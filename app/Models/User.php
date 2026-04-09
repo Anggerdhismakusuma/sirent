@@ -21,6 +21,19 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'preferred_theme',
+        'preferred_lang',
+        'phone_number',
+        'address',
+        'avatar',
+        'latitude',
+        'longitude',
+        'verification_status',
+        'ktm_path',
+        'selfie_path',
+        'rejection_reason',
+        'verified_at',
     ];
 
     /**

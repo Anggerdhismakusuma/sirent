@@ -18,6 +18,28 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+
+            // Ngatur role sama preference user
+            $table->enum('role', ['peminjam', 'pemilik', 'admin'])->default('peminjam');
+            $table->enum('preferred_theme', ['dark', 'light', 'system'])->default('system');
+            $table->string('preferred_lang', 2)->default('id');
+
+            // ngatur data pribadi user
+            $table->string('phone_number')->nullable();
+            $table->text('address')->nullable();
+            $table->string('avatar')->nullable();
+
+            // lokasi user
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+        
+            // verifikasi user
+            $table->enum('verification_status', ['unverified', 'pending', 'verified', 'rejected'])->default('unverified');
+            $table->string('ktm_path')->nullable();
+            $table->string('selfie_path')->nullable();
+            $table->string('rejection_reason')->nullable();
+            $table->timestamp('verified_at')->nullable();
+            
             $table->timestamps();
         });
 
