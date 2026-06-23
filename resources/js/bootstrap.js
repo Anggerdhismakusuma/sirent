@@ -1,4 +1,25 @@
 import axios from 'axios';
 window.axios = axios;
+<<<<<<< HEAD
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+=======
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+window.Pusher = Pusher;
+
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY || 'sirent-app-key',
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER || 'mt1',
+    forceTLS: (import.meta.env.VITE_PUSHER_SCHEME || 'http') === 'https',
+    wsHost: import.meta.env.VITE_PUSHER_HOST || window.location.hostname,
+    wsPort: parseInt(import.meta.env.VITE_PUSHER_PORT || '6001'),
+    wssPort: parseInt(import.meta.env.VITE_PUSHER_PORT || '6001'),
+    disableStats: true,
+    enabledTransports: ['ws', 'wss'],
+});
+>>>>>>> origin/feat-peminjam

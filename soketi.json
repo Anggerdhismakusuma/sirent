@@ -1,0 +1,18 @@
+{
+    "debug": true,
+    "port": 6001,
+    "appManager.array.apps": [
+        {
+            "id": "sirent-local",
+            "key": "sirent-app-key",
+            "secret": "sirent-app-secret"
+        }
+    ],
+    "appManager.driver": "array",
+    "database": {
+        "default": "sqlite",
+        "sqlite": {
+            "databasePath": "database/soketi.sqlite"
+        }
+    }
+}

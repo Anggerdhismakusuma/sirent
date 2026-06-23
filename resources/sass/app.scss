@@ -1,0 +1,595 @@
+// SI-RENT Design System Tokens (from Figma)
+// ============================================
+
+// 3. SI-RENT CSS Custom Properties — Semantic Tokens
+:root {
+    // ═══ Brand Colors ═══
+    --primary-blue: #0031e1;
+    --primary-blue-light: #204be5;
+    --primary-blue-dark: #002cc0;
+    --primary-blue-deep: #001f7e;
+    --primary-blue-ghost: #b5d4ff;
+    --primary-blue-bg: #ecf2fd;
+    --primary-blue-card: #dde7fc;
+
+    // ═══ Surface / Background ═══
+    --bg-page: #ffffff;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f8f9fa;
+    --bg-grey: #f0f0f0;
+
+    // ═══ Border ═══
+    --border-default: #d4d4d4;
+    --border-light: #e2e2e2;
+    --border-subtle: #f0f0f0;
+
+    // ═══ Text ═══
+    --text-primary: #000000;
+    --text-secondary: #5c5c5c;
+    --text-tertiary: #888888;
+    --text-muted: #6a6a6a;
+    --text-placeholder: rgba(0, 0, 0, 0.3);
+
+    // ═══ Dark Text (brand headings) ═══
+    --dark-text: #001d83;
+    --text-grey-light: #9092a1;
+    --text-grey-dark: #717171;
+
+    // ═══ Status Colors ═══
+    --status-green: #078500;
+    --status-green-bg: rgba(115, 255, 138, 0.65);
+    --status-red: #850012;
+    --status-red-bg: rgba(255, 115, 117, 0.65);
+
+    // ═══ Sidebar ═══
+    --sidebar-bg-start: #002cc0;
+    --sidebar-bg-end: #001f7e;
+    --sidebar-card-bg: #04278c;
+    --sidebar-card-border: #4c63a6;
+    --sidebar-active-bg: #0c36b0;
+    --sidebar-highlight: #1656ff;
+
+    // ═══ Chat ═══
+    --chat-bubble-mine: #0031e1;
+    --chat-bubble-other: #ebebeb;
+    --chat-bubble-other-text: #000000;
+    --chat-active-bg: #ecf2fd;
+    --chat-hover-bg: rgba(236, 242, 253, 0.5);
+
+    // ═══ Typography ═══
+    --font-heading: 'Mona Sans', sans-serif;
+    --font-body: 'Mona Sans', sans-serif;
+    --font-logo: 'Teko', sans-serif;
+
+    // ═══ Shadows ═══
+    --shadow-card: 0px 4px 6px 0px rgba(0, 0, 0, 0.2);
+    --shadow-elevated: 0px 4px 8px 0px rgba(0, 0, 0, 0.25);
+    --shadow-input: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    --shadow-sidebar: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
+
+    // ═══ Border Radius ═══
+    --radius-sm: 5px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 20px;
+    --radius-2xl: 30px;
+
+    // ═══ Layout ═══
+    --sidebar-width: 288px;
+}
+
+// 4. Override Bootstrap Variables
+$primary: #0031e1;
+$font-family-sans-serif: 'Mona Sans', system-ui, -apple-system, sans-serif;
+$font-family-base: 'Mona Sans', system-ui, -apple-system, sans-serif;
+$border-radius: 0.625rem; // 10px default
+$input-border-radius: 0.75rem; // 12px
+
+// 5. Global Styles
+body {
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background-color: var(--bg-page);
+}
+
+// Alpine.js cloak — prevent FOUC
+[x-cloak] {
+    display: none !important;
+}
+
+// Font utility
+.font-logo {
+    font-family: var(--font-logo);
+    font-weight: 600;
+}
+
+// Primary button style (from Figma)
+.btn-primary-sirent {
+    background-color: #3673fb;
+    border: 0.2px solid #000;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-input);
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    padding: 0.75rem 2rem;
+
+    &:hover {
+        background-color: var(--primary-blue);
+        color: #fff;
+    }
+}
+
+// Outline button
+.btn-outline-sirent {
+    border: 1px solid #3058e6;
+    border-radius: var(--radius-md);
+    color: #204be5;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0.5rem 1.5rem;
+
+    &:hover {
+        background-color: var(--primary-blue-bg);
+    }
+}
+
+// Card style
+.card-sirent {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+
+// 1. Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// 2. Import Bootstrap Icons
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+// 3. Import Google Fonts via Bun
+@import url('https://fonts.bunny.net/css?family=mona-sans:400,500,600,700|teko:600');
+
+// ============================================
+// CHAT STYLES (F-CHT-01 s.d. F-CHT-05, Figma node 1860-3538)
+// ============================================
+
+// Three-panel chat layout (full height minus navbar)
+.chat-container {
+    display: flex;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+}
+
+// Panel 1: Conversation List (391px)
+.chat-panel-left {
+    width: 391px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+
+    @media (max-width: 767.98px) {
+        width: 100%;
+        &.d-none { display: none !important; }
+    }
+}
+
+// Panel 2: Messages (flex: 1)
+.chat-panel-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    min-width: 0;
+
+    @media (max-width: 767.98px) {
+        &.d-none { display: none !important; }
+    }
+}
+
+// Panel 3: Details Sidebar (413px)
+.chat-panel-right {
+    width: 413px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border-light);
+    overflow-y: auto;
+    background: var(--bg-surface);
+
+    @media (max-width: 767.98px) {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1050;
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+// Active conversation row
+.chat-conversation-row {
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--chat-hover-bg);
+    }
+}
+
+.chat-conversation-active {
+    background-color: var(--chat-active-bg) !important;
+    border-left: 2px solid var(--primary-blue) !important;
+}
+
+// Conversation list scrollable area
+.chat-conversation-list {
+    flex: 1;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #d4d4d4;
+        border-radius: 2px;
+    }
+}
+
+// Messages container
+.chat-messages-container {
+    overflow-y: auto;
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: var(--bg-grey);
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+}
+
+// Chat header
+.chat-header {
+    flex-shrink: 0;
+}
+
+// Chat input area
+.chat-input-area {
+    flex-shrink: 0;
+}
+
+// Message bubble base (used for server-rendered bubbles)
+.chat-bubble-mine {
+    background: var(--chat-bubble-mine);
+    border-radius: 5px 5px 0 5px;
+    color: #fff;
+    padding: 8px 14px;
+    font-family: 'Mona Sans', sans-serif;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+.chat-bubble-other {
+    background: var(--chat-bubble-other);
+    border-radius: 0 10px 10px 10px;
+    color: var(--chat-bubble-other-text);
+    padding: 8px 14px;
+    font-family: 'Mona Sans', sans-serif;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+// ============================================
+// THEME SWITCH (shadcn/ui style)
+// ============================================
+.theme-switch {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 44px;
+    height: 24px;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &-off {
+        background-color: #d4d4d8;
+    }
+
+    &-on {
+        background-color: #0031e1;
+    }
+
+    &-thumb {
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 1px;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &-on &-thumb {
+        transform: translate(20px, -50%);
+    }
+}
+
+// ============================================
+// DARK MODE — "SI-RENT Midnight Indigo"
+// ============================================
+[data-bs-theme="dark"] {
+    // ═══ Brand Colors (brighter for dark backgrounds) ═══
+    --primary-blue: #4d7aff;
+    --primary-blue-light: #6b91ff;
+    --primary-blue-dark: #3a5fd9;
+    --primary-blue-deep: #2a4abf;
+    --primary-blue-ghost: #1e3578;
+    --primary-blue-bg: rgba(77, 122, 255, 0.08);
+    --primary-blue-card: rgba(77, 122, 255, 0.12);
+
+    // ═══ Surface / Background ═══
+    --bg-page: #090d1a;
+    --bg-surface: #111627;
+    --bg-surface-hover: #1a1f35;
+    --bg-grey: #151a2b;
+
+    // ═══ Border ═══
+    --border-default: #252a42;
+    --border-light: #1e2440;
+    --border-subtle: #181d33;
+
+    // ═══ Text ═══
+    --text-primary: #e4e6f0;
+    --text-secondary: #8e92a8;
+    --text-tertiary: #5e637a;
+    --text-muted: #6b7084;
+    --text-placeholder: rgba(228, 230, 240, 0.3);
+
+    // ═══ Dark Text (brand headings) ═══
+    --dark-text: #a0b6ff;
+    --text-grey-light: #5e637a;
+    --text-grey-dark: #8e92a8;
+
+    // ═══ Status Colors (adjusted for dark) ═══
+    --status-green: #34d65a;
+    --status-green-bg: rgba(52, 214, 90, 0.15);
+    --status-red: #ff5c62;
+    --status-red-bg: rgba(255, 92, 98, 0.15);
+
+    // ═══ Sidebar ═══
+    --sidebar-bg-start: #0d1140;
+    --sidebar-bg-end: #090d1a;
+    --sidebar-card-bg: #111b3d;
+    --sidebar-card-border: #1e2a52;
+    --sidebar-active-bg: #1a3060;
+    --sidebar-highlight: #4d7aff;
+
+    // ═══ Chat ═══
+    --chat-bubble-mine: #4d7aff;
+    --chat-bubble-other: #1a1f35;
+    --chat-bubble-other-text: #e4e6f0;
+    --chat-active-bg: rgba(77, 122, 255, 0.1);
+    --chat-hover-bg: rgba(77, 122, 255, 0.05);
+
+    // ═══ Shadows (deeper for dark mode) ═══
+    --shadow-card: 0px 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-elevated: 0px 4px 16px rgba(0, 0, 0, 0.6);
+    --shadow-input: 0px 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-sidebar: 0px 4px 16px rgba(0, 0, 0, 0.6);
+
+    // ═══ Component Overrides ═══
+
+    // Navbar
+    .navbar {
+        background-color: var(--bg-surface) !important;
+        border-bottom: 1px solid var(--border-default);
+
+        .navbar-brand span {
+            color: var(--primary-blue-light) !important;
+        }
+    }
+
+    // Global background
+    body {
+        background-color: var(--bg-page);
+        color: var(--text-primary);
+    }
+
+    // Cards & white containers → surface
+    .bg-white {
+        background-color: var(--bg-surface) !important;
+    }
+
+    .card-sirent {
+        background: var(--bg-surface);
+        border-color: var(--border-default);
+    }
+
+    .shadow-sm {
+        box-shadow: var(--shadow-card) !important;
+    }
+
+    // Borders
+    .border, .border-bottom {
+        border-color: var(--border-default) !important;
+    }
+
+    // Text overrides (Bootstrap .text-dark → light)
+    .text-dark {
+        color: var(--text-primary) !important;
+    }
+
+    .text-muted {
+        color: var(--text-secondary) !important;
+    }
+
+    // Footer
+    footer {
+        background-color: var(--bg-surface) !important;
+        border-top: 1px solid var(--border-default);
+    }
+
+    // Auth modal
+    .modal-content {
+        background-color: var(--bg-surface);
+        border-color: var(--border-default);
+    }
+
+    // ── Chat ──
+    .chat-panel-left,
+    .chat-panel-center,
+    .chat-panel-right {
+        background: var(--bg-surface) !important;
+        border-color: var(--border-default) !important;
+    }
+
+    .chat-conversation-active {
+        background-color: var(--chat-active-bg) !important;
+        border-left-color: var(--primary-blue) !important;
+    }
+
+    .chat-conversation-row:hover {
+        background-color: var(--chat-hover-bg) !important;
+    }
+
+    .chat-bubble-other {
+        background: var(--chat-bubble-other);
+        color: var(--chat-bubble-other-text);
+    }
+
+    .chat-header {
+        border-bottom-color: var(--border-default) !important;
+    }
+
+    .chat-input-area {
+        border-top-color: var(--border-default) !important;
+    }
+
+    .chat-messages-container {
+        &::-webkit-scrollbar-track { background: var(--bg-surface); }
+        &::-webkit-scrollbar-thumb { background: var(--text-tertiary); }
+    }
+
+    // Form controls
+    .form-control:not(.border-0) {
+        background-color: var(--bg-grey);
+        border-color: var(--border-default);
+        color: var(--text-primary);
+    }
+
+    .input-group-text {
+        background-color: var(--bg-grey);
+        border-color: var(--border-default);
+        color: var(--text-secondary);
+    }
+
+    .input-group-text.bg-white {
+        background-color: var(--bg-grey) !important;
+        border-color: var(--border-default) !important;
+        color: var(--text-secondary);
+    }
+
+    // Dropdowns
+    .dropdown-menu {
+        background-color: var(--bg-surface);
+        border-color: var(--border-default);
+    }
+
+    .dropdown-item {
+        color: var(--text-primary);
+
+        &:hover {
+            background-color: var(--bg-surface-hover);
+            color: #fff;
+        }
+    }
+
+    // Buttons
+    .btn-light {
+        background-color: var(--bg-grey);
+        border-color: var(--border-default);
+        color: var(--text-primary);
+
+        &:hover {
+            background-color: var(--bg-surface-hover);
+            color: #fff;
+        }
+    }
+
+    .btn-outline-secondary, .btn-outline-primary {
+        &:not(:hover) {
+            border-color: var(--border-default);
+        }
+    }
+
+    // Page link / pagination
+    .page-link {
+        background-color: var(--bg-surface);
+        border-color: var(--border-default);
+    }
+
+    .page-item.disabled .page-link {
+        background-color: transparent;
+    }
+
+    // Tables
+    .table {
+        --bs-table-bg: transparent;
+        --bs-table-color: var(--text-primary);
+    }
+
+    // Nav tabs
+    .nav-tabs {
+        border-bottom-color: var(--border-default);
+
+        .nav-link {
+            color: var(--text-secondary);
+
+            &.active {
+                color: var(--primary-blue);
+                background-color: transparent;
+                border-color: var(--border-default) var(--border-default) var(--bg-surface);
+            }
+        }
+    }
+
+    // Hero gradient (home page)
+    [style*="background:linear-gradient(180deg, #0c0090"] {
+        background: linear-gradient(180deg, #090d1a 0%, #0f1740 60%, var(--bg-page) 100%) !important;
+    }
+
+    // About page hero gradient
+    [style*="background:linear-gradient(180deg, #0c0090 0%, #001f7e 100%"] {
+        background: linear-gradient(180deg, #090d1a 0%, #0f1740 100%) !important;
+    }
+
+    // CTA banner gradient
+    [style*="background:linear-gradient(269.76deg"] {
+        background: linear-gradient(269.76deg, #0d1140 45.67%, #1f0894 96.09%) !important;
+    }
+}
+
+// ═══ Smooth Theme Transition ═══
+[data-bs-theme] {
+    &, *, *::before, *::after {
+        transition: background-color 0.3s ease, color 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    }
+}

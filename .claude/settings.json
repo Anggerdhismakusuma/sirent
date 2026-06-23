@@ -1,0 +1,11 @@
+{
+  "enabledPlugins": {
+    "figma@claude-plugins-official": false
+  },
+  "mcpServers": {
+    "figma-mcp-go": {
+      "command": "npx",
+      "args": ["-y", "@vkhanhqui/figma-mcp-go"]
+    }
+  }
+}
