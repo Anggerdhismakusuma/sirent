@@ -1,5 +1,20 @@
-// SI-RENT Design System Tokens (from Figma)
-// ============================================
+
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+
+// Override Bootstrap Variables
+$primary: #0031e1;
+$font-family-sans-serif: 'Mona Sans', system-ui, -apple-system, sans-serif;
+$font-family-base: 'Mona Sans', system-ui, -apple-system, sans-serif;
+$border-radius: 0.625rem; // 10px default
+$input-border-radius: 0.75rem; // 12px
+
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/utilities';
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+@import url('https://fonts.bunny.net/css?family=mona-sans:400,500,600,700|teko:600');
 
 // 3. SI-RENT CSS Custom Properties — Semantic Tokens
 :root {
@@ -78,13 +93,6 @@
     --sidebar-width: 288px;
 }
 
-// 4. Override Bootstrap Variables
-$primary: #0031e1;
-$font-family-sans-serif: 'Mona Sans', system-ui, -apple-system, sans-serif;
-$font-family-base: 'Mona Sans', system-ui, -apple-system, sans-serif;
-$border-radius: 0.625rem; // 10px default
-$input-border-radius: 0.75rem; // 12px
-
 // 5. Global Styles
 body {
     font-family: var(--font-body);
@@ -141,15 +149,6 @@ body {
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-card);
 }
-
-// 1. Import Bootstrap
-@import 'bootstrap/scss/bootstrap';
-
-// 2. Import Bootstrap Icons
-@import 'bootstrap-icons/font/bootstrap-icons.css';
-
-// 3. Import Google Fonts via Bun
-@import url('https://fonts.bunny.net/css?family=mona-sans:400,500,600,700|teko:600');
 
 // ============================================
 // CHAT STYLES (F-CHT-01 s.d. F-CHT-05, Figma node 1860-3538)

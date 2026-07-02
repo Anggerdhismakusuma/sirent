@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 // Auth Routes (AJAX — no dedicated pages)
 // ============================================
 Route::post('/auth/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/auth/verify_otp', [AuthController::class, 'verifyOtp'])->name('auth.verify-otp');
 Route::post('/auth/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->name('auth.forgot-password');
