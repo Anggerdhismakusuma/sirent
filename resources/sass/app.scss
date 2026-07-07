@@ -592,3 +592,311 @@ body {
         transition: background-color 0.3s ease, color 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
     }
 }
+
+.store-dashboard-wrapper {
+    min-height: calc(100vh - 120px);
+    padding-bottom: 48px;
+}
+
+.empty-store-state {
+    min-height: calc(100vh - 220px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+
+    h1 {
+        color: #b8b8b8;
+        font-family: 'Mona Sans', sans-serif;
+        font-size: 30px;
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+
+    .btn-open-store {
+        border: none;
+        background: #0438f2;
+        color: #ffffff;
+        padding: 12px 36px;
+        border-radius: 6px;
+        font-family: 'Mona Sans', sans-serif;
+        font-size: 15px;
+        box-shadow: 0 6px 14px rgba(4, 56, 242, 0.25);
+    }
+}
+
+.seller-dashboard {
+    width: 100%;
+}
+
+.seller-section-title {
+    color: #0438f2;
+    font-family: 'Mona Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Stats row */
+.seller-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.seller-stat-card {
+    background: #ffffff;
+    border: 1px solid #dce0ec;
+    border-radius: 8px;
+    padding: 14px;
+    min-height: 112px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    .stat-icon {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 8px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        flex: 0 0 34px;
+
+        i {
+            font-size: 17px;
+        }
+    }
+
+    small {
+        display: block;
+        text-transform: uppercase;
+        color: #6a6f80;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    h4 {
+        margin: 4px 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: #111111;
+        line-height: 1.2;
+    }
+
+    p {
+        margin: 0;
+        color: #10a23a;
+        font-size: 10px;
+        font-weight: 700;
+    }
+}
+
+/* Main dashboard grid */
+.seller-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(320px, 1.1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.seller-panel {
+    background: #ffffff;
+    border: 1px solid #dce0ec;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    h6 {
+        color: #0438f2;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 16px;
+    }
+}
+
+.seller-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h6 {
+        margin-bottom: 0;
+    }
+
+    select {
+        border: 1px solid #dce0ec;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 12px;
+        color: #6a6f80;
+        background: #ffffff;
+    }
+
+    a {
+        font-size: 12px;
+        color: #0438f2;
+        text-decoration: none;
+        font-weight: 700;
+    }
+}
+
+.revenue-panel,
+.trend-panel,
+.top-items-panel {
+    grid-column: 1 / 2;
+}
+
+.category-panel,
+.recap-panel {
+    grid-column: 2 / 3;
+}
+
+.chart-box {
+    position: relative;
+    width: 100%;
+}
+
+.chart-large {
+    height: 230px;
+    margin-top: 16px;
+}
+
+.chart-donut {
+    width: 175px;
+    height: 175px;
+    flex-shrink: 0;
+}
+
+.category-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 45%;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+
+        span {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #0438f2;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        strong {
+            display: block;
+            font-size: 11px;
+            color: #333333;
+        }
+
+        small {
+            font-size: 10px;
+            color: #6a6f80;
+        }
+    }
+
+    li:nth-child(1) span { background: #08328D; }
+    li:nth-child(2) span { background: #1C6BFF; }
+    li:nth-child(3) span { background: #8C5CFF; }
+    li:nth-child(4) span { background: #F9C846; }
+    li:nth-child(5) span { background: #56C596; }
+    li:nth-child(6) span { background: #FF6B6B; }
+    li:nth-child(7) span { background: #20C997; }
+}
+
+.seller-table {
+    font-size: 12px;
+
+    th {
+        background: #eeeeee;
+        font-weight: 800;
+        padding: 10px;
+    }
+
+    td {
+        padding: 10px;
+        font-weight: 600;
+    }
+
+    .active-row {
+        background: #dceaff;
+    }
+}
+
+.seller-success-note {
+    background: #c9f8c8;
+    color: #137a1d;
+    padding: 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.top-items-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.top-item-card {
+    position: relative;
+    border: 1px solid #dce0ec;
+    border-radius: 8px;
+    padding: 10px;
+    background: #ffffff;
+
+    .item-rank {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #d5d900;
+        color: #111111;
+        font-size: 12px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    img {
+        width: 100%;
+        height: 76px;
+        object-fit: cover;
+        border-radius: 6px;
+        background: #eeeeee;
+        margin-bottom: 8px;
+    }
+
+    h6 {
+        color: #111111;
+        font-size: 11px;
+        margin: 0;
+        font-weight: 800;
+    }
+
+    p {
+        margin: 2px 0 0;
+        color: #0438f2;
+        font-size: 10px;
+        font-weight: 700;
+    }
+}                       
