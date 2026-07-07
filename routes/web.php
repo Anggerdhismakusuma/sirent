@@ -94,6 +94,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Borrower\DashboardController::class, 'index'])
         ->name('borrower.dashboard');
 
+    Route::post('/dashboard/store/open', [StoreController::class, 'openDashboardStore'])
+        ->name('borrower.store.open');
+
     Route::get('/aktivitas', function () {
         return view('home');
     })->name('borrower.activity');
