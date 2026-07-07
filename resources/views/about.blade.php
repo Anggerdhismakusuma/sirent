@@ -1,9 +1,8 @@
+﻿@section('title', 'About Us')
+@vite(['resources/js/app.js'])
 
-
-@section('title', 'About Us')
-@vite(['resources/js/app.js', 'resources/sass/app.scss'])
 <section class="about-page text-white">
-    <a class="about-back" href="{{ route('home') }}"> 
+    <a class="about-back" href="{{ url()->previous() }}"> {{-- route untuk back button blm diisi menunggu push angger --}}
         <i class="bi bi-chevron-left"></i>
     </a>
 
@@ -24,12 +23,12 @@
                             <h3>Variety</h3>
                             <p>Find all kinds of hobby gear in one place.</p>
                         </div>
-    
+
                         <div class="about-feature-item">
                             <h3>Affordable</h3>
                             <p>Rent high quality equipment without overspending.</p>
                         </div>
-    
+
                         <div class="about-feature-item">
                             <h3>Trusted</h3>
                             <p>Secure transactions between renters and owners.</p>
@@ -39,7 +38,7 @@
             </div>
 
             <div class="col-lg-5 about-right d-flex align-items-center justify-content-center">
-                <img src="{{ asset('images/logo-sirent 1.png') }}" alt="SI-RENT Logo" class="about-logo">
+                <img src="{{ asset('images/logo-sirent.png') }}" alt="SI-RENT Logo" class="about-logo">
             </div>
         </div>
     </div>

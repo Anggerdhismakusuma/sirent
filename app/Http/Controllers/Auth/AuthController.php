@@ -12,30 +12,107 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
     /**
-     * Handle AJAX registration from modal.
+     * Handle AJAX registration from modal — Step 1: Save data to session & Send OTP.
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'role' => User::ROLE_BORROWER,
+        // 1. Generate 6 digit angka OTP secara acak
+        $otp = rand(100000, 999999);
+
+        // 2. Simpan data registrasi sementara & OTP ke dalam Session
+        session([
+            'register_data' => [
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+            ],
+            'register_otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(10) // Expired dalam 10 menit
         ]);
 
+        // 3. Kirim email OTP ke Mailpit
+        Mail::send([], [], function ($message) use ($request, $otp) {
+            $message->to($request->email)
+                ->subject('Kode Verifikasi Registrasi SI-RENT')
+                ->html("
+                        <div style='font-family: sans-serif; padding: 20px; max-width: 500px; border: 1px solid #ddd; border-radius: 12px;'>
+                            <h2 style='color: #3673fb;'>Verifikasi Akun SI-RENT</h2>
+                            <p>Halo, terima kasih telah mendaftar di SI-RENT. Gunakan kode OTP di bawah ini untuk menyelesaikan pendaftaran Anda:</p>
+                            <div style='background: #f0f4ff; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;'>
+                                <span style='font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #3673fb;'>{$otp}</span>
+                            </div>
+                            <p style='font-size: 12px; color: #777;'>Kode ini berlaku selama 10 menit. Jangan sebarkan kode ini kepada siapa pun.</p>
+                        </div>
+                    ");
+        });
+
+        // 4. Return response sukses, kirim balik email-nya untuk di-render di frontend
+        return response()->json([
+            'success' => true,
+            'message' => 'Kode OTP berhasil dikirim ke email Anda.',
+            'email' => $request->email,
+        ]);
+    }
+
+    /**
+     * Handle AJAX OTP verification — Step 2: Validate OTP & Create Account.
+     */
+    public function verifyOtp(Request $request): JsonResponse
+    {
+        $request->validate([
+            'otp' => 'required|string|size:6',
+        ]);
+
+        // 1. Cek apakah session data registrasi ada dan OTP belum expired
+        if (!session()->has('register_otp') || now()->gt(session('otp_expires_at'))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode OTP sudah kedaluwarsa atau tidak valid. Silakan daftar ulang.',
+            ], 422);
+        }
+
+        // 2. Cocokkan OTP yang diinput dengan yang ada di Session
+        if ($request->otp !== (string) session('register_otp')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode OTP yang Anda masukkan salah.',
+                'errors' => [
+                    'otp' => ['Kode OTP tidak cocok.']
+                ]
+            ], 422);
+        }
+
+        // 3. Jika cocok, ambil data sementara tadi dan simpan resmi ke Database
+        $userData = session('register_data');
+        $user = User::create([
+            'name' => $userData['name'],
+            'email' => $userData['email'],
+            'phone' => $userData['phone'],
+            'password' => $userData['password'],
+            'role' => User::ROLE_BORROWER, // Default sebagai penyewa
+            'email_verified_at' => now(), // Langsung tandai terverifikasi karena via OTP
+        ]);
+
+        // Memicu event registered bawaan laravel (opsional)
         event(new Registered($user));
 
-        $user->sendEmailVerificationNotification();
+        // 4. Hapus session data sementara
+        session()->forget(['register_data', 'register_otp', 'otp_expires_at']);
+
+        // 5. Login-kan user secara otomatis ke sistem
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'success' => true,
-            'message' => __('ui.register_success_verify'),
-            'redirect' => route('home'),
+            'message' => 'Akun Anda berhasil diverifikasi!',
+            'redirect' => route('onboarding.step1'),
         ]);
     }
 
@@ -100,7 +177,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        Auth::guard('web')->logout();
+        $this->guard()->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -167,5 +244,13 @@ class AuthController extends Controller
             'success' => false,
             'message' => 'Token reset tidak valid atau sudah kadaluarsa.',
         ], 422);
+    }
+
+    /**
+     * Get the guard to be used during authentication.
+     */
+    protected function guard()
+    {
+        return Auth::guard('web');
     }
 }

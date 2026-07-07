@@ -2,8 +2,7 @@
 @php
     $theme = auth()->check() ? (auth()->user()->theme ?? 'light') : 'light';
 @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      data-bs-theme="{{ $theme }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="{{ $theme }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -27,13 +26,19 @@
     @stack('styles')
 </head>
 <body>
-    <x-layout.navbar />
+    {{-- Sembunyikan Navbar saat di halaman onboarding --}}
+    @if(!Request::is('onboarding*'))
+        <x-layout.navbar />
+    @endif
 
     <main>
         @yield('content')
     </main>
 
-    <x-layout.footer />
+    {{-- Sembunyikan Footer saat di halaman onboarding --}}
+    @if(!Request::is('onboarding*'))
+        <x-layout.footer />
+    @endif
 
     {{-- Auth Modal — available on all pages --}}
     <x-auth-modal />
@@ -47,14 +52,8 @@
             lang: '{{ auth()->user()->language ?? 'id' }}',
             theme: '{{ auth()->user()->theme ?? 'light' }}'
         };
-    </script>
-    @else
-    @php $guestLang = session()->get('locale', config('app.locale', 'id')); @endphp
-    <script>
-        window.SIRENT_CONFIG = { lang: '{{ $guestLang }}', theme: '{{ $theme }}' };
-    </script>
-    <script>
-        // Global Echo listener for unread badge (navbar-level)
+
+        // Listener Echo ditaruh di sini (khusus user login)
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 if (window.Echo && window.AuthUser) {
@@ -72,6 +71,11 @@
                 }
             }, 1000);
         });
+    </script>
+    @else
+    @php $guestLang = session()->get('locale', config('app.locale', 'id')); @endphp
+    <script>
+        window.SIRENT_CONFIG = { lang: '{{ $guestLang }}', theme: '{{ $theme }}' };
     </script>
     @endauth
 

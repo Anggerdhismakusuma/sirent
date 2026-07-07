@@ -2,20 +2,13 @@
 
 namespace Database\Factories;
 
-<<<<<<< HEAD
-=======
 use App\Models\User;
->>>>>>> origin/feat-peminjam
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
-<<<<<<< HEAD
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
-=======
  * @extends Factory<User>
->>>>>>> origin/feat-peminjam
  */
 class UserFactory extends Factory
 {

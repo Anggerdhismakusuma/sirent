@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Rating;
 use App\Models\RentalRequest;
@@ -64,16 +63,4 @@ class StoreController extends Controller
             'completedRentals'
         ));
     }
-
-    public function openDashboardStore(Request $request){
-        $user = $request->user();
-
-        $user->forceFill([
-            'is_owner_active' => true,
-        ])->save();
-
-        return redirect()
-            ->route('borrower.dashboard', ['tab' => 'store'])
-            ->with('success', 'Store berhasil dibuka.');
-    } 
 }

@@ -14,9 +14,6 @@ trim_trailing_whitespace = false
 [*.{yml,yaml}]
 indent_size = 2
 
-<<<<<<< HEAD
 [docker-compose.yml]
-=======
 [compose.yaml]
->>>>>>> origin/feat-peminjam
 indent_size = 4
