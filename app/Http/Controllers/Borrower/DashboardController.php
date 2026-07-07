@@ -78,17 +78,9 @@ class DashboardController extends Controller
             ->where('status', 'ongoing')
             ->count();
 
-        // Fallback kalau rental_requests masih kosong
-        $fallbackIncome = (clone $ownerProductsQuery)
-            ->selectRaw('SUM(price_per_day * total_rented) as total')
-            ->value('total') ?? 0;
-
-        $fallbackTransactions = (clone $ownerProductsQuery)
-            ->sum('total_rented');
-
         $sellerStats = [
-            'income' => $totalIncome > 0 ? (float) $totalIncome : (float) $fallbackIncome,
-            'transactions' => $totalTransactions > 0 ? (int) $totalTransactions : (int) $fallbackTransactions,
+            'income' => (float) $totalIncome,
+            'transactions' => (int) $totalTransactions,
             'items' => (int) $availableItems,
             'ongoing' => (int) $ongoingRent,
             'rating' => number_format((float) $user->rating_avg_as_owner, 1) . ' / 5.0',
@@ -96,38 +88,39 @@ class DashboardController extends Controller
         ];
 
         // =========================
-        // Revenue Stream - Daily this month
+        // Revenue Stream - Monthly last 6 months
         // =========================
 
         $startOfMonth = now()->startOfMonth()->copy();
         $endOfMonth = now()->endOfMonth()->copy();
-        $daysInMonth = now()->daysInMonth;
 
         $revenueLabels = [];
         $revenueChart = [];
 
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $revenueLabels[] = $day . ' ' . now()->format('M');
-            $revenueChart[$day] = 0;
-        }
-
-        $dailyRevenue = RentalRequest::selectRaw('DAY(created_at) as day, SUM(total_price) as total')
+        $monthlyRevenueRows = RentalRequest::selectRaw("
+                DATE_FORMAT(completed_at, '%Y-%m') as month_key,
+                SUM(total_price) as total
+            ")
             ->where('owner_id', $user->id)
             ->whereIn('status', $completedStatuses)
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->groupBy(DB::raw('DAY(created_at)'))
-            ->get();
+            ->whereNotNull('completed_at')
+            ->where('completed_at', '>=', now()->subMonths(5)->startOfMonth())
+            ->groupBy(DB::raw("DATE_FORMAT(completed_at, '%Y-%m')"))
+            ->pluck('total', 'month_key');
 
-        foreach ($dailyRevenue as $row) {
-            $revenueChart[(int) $row->day] = (float) $row->total;
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $key = $month->format('Y-m');
+
+            $revenueLabels[] = $month->format('M Y');
+            $revenueChart[] = (float) ($monthlyRevenueRows[$key] ?? 0);
         }
-
-        $revenueChart = array_values($revenueChart);
 
         // =========================
         // Renting Trend - Daily request count this month
         // =========================
 
+        $daysInMonth = now()->daysInMonth;
         $rentingTrendChart = [];
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
@@ -251,7 +244,7 @@ class DashboardController extends Controller
 
         // =========================
         // Top Items Rented
-        // =========================
+        // =========================p
 
         $topItems = Product::with('primaryImage')
             ->where('owner_id', $user->id)

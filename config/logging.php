@@ -54,11 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-<<<<<<< HEAD
-            'channels' => explode(',', env('LOG_STACK', 'single')),
-=======
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),
->>>>>>> origin/feat-peminjam
             'ignore_exceptions' => false,
         ],
 
@@ -80,11 +76,7 @@ return [
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
-<<<<<<< HEAD
-            'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
-=======
             'username' => env('LOG_SLACK_USERNAME', env('APP_NAME', 'Laravel')),
->>>>>>> origin/feat-peminjam
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
             'level' => env('LOG_LEVEL', 'critical'),
             'replace_placeholders' => true,
@@ -106,17 +98,10 @@ return [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
-<<<<<<< HEAD
-            'formatter' => env('LOG_STDERR_FORMATTER'),
-            'with' => [
-                'stream' => 'php://stderr',
-            ],
-=======
             'handler_with' => [
                 'stream' => 'php://stderr',
             ],
             'formatter' => env('LOG_STDERR_FORMATTER'),
->>>>>>> origin/feat-peminjam
             'processors' => [PsrLogMessageProcessor::class],
         ],
 

@@ -8,14 +8,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
-<<<<<<< HEAD
-        health: '/up',
-    )
-    ->withMiddleware(function (Middleware $middleware) {
-        //
-    })
-    ->withExceptions(function (Exceptions $exceptions) {
-=======
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
@@ -33,6 +25,5 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
->>>>>>> origin/feat-peminjam
         //
     })->create();

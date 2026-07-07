@@ -1,11 +1,4 @@
 import './bootstrap';
-<<<<<<< HEAD
-
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-import '../scss/app.scss'
-=======
 import './auth-modal';
 import Alpine from 'alpinejs';
 import flatpickr from 'flatpickr';
@@ -19,4 +12,3 @@ window.bootstrap = bootstrap;
 window.Swal = Swal;
 
 Alpine.start();
->>>>>>> origin/feat-peminjam

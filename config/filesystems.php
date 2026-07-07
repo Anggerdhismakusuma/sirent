@@ -41,11 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-<<<<<<< HEAD
-            'url' => env('APP_URL').'/storage',
-=======
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
->>>>>>> origin/feat-peminjam
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

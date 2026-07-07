@@ -1,10 +1,7 @@
 <?php
 
-<<<<<<< HEAD
-=======
 use App\Models\User;
 
->>>>>>> origin/feat-peminjam
 return [
 
     /*
@@ -67,11 +64,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-<<<<<<< HEAD
-            'model' => env('AUTH_MODEL', App\Models\User::class),
-=======
             'model' => env('AUTH_MODEL', User::class),
->>>>>>> origin/feat-peminjam
         ],
 
         // 'users' => [
@@ -113,11 +106,7 @@ return [
     | Password Confirmation Timeout
     |--------------------------------------------------------------------------
     |
-<<<<<<< HEAD
-    | Here you may define the amount of seconds before a password confirmation
-=======
     | Here you may define the number of seconds before a password confirmation
->>>>>>> origin/feat-peminjam
     | window expires and users are asked to re-enter their password via the
     | confirmation screen. By default, the timeout lasts for three hours.
     |

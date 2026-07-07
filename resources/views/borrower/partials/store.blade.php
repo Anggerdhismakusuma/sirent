@@ -217,6 +217,23 @@ window.initStoreCharts = function () {
 
     const revenueLabels = @json($revenueLabels ?? []);
     const revenueData = @json($revenueChart ?? []);
+    
+    const maxRevenue = Math.max(...revenueData, 0);
+
+    function formatRupiahShort(value) {
+        value = Number(value || 0);
+
+        if (value >= 1000000) {
+            return 'Rp ' + (value / 1000000).toFixed(1).replace('.0', '') + ' jt';
+        }
+
+        if (value >= 1000) {
+            return 'Rp ' + (value / 1000).toFixed(0) + ' rb';
+        }
+
+        return 'Rp ' + value.toLocaleString('id-ID');
+    }
+
     const trendData = @json($rentingTrendChart ?? []);
     const categoryLabels = @json(array_keys($categoryChart ?? []));
     const categoryData = @json(array_values($categoryChart ?? []));
@@ -246,7 +263,7 @@ window.initStoreCharts = function () {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Rp ' + Number(context.raw).toLocaleString('id-ID');
+                            return 'Revenue: Rp ' + Number(context.raw || 0).toLocaleString('id-ID');
                         }
                     }
                 }
@@ -268,6 +285,7 @@ window.initStoreCharts = function () {
                 },
                 y: {
                     beginAtZero: true,
+                    suggestedMax: maxRevenue === 0 ? 1000000 : undefined,
                     grid: {
                         color: gridColor
                     },
@@ -277,7 +295,7 @@ window.initStoreCharts = function () {
                             size: 10
                         },
                         callback: function(value) {
-                            return value / 1000000 + ' jt';
+                            return formatRupiahShort(value);
                         }
                     }
                 }

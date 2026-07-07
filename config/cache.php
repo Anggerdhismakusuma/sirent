@@ -27,12 +27,8 @@ return [
     | same cache driver to group types of items stored in your caches.
     |
     | Supported drivers: "array", "database", "file", "memcached",
-<<<<<<< HEAD
-    |                    "redis", "dynamodb", "octane", "null"
-=======
     |                    "redis", "dynamodb", "octane",
     |                    "failover", "null"
->>>>>>> origin/feat-peminjam
     |
     */
 
@@ -95,8 +91,6 @@ return [
             'driver' => 'octane',
         ],
 
-<<<<<<< HEAD
-=======
         'failover' => [
             'driver' => 'failover',
             'stores' => [
@@ -105,7 +99,6 @@ return [
             ],
         ],
 
->>>>>>> origin/feat-peminjam
     ],
 
     /*
@@ -119,10 +112,6 @@ return [
     |
     */
 
-<<<<<<< HEAD
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
-=======
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
->>>>>>> origin/feat-peminjam
 
 ];

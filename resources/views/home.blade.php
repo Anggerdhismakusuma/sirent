@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-<body>
-    <x-navbar />
-    
-</body>
-=======
 ﻿{{-- SI-RENT Home —” F-PUB-01 (Guest) & F-PUB-02 (Logged-in), Figma nodes 1737-2623 & 1749-4405 --}}
 @extends('layouts.app')
 
@@ -435,4 +429,3 @@
     }
 </script>
 @endpush
->>>>>>> origin/feat-peminjam
