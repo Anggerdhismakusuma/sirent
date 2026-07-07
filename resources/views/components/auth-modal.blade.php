@@ -1,4 +1,19 @@
 {{-- SI-RENT Auth Modal: Login / Register / Forgot Password --}}
+<style>
+    .fake-cursor {
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+    }
+</style>
+
 <div x-data="{
     show: false,
     mode: 'login',
@@ -13,43 +28,42 @@
         document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
 
         fetch('{{ route('auth.register') }}', {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(async res => {
-            const data = await res.json();
-            if (!res.ok) throw data;
-            return data;
-        })
-        .then(data => {
-            if (data.success) {
-                // SINKRON: Mengubah mode langsung di dalam scope internal Alpine
-                this.mode = 'verify_otp';
-                this.emailForOtp = data.email;
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) throw data;
+                return data;
+            })
+            .then(data => {
+                if (data.success) {
+                    this.mode = 'verify_otp';
+                    this.emailForOtp = data.email;
 
-                // Auto focus ke input OTP tersembunyi
-                setTimeout(() => {
-                    const inputReal = document.getElementById('otp-real-input');
-                    if (inputReal) inputReal.focus();
-                }, 200);
-            }
-        })
-        .catch(err => {
-            if (err.errors) {
-                Object.keys(err.errors).forEach(key => {
-                    const errorBox = document.getElementById('register-' + key + '-error');
-                    const inputField = e.target.querySelector('[name=' + key + ']');
-                    if (errorBox) errorBox.innerText = err.errors[key][0];
-                    if (inputField) inputField.classList.add('is-invalid');
-                });
-            } else {
-                alert(err.message || 'Terjadi kesalahan, silakan coba lagi.');
-            }
-        })
-        .finally(() => {
-            this.isLoading = false;
-        });
+                    // Auto focus ke input OTP tersembunyi
+                    setTimeout(() => {
+                        const inputReal = document.getElementById('otp-real-input');
+                        if (inputReal) inputReal.focus();
+                    }, 200);
+                }
+            })
+            .catch(err => {
+                if (err.errors) {
+                    Object.keys(err.errors).forEach(key => {
+                        const errorBox = document.getElementById('register-' + key + '-error');
+                        const inputField = e.target.querySelector('[name=' + key + ']');
+                        if (errorBox) errorBox.innerText = err.errors[key][0];
+                        if (inputField) inputField.classList.add('is-invalid');
+                    });
+                } else {
+                    alert(err.message || 'Terjadi kesalahan, silakan coba lagi.');
+                }
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
     }
 }" x-init="$watch('show', v => document.body.style.overflow = v ? 'hidden' : '')"
     x-on:open-auth-modal.window="mode = $event.detail.mode; if($event.detail.email) { emailForOtp = $event.detail.email }; show = true"
@@ -118,7 +132,6 @@
                 <h2 class="fw-semibold mb-1" style="font-size:26px;">{{ __('ui.create_account') }}</h2>
                 <p class="text-black-50 mb-4" style="font-size:16px;">{{ __('ui.register_subtitle') }}</p>
 
-                {{-- DIUBAH: Menggunakan handler internal Alpine.js --}}
                 <form id="register-form" x-on:submit.prevent="submitRegisterAlpine($event)">
                     @csrf
                     <div class="mb-3">
@@ -161,7 +174,7 @@
                     </div>
                     <button type="submit" class="btn w-100 text-white fw-bold" :disabled="isLoading"
                         style="background:#3673fb; border-radius:12px; height:55px; font-size:20px; box-shadow:0px 4px 4px rgba(0,0,0,0.25);">{{ __('ui.register') }}</button>
-                    
+
                     <div class="text-center my-2" x-show="isLoading">
                         <div class="spinner-border text-primary spinner-border-sm"></div>
                     </div>
@@ -195,13 +208,21 @@
                             class="position-absolute opacity-0" style="width: 1px; height: 1px; z-index: -1;" required
                             autofocus>
 
+                        {{-- DIUBAH: Memperbaiki tag container @click double yang sempat double/bermprosal --}}
                         <div class="d-flex justify-content-center gap-2"
                             @click="document.getElementById('otp-real-input').focus()">
                             <template x-for="i in 6">
-                                <div class="d-flex align-items-center justify-content-center fw-bold fs-3 transition-all"
+                                <div class="d-flex align-items-center justify-content-center fw-bold fs-3 position-relative transition-all"
                                     :class="otpCode.length >= i ? 'border-primary shadow-sm' : 'border-secondary-subtle'"
                                     style="width: 55px; height: 60px; border: 2px solid; border-radius: 12px; background: var(--bg-surface); cursor: text;"
                                     x-text="otpCode[i-1] || ''">
+
+                                    {{-- Fake Blinking Cursor: Muncul cuma di kotak kosong pertama yang aktif --}}
+                                    <template x-if="document.activeElement === document.getElementById('otp-real-input') && otpCode.length === (i - 1)">
+                                        <div class="position-absolute bg-primary fake-cursor"
+                                            style="width: 2px; height: 24px;"></div>
+                                    </template>
+
                                 </div>
                             </template>
                         </div>
@@ -249,8 +270,6 @@
 </div>
 
 <script>
-    // Fungsi submitRegister lama di tag script sudah dihapus sepenuhnya karena sudah dipindahkan ke x-data Alpine!
-
     // TAHAP 2: Kirim 6 Digit OTP ke Backend & Redirect
     function submitOtp(formElement) {
         const formData = new FormData(formElement);

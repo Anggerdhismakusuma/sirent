@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\OnboardingController;
 use Illuminate\Support\Facades\Route;
 
 // ============================================
@@ -18,7 +19,7 @@ Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logou
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->name('auth.forgot-password');
 Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->name('auth.reset-password');
 
-// Email Verification — signed URL from email link
+// Email Verification — Tampilan sukses statis di tab baru saat link diklik
 Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Http\Request $request) {
     $user = \App\Models\User::findOrFail($request->route('id'));
 
@@ -30,33 +31,45 @@ Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Http\Request $requ
         abort(403);
     }
 
-    if ($user->hasVerifiedEmail()) {
-        return redirect()->route('home')->with('message', __('ui.email_verified'));
+    if (!$user->hasVerifiedEmail()) {
+        $user->markEmailAsVerified();
+        event(new \Illuminate\Auth\Events\Verified($user));
     }
 
-    $user->markEmailAsVerified();
-    event(new \Illuminate\Auth\Events\Verified($user));
-
-    // Auto-login after email verification
+    // Auto-login setelah email verification jika session sempat hilang
     \Illuminate\Support\Facades\Auth::login($user);
 
-    return redirect()->route('onboarding.step1');
+    return "
+        <div style='text-align: center; margin-top: 80px; font-family: \"Segoe UI\", Tahoma, Geneva, Verdana, sans-serif; color: #333;'>
+            <div style='max-width: 500px; margin: 0 auto; padding: 40px; border: 1px solid #e4e4e4; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);'>
+                <h2 style='color: #28a745; margin-bottom: 10px;'>✓ Email Berhasil Diverifikasi</h2>
+                <p style='color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 25px;'>
+                    Terima kasih! Email Anda telah terverifikasi di sistem SI-RENT. Silakan kembali ke tab utama onboarding Anda untuk melanjutkan pengisian data.
+                </p>
+                <button onclick='window.close()' style='background: #0031e1; color: white; border: none; padding: 12px 30px; font-weight: 600; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s;'>
+                    Tutup Halaman Ini
+                </button>
+            </div>
+        </div>
+    ";
 })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
 
-Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-
-    return response()->json(['success' => true, 'message' => 'Verification email resent.']);
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+// Memicu pengiriman email lewat OnboardingController
+Route::post('/email/verification-notification', [OnboardingController::class, 'sendVerificationEmail'])
+    ->middleware(['auth', 'throttle:6,1'])
+    ->name('verification.send');
 
 // ============================================
 // Onboarding Routes (3-step after email verification)
 // ============================================
 Route::middleware('auth')->prefix('onboarding')->name('onboarding.')->group(function () {
-    Route::get('/step-1', [\App\Http\Controllers\OnboardingController::class, 'step1'])->name('step1');
-    Route::post('/step-1', [\App\Http\Controllers\OnboardingController::class, 'storeStep1'])->name('step1.store');
-    Route::post('/step-2', [\App\Http\Controllers\OnboardingController::class, 'storeStep2'])->name('step2.store');
-    Route::post('/step-3', [\App\Http\Controllers\OnboardingController::class, 'storeStep3'])->name('step3.store');
+    Route::get('/step-1', [OnboardingController::class, 'step1'])->name('step1');
+    Route::post('/step-1', [OnboardingController::class, 'storeStep1'])->name('step1.store');
+    Route::post('/step-2', [OnboardingController::class, 'storeStep2'])->name('step2.store');
+    Route::post('/step-3', [OnboardingController::class, 'storeStep3'])->name('step3.store');
+    
+    // Route AJAX baru untuk memicu OTP WhatsApp dari Alpine.js
+    Route::post('/verify-whatsapp', [OnboardingController::class, 'verifyWhatsApp'])->name('verify.whatsapp');
 });
 
 // ============================================
@@ -92,6 +105,14 @@ Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('stor
 // Borrower Routes (Middleware: auth — Phase 1)
 // ============================================
 Route::middleware('auth')->group(function () {
+    
+    // API Endpoint ringan untuk kebutuhan Polling status email dari halaman onboarding
+    Route::get('/api/user/check-email-status', function() {
+        return response()->json([
+            'verified' => auth()->user()->hasVerifiedEmail()
+        ]);
+    });
+
     Route::get('/dashboard', [\App\Http\Controllers\Borrower\DashboardController::class, 'index'])
         ->name('borrower.dashboard');
 
@@ -130,4 +151,3 @@ Route::middleware('auth')->group(function () {
     Route::post('/peminjaman/{id}/rating', [\App\Http\Controllers\Borrower\RatingController::class, 'storeForOwner'])
         ->name('ratings.storeForOwner');
 });
-
