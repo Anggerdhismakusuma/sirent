@@ -88,7 +88,7 @@
                                         <i class="bi bi-whatsapp position-absolute"
                                             style="top:18px; left:16px; color: var(--text-secondary);"></i>
                                         <input type="text" name="phone" x-model="phone" required
-                                            :disabled="whatsappVerified" class="form-control ps-5"
+                                            ="whatsappVerified" class="form-control ps-5"
                                             placeholder="Ex: 0812345678910"
                                             style="height:60px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--border-default);">
                                     </div>

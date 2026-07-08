@@ -1,8 +1,8 @@
 ﻿@section('title', 'About Us')
-@vite(['resources/js/app.js'])
+@vite(['resources/js/app.js', 'resources/sass/app.scss'])
 
 <section class="about-page text-white">
-    <a class="about-back" href="{{ url()->previous() }}"> {{-- route untuk back button blm diisi menunggu push angger --}}
+    <a class="about-back" href="{{ route('home') }}"> 
         <i class="bi bi-chevron-left"></i>
     </a>
 
@@ -38,7 +38,7 @@
             </div>
 
             <div class="col-lg-5 about-right d-flex align-items-center justify-content-center">
-                <img src="{{ asset('images/logo-sirent.png') }}" alt="SI-RENT Logo" class="about-logo">
+                <img src="{{ asset('images/logo-sirent 1.png') }}" alt="SI-RENT Logo" class="about-logo">
             </div>
         </div>
     </div>
