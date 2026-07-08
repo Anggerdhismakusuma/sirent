@@ -7,7 +7,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+
 use Illuminate\Support\Facades\Route;
+
 
 // ============================================
 // Auth Routes (AJAX — no dedicated pages)
@@ -100,6 +103,17 @@ Route::get('/about-us', function () {
 Route::get('/toko/{user}', [StoreController::class, 'show'])->name('store.show');
 Route::get('/toko/{user}/about', [StoreController::class, 'show'])->name('store.about');
 Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('store.reviews');
+
+// ============================================
+// Admin Routes
+// ============================================
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
 
 // ============================================
 // Borrower Routes (Middleware: auth — Phase 1)

@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'auth.guest' => \App\Http\Middleware\RedirectIfGuest::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
         $middleware->web(append: [
