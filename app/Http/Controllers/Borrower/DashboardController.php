@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Borrower;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\RentalRequest;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -429,6 +430,13 @@ class DashboardController extends Controller
 
         $topItems = $allTopItems->take(5);
 
+        $storeItems = Product::with(['primaryImage', 'category'])
+            ->where('owner_id', $user->id)
+            ->latest()
+            ->get();
+
+        $categories = Category::orderBy('name')->get();
+
         return view('borrower.dashboard', compact(
             'user',
             'trustScore',
@@ -445,6 +453,8 @@ class DashboardController extends Controller
             'monthlyGrowthNote',
             'topItems',
             'allTopItems',
+            'storeItems',
+            'categories'
         ));
     }
 }

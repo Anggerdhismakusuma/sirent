@@ -133,6 +133,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/dashboard/store/open', [StoreController::class, 'openDashboardStore'])
         ->name('borrower.store.open');
 
+    Route::post('/dashboard/store/products', [StoreController::class, 'storeProduct'])
+    ->name('borrower.store.products.store');
+
+    Route::delete('/dashboard/store/products/{product}', [StoreController::class, 'deleteProduct'])
+    ->name('borrower.store.products.delete');
+
     Route::get('/aktivitas', function () {
         return view('home');
     })->name('borrower.activity');

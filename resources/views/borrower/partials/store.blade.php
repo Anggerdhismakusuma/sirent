@@ -282,7 +282,154 @@
                         </div>
                     </div>
                 </div>
+                
+                {{-- Store Items Management --}}
+                <div class="seller-panel store-items-panel">
+                    <div class="seller-panel-header">
+                        <div>
+                            <h6>Store Items</h6>
+                            <small class="text-muted">Manage your listed rental items.</small>
+                        </div>
 
+                        <button type="button"
+                            class="btn-add-store-item"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addStoreItemModal">
+                            + Add Item
+                        </button>
+                    </div>
+
+                    <div class="store-items-list">
+                        @forelse ($storeItems as $item)
+                            @php
+                                $itemName = $item->name ?? $item->title ?? 'Item';
+                                $itemPrice = $item->price_per_day ?? $item->price ?? 0;
+                                $imagePath = $item->primaryImage->image_path ?? null;
+                            @endphp
+
+                            <div class="store-item-row">
+                                <div class="store-item-info">
+                                    <img
+                                        src="{{ $imagePath ? asset('storage/' . $imagePath) : asset('images/placeholder-product.png') }}"
+                                        alt="{{ $itemName }}"
+                                    >
+
+                                    <div>
+                                        <h6>{{ $itemName }}</h6>
+                                        <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}/day</p>
+
+                                        <div class="store-item-meta">
+                                            <span>{{ $item->category->name ?? 'No Category' }}</span>
+                                            <span class="{{ ($item->status ?? 'inactive') === 'active' ? 'item-active' : 'item-inactive' }}">
+                                                {{ ucfirst($item->status ?? 'inactive') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form
+                                    action="{{ route('borrower.store.products.delete', $item->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin mau hapus item ini dari store?')"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn-delete-store-item">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div class="store-items-empty">
+                                Belum ada item di store kamu.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- Add Store Item Modal --}}
+                <div class="modal fade" id="addStoreItemModal" tabindex="-1" aria-labelledby="addStoreItemModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content border-0 rounded-4">
+                            <form action="{{ route('borrower.store.products.store') }}" method="POST">
+                                @csrf
+
+                                <div class="modal-header border-0 px-4 pt-4">
+                                    <div>
+                                        <h5 class="modal-title fw-bold text-primary" id="addStoreItemModalLabel">
+                                            Add Store Item
+                                        </h5>
+                                        <small class="text-muted">
+                                            Add a new rental item to your store.
+                                        </small>
+                                    </div>
+
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body px-4 pb-2">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Item Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            class="form-control"
+                                            placeholder="Example: Canon EOS M50"
+                                            required
+                                        >
+                                    </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Category</label>
+                                            <select name="category_id" class="form-select" required>
+                                                <option value="">Select category</option>
+                                                @foreach ($categories as $category)
+                                                    <option value="{{ $category->id }}">
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Price per Day</label>
+                                            <input
+                                                type="number"
+                                                name="price_per_day"
+                                                class="form-control"
+                                                placeholder="Example: 50000"
+                                                min="0"
+                                                required
+                                            >
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Description</label>
+                                            <textarea
+                                                name="description"
+                                                class="form-control"
+                                                rows="4"
+                                                placeholder="Describe your item..."
+                                            ></textarea>
+                                        </div>
+
+                                        <input type="hidden" name="status" value="active">
+                                    </div>
+
+                                    <div class="modal-footer border-0 px-4 pb-4">
+                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+                                            Cancel
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                            Save Item
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
             </div>
         </div>
     @endif

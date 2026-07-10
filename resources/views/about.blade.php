@@ -1,4 +1,10 @@
-﻿@section('title', 'About Us')
+﻿@extends('layouts.app')
+
+@section('title', 'About Us')
+
+@section('hide-navbar', true)
+
+@section('content')
 @vite(['resources/js/app.js', 'resources/sass/app.scss'])
 
 <section class="about-page text-white">
@@ -43,3 +49,4 @@
         </div>
     </div>
 </section>
+@endsection
