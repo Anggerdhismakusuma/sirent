@@ -118,4 +118,24 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return $this->hasMany(Dispute::class, 'handled_by');
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->role === self::ROLE_OWNER || $this->is_owner_active;
+    }
+
+    public function isBorrower(): bool
+    {
+        return $this->role === self::ROLE_BORROWER;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->account_status === self::ACCOUNT_ACTIVE;
+    }
 }

@@ -7,7 +7,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+
 use Illuminate\Support\Facades\Route;
+
 
 // ============================================
 // Auth Routes (AJAX — no dedicated pages)
@@ -102,6 +105,17 @@ Route::get('/toko/{user}/about', [StoreController::class, 'show'])->name('store.
 Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('store.reviews');
 
 // ============================================
+// Admin Routes
+// ============================================
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->name('dashboard');
+    });
+
+// ============================================
 // Borrower Routes (Middleware: auth — Phase 1)
 // ============================================
 Route::middleware('auth')->group(function () {
@@ -115,6 +129,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [\App\Http\Controllers\Borrower\DashboardController::class, 'index'])
         ->name('borrower.dashboard');
+
+    Route::post('/dashboard/store/open', [StoreController::class, 'openDashboardStore'])
+        ->name('borrower.store.open');
+
+    Route::post('/dashboard/store/products', [StoreController::class, 'storeProduct'])
+    ->name('borrower.store.products.store');
+
+    Route::delete('/dashboard/store/products/{product}', [StoreController::class, 'deleteProduct'])
+    ->name('borrower.store.products.delete');
 
     Route::get('/aktivitas', function () {
         return view('home');

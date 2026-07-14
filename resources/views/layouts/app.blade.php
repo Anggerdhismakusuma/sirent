@@ -28,7 +28,9 @@
 <body>
     {{-- Sembunyikan Navbar saat di halaman onboarding --}}
     @if(!Request::is('onboarding*'))
-        <x-layout.navbar />
+        @sectionMissing('hide-navbar')
+            <x-layout.navbar />
+        @endif
     @endif
 
     <main>
@@ -37,7 +39,9 @@
 
     {{-- Sembunyikan Footer saat di halaman onboarding --}}
     @if(!Request::is('onboarding*'))
-        <x-layout.footer />
+        @sectionMissing('hide-footer')
+            <x-layout.footer />
+        @endif
     @endif
 
     {{-- Auth Modal — available on all pages --}}

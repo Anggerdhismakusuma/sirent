@@ -27,7 +27,10 @@
                     </div>
                     <small>Total Rent Income</small>
                     <h4>Rp {{ number_format($sellerStats['income'] ?? 0, 0, ',', '.') }}</h4>
-                    <p>▲ 11.8% vs Jan 2026</p>
+                    <p class="{{ $sellerGrowth['income']['class'] ?? 'text-muted' }}">
+                        {{ $sellerGrowth['income']['icon'] ?? '•' }}
+                        {{ $sellerGrowth['income']['label'] ?? 'No comparison data' }}
+                    </p>
                 </div>
 
                 <div class="seller-stat-card">
@@ -36,7 +39,10 @@
                     </div>
                     <small>Total Transaction</small>
                     <h4>{{ $sellerStats['transactions'] ?? 0 }}</h4>
-                    <p>▲ 15.2% vs Jan 2026</p>
+                    <p class="{{ $sellerGrowth['transactions']['class'] ?? 'text-muted' }}">
+                        {{ $sellerGrowth['transactions']['icon'] ?? '•' }}
+                        {{ $sellerGrowth['transactions']['label'] ?? 'No comparison data' }}
+                    </p>
                 </div>
 
                 <div class="seller-stat-card">
@@ -45,7 +51,10 @@
                     </div>
                     <small>Available Items</small>
                     <h4>{{ $sellerStats['items'] ?? 0 }}</h4>
-                    <p>▲ 8.4% vs Jan 2026</p>
+                    <p class="{{ $sellerGrowth['items']['class'] ?? 'text-muted' }}">
+                        {{ $sellerGrowth['items']['icon'] ?? '•' }}
+                        {{ $sellerGrowth['items']['label'] ?? 'No comparison data' }}
+                    </p>
                 </div>
 
                 <div class="seller-stat-card">
@@ -54,7 +63,10 @@
                     </div>
                     <small>Ongoing Rent</small>
                     <h4>{{ $sellerStats['ongoing'] ?? 0 }}</h4>
-                    <p>▲ 6.7% vs Jan 2026</p>
+                    <p class="{{ $sellerGrowth['ongoing']['class'] ?? 'text-muted' }}">
+                        {{ $sellerGrowth['ongoing']['icon'] ?? '•' }}
+                        {{ $sellerGrowth['ongoing']['label'] ?? 'No comparison data' }}
+                    </p>
                 </div>
 
                 <div class="seller-stat-card">
@@ -62,8 +74,11 @@
                         <i class="bi bi-star"></i>
                     </div>
                     <small>Average Rating</small>
-                    <h4>{{ $sellerStats['rating'] ?? '0 / 5.0' }}</h4>
-                    <p>▲ 0.4 vs Jan 2026</p>
+                    <h4>{{ $sellerStats['rating'] ?? '0.0 / 5.0' }}</h4>
+                    <p class="{{ $sellerGrowth['rating']['class'] ?? 'text-muted' }}">
+                        {{ $sellerGrowth['rating']['icon'] ?? '•' }}
+                        {{ $sellerGrowth['rating']['label'] ?? 'No comparison data' }}
+                    </p>
                 </div>
 
                 <div class="seller-stat-card">
@@ -72,25 +87,48 @@
                     </div>
                     <small>Followers</small>
                     <h4>{{ $sellerStats['followers'] ?? 0 }}</h4>
-                    <p>▲ 12 vs Jan 2026</p>
                 </div>
+
 
             </div>
 
             {{-- DASHBOARD GRID --}}
             <div class="seller-grid">
 
-                {{-- Revenue Stream --}}
-                <div class="seller-panel revenue-panel">
+                {{-- Performance Trend --}}
+                <div class="seller-panel performance-panel">
                     <div class="seller-panel-header">
-                        <h6>Revenue Stream</h6>
-                        <select>
-                            <option>Monthly</option>
+                        <div>
+                            <h6>Performance Trend</h6>
+                            <small class="text-muted">
+                                Revenue and rental activity based on selected period
+                            </small>
+                        </div>
+
+                        <select onchange="window.location.href='{{ url('/dashboard') }}?tab=store&revenue_period=' + this.value">
+                            <option value="monthly" {{ ($revenuePeriod ?? 'monthly') === 'monthly' ? 'selected' : '' }}>
+                                Monthly
+                            </option>
+                            <option value="weekly" {{ ($revenuePeriod ?? 'monthly') === 'weekly' ? 'selected' : '' }}>
+                                Weekly
+                            </option>
                         </select>
                     </div>
 
-                    <div class="chart-box chart-large">
-                        <canvas id="revenueChart"></canvas>
+                    <div class="performance-chart-grid">
+                        <div>
+                            <h6 class="chart-subtitle">Revenue Stream</h6>
+                            <div class="chart-box chart-large">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h6 class="chart-subtitle">Renting Trend</h6>
+                            <div class="chart-box chart-large">
+                                <canvas id="rentingTrendChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -109,7 +147,7 @@
                                     <span></span>
                                     <div>
                                         <strong>{{ $category }}</strong>
-                                        <small>{{ $value }}</small>
+                                        <small>Rp {{ number_format((float) $value, 0, ',', '.') }}</small>
                                     </div>
                                 </li>
                             @endforeach
@@ -117,19 +155,6 @@
                     </div>
                 </div>
 
-                {{-- Renting Trend --}}
-                <div class="seller-panel trend-panel">
-                    <div class="seller-panel-header">
-                        <h6>Renting Trend</h6>
-                        <select>
-                            <option>Monthly</option>
-                        </select>
-                    </div>
-
-                    <div class="chart-box chart-large">
-                        <canvas id="rentingTrendChart"></canvas>
-                    </div>
-                </div>
 
                 {{-- Monthly Recap --}}
                 <div class="seller-panel recap-panel">
@@ -156,7 +181,7 @@
                     </table>
 
                     <div class="seller-success-note">
-                        Revenue in February 2026 increased 11.8% compared to January 2026
+                        {{ $monthlyGrowthNote ?? 'Not enough previous month revenue data for comparison.' }}
                     </div>
                 </div>
 
@@ -164,7 +189,11 @@
                 <div class="seller-panel top-items-panel">
                     <div class="seller-panel-header">
                         <h6>Top Items Rented</h6>
-                        <a href="#">See all</a>
+                        <a href="#"
+                            data-bs-toggle="modal"
+                            data-bs-target="#topItemsModal">
+                            See all
+                        </a>
                     </div>
 
                     <div class="top-items-grid">
@@ -173,6 +202,7 @@
                                 $itemName = $item->name ?? $item->title ?? 'Item';
                                 $itemPrice = $item->price_per_day ?? $item->price ?? 0;
                                 $imagePath = $item->primaryImage->image_path ?? null;
+                                $rentedCount = $item->rented_count ?? $item->total_rented ?? 0;
                             @endphp
 
                             <div class="top-item-card">
@@ -185,6 +215,9 @@
 
                                 <h6>{{ $itemName }}</h6>
                                 <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}/day</p>
+                                <small class="text-muted">
+                                    {{ $rentedCount }}x rented
+                                </small>
                             </div>
                         @empty
                             <div class="text-muted small">
@@ -192,8 +225,211 @@
                             </div>
                         @endforelse
                     </div>
+
+                    <div class="modal fade" id="topItemsModal" tabindex="-1" aria-labelledby="topItemsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content border-0 rounded-4">
+                                <div class="modal-header border-0 px-4 pt-4">
+                                    <div>
+                                        <h5 class="modal-title fw-bold text-primary" id="topItemsModalLabel">
+                                            All Rented Items
+                                        </h5>
+                                        <small class="text-muted">
+                                            Complete list of your store items and rental frequency.
+                                        </small>
+                                    </div>
+
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body px-4 pb-4">
+                                    <div class="all-items-modal-grid">
+                                        @forelse ($allTopItems as $index => $item)
+                                            @php
+                                                $itemName = $item->name ?? $item->title ?? 'Item';
+                                                $itemPrice = $item->price_per_day ?? $item->price ?? 0;
+                                                $imagePath = $item->primaryImage->image_path ?? null;
+                                                $rentedCount = $item->rented_count ?? $item->total_rented ?? 0;
+                                            @endphp
+
+                                            <div class="all-item-card">
+                                                <div class="all-item-rank">
+                                                    #{{ $index + 1 }}
+                                                </div>
+
+                                                <img
+                                                    src="{{ $imagePath ? asset('storage/' . $imagePath) : asset('images/placeholder-product.png') }}"
+                                                    alt="{{ $itemName }}"
+                                                >
+
+                                                <div class="all-item-info">
+                                                    <h6>{{ $itemName }}</h6>
+                                                    <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}/day</p>
+
+                                                    <span class="rented-badge">
+                                                        {{ $rentedCount }}x rented
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-muted">
+                                                Belum ada item yang disewakan.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {{-- Store Items Management --}}
+                <div class="seller-panel store-items-panel">
+                    <div class="seller-panel-header">
+                        <div>
+                            <h6>Store Items</h6>
+                            <small class="text-muted">Manage your listed rental items.</small>
+                        </div>
+
+                        <button type="button"
+                            class="btn-add-store-item"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addStoreItemModal">
+                            + Add Item
+                        </button>
+                    </div>
+
+                    <div class="store-items-list">
+                        @forelse ($storeItems as $item)
+                            @php
+                                $itemName = $item->name ?? $item->title ?? 'Item';
+                                $itemPrice = $item->price_per_day ?? $item->price ?? 0;
+                                $imagePath = $item->primaryImage->image_path ?? null;
+                            @endphp
+
+                            <div class="store-item-row">
+                                <div class="store-item-info">
+                                    <img
+                                        src="{{ $imagePath ? asset('storage/' . $imagePath) : asset('images/placeholder-product.png') }}"
+                                        alt="{{ $itemName }}"
+                                    >
+
+                                    <div>
+                                        <h6>{{ $itemName }}</h6>
+                                        <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}/day</p>
+
+                                        <div class="store-item-meta">
+                                            <span>{{ $item->category->name ?? 'No Category' }}</span>
+                                            <span class="{{ ($item->status ?? 'inactive') === 'active' ? 'item-active' : 'item-inactive' }}">
+                                                {{ ucfirst($item->status ?? 'inactive') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form
+                                    action="{{ route('borrower.store.products.delete', $item->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin mau hapus item ini dari store?')"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn-delete-store-item">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div class="store-items-empty">
+                                Belum ada item di store kamu.
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
 
+                {{-- Add Store Item Modal --}}
+                <div class="modal fade" id="addStoreItemModal" tabindex="-1" aria-labelledby="addStoreItemModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content border-0 rounded-4">
+                            <form action="{{ route('borrower.store.products.store') }}" method="POST">
+                                @csrf
+
+                                <div class="modal-header border-0 px-4 pt-4">
+                                    <div>
+                                        <h5 class="modal-title fw-bold text-primary" id="addStoreItemModalLabel">
+                                            Add Store Item
+                                        </h5>
+                                        <small class="text-muted">
+                                            Add a new rental item to your store.
+                                        </small>
+                                    </div>
+
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body px-4 pb-2">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Item Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            class="form-control"
+                                            placeholder="Example: Canon EOS M50"
+                                            required
+                                        >
+                                    </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Category</label>
+                                            <select name="category_id" class="form-select" required>
+                                                <option value="">Select category</option>
+                                                @foreach ($categories as $category)
+                                                    <option value="{{ $category->id }}">
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Price per Day</label>
+                                            <input
+                                                type="number"
+                                                name="price_per_day"
+                                                class="form-control"
+                                                placeholder="Example: 50000"
+                                                min="0"
+                                                required
+                                            >
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Description</label>
+                                            <textarea
+                                                name="description"
+                                                class="form-control"
+                                                rows="4"
+                                                placeholder="Describe your item..."
+                                            ></textarea>
+                                        </div>
+
+                                        <input type="hidden" name="status" value="active">
+                                    </div>
+
+                                    <div class="modal-footer border-0 px-4 pb-4">
+                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+                                            Cancel
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                            Save Item
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
             </div>
         </div>
     @endif
