@@ -10,7 +10,7 @@
         {{-- Search Bar (desktop) --}}
         <div class="d-none d-lg-flex mx-auto" style="width:400px;">
             <form action="{{ route('products.index') }}" method="GET" class="w-100">
-                <div class="input-group">
+                <div class="input-group">  
                     <button type="submit" class="input-group-text bg-transparent border-primary" style="border-radius:10px 0 0 10px;">
                         <i class="bi bi-search text-primary"></i>
                     </button>
@@ -52,7 +52,14 @@
                         <span class="d-none d-md-inline fw-medium" style="font-size:14px;">{{ auth()->user()->name }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border" style="border-radius:10px;">
-                        <li><a class="dropdown-item" href="{{ route('borrower.dashboard') }}">{{ __('ui.dashboard') }}</a></li>
+                        <li>
+                            <a class="dropdown-item"
+                            href="{{ auth()->user()->role === \App\Models\User::ROLE_ADMIN
+                                    ? route('admin.dashboard')
+                                    : route('borrower.dashboard') }}">
+                                {{ __('ui.dashboard') }}
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger" href="#"
