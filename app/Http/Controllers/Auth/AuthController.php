@@ -123,7 +123,7 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        // Check account status before attempting login
+        // Cari user sebelum autentikasi untuk mengecek status akun
         $user = User::where('email', $request->email)->first();
 
         if ($user && $user->account_status === User::ACCOUNT_BANNED) {
@@ -137,39 +137,59 @@ class AuthController extends Controller
             if ($user->suspended_until && now()->lt($user->suspended_until)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Akun Anda ditangguhkan hingga ' . $user->suspended_until->format('d M Y H:i') . '. Silakan coba lagi nanti.',
+                    'message' => 'Akun Anda ditangguhkan hingga '
+                        . $user->suspended_until->format('d M Y H:i')
+                        . '. Silakan coba lagi nanti.',
                 ], 403);
             }
-            // Lazy un-suspend
-            $user->update(['account_status' => User::ACCOUNT_ACTIVE, 'suspended_until' => null]);
+
+            // Aktifkan kembali akun jika masa suspend sudah selesai
+            $user->update([
+                'account_status' => User::ACCOUNT_ACTIVE,
+                'suspended_until' => null,
+            ]);
         }
 
         $remember = $request->boolean('remember');
 
-        if (Auth::attempt($credentials, $remember)) {
-            $request->session()->regenerate();
-
-            $user = Auth::user();
-
+        if (!Auth::attempt($credentials, $remember)) {
             return response()->json([
-                'success' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'avatar' => $user->avatar,
+                'success' => false,
+                'message' => 'Email atau password salah.',
+                'errors' => [
+                    'email' => [
+                        'Kredensial yang diberikan tidak cocok dengan data kami.'
+                    ],
                 ],
-                'message' => 'Login successful.',
-            ]);
+            ], 422);
+        }
+
+        $request->session()->regenerate();
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Tentukan halaman tujuan berdasarkan role
+        if ($user->role === User::ROLE_ADMIN) {
+            $redirect = route('admin.dashboard');
+        } elseif (!$user->hasVerifiedEmail()) {
+            $redirect = route('onboarding.step1');
+        } else {
+            $redirect = route('borrower.dashboard');
         }
 
         return response()->json([
-            'success' => false,
-            'message' => 'Email atau password salah.',
-            'errors' => [
-                'email' => ['Kredensial yang diberikan tidak cocok dengan data kami.'],
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+                'role' => $user->role,
             ],
-        ], 422);
+            'message' => 'Login successful.',
+            'redirect' => $redirect,
+        ]);
     }
 
     /**

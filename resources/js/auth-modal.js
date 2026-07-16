@@ -3,8 +3,10 @@
 
 window.submitLogin = async function(form) {
     clearAuthErrors();
+
     const btn = document.getElementById('login-btn');
     const spinner = document.getElementById('login-spinner');
+
     btn.disabled = true;
     spinner.hidden = false;
 
@@ -12,22 +14,40 @@ window.submitLogin = async function(form) {
         const res = await fetch('/auth/login', {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                'X-CSRF-TOKEN': document.querySelector(
+                    'meta[name="csrf-token"]'
+                )?.content,
                 'Accept': 'application/json',
             },
             body: new FormData(form),
         });
+
         const data = await res.json();
 
         if (res.ok && data.success) {
-            window.dispatchEvent(new CustomEvent('close-auth-modal'));
-            window.dispatchEvent(new CustomEvent('auth-changed', { detail: { user: data.user } }));
-            window.location.reload();
+            window.dispatchEvent(
+                new CustomEvent('close-auth-modal')
+            );
+
+            window.dispatchEvent(
+                new CustomEvent('auth-changed', {
+                    detail: {
+                        user: data.user
+                    }
+                })
+            );
+
+            // Redirect berdasarkan URL dari AuthController
+            window.location.href = data.redirect || '/dashboard';
         } else {
-            if (data.errors) displayAuthErrors(data.errors, 'login');
-            else alert(data.message || 'Login failed.');
+            if (data.errors) {
+                displayAuthErrors(data.errors, 'login');
+            } else {
+                alert(data.message || 'Login failed.');
+            }
         }
     } catch (e) {
+        console.error('Login error:', e);
         alert('Network error. Please check your connection.');
     } finally {
         btn.disabled = false;
