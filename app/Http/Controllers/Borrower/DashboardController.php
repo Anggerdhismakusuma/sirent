@@ -437,6 +437,19 @@ class DashboardController extends Controller
 
         $categories = Category::orderBy('name')->get();
 
+        $incomingRentalRequests = collect();
+
+        if ($user->is_owner_active) {
+            $incomingRentalRequests = RentalRequest::with([
+                    'product.primaryImage',
+                    'borrower',
+                ])
+                ->where('owner_id', $user->id)
+                ->where('status', RentalRequest::STATUS_PENDING)
+                ->latest()
+                ->get();
+        }
+
         return view('borrower.dashboard', compact(
             'user',
             'trustScore',
@@ -454,7 +467,8 @@ class DashboardController extends Controller
             'topItems',
             'allTopItems',
             'storeItems',
-            'categories'
+            'categories',
+            'incomingRentalRequests',
         ));
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\StoreRentalRequestController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -138,6 +139,20 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/dashboard/store/products/{product}', [StoreController::class, 'deleteProduct'])
     ->name('borrower.store.products.delete');
+
+    Route::patch('/dashboard/store/products/{product}', [StoreController::class, 'updateProduct'])
+    ->name('borrower.store.products.update');
+
+    // Rental Approve
+    Route::patch(
+    '/dashboard/store/rental-requests/{rentalRequest}/approve',
+        [StoreRentalRequestController::class, 'approve']
+    )->name('borrower.store.rental-requests.approve');
+
+    Route::patch(
+        '/dashboard/store/rental-requests/{rentalRequest}/reject',
+        [StoreRentalRequestController::class, 'reject']
+    )->name('borrower.store.rental-requests.reject');
 
     Route::get('/aktivitas', function () {
         return view('home');

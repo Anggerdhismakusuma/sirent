@@ -166,7 +166,7 @@
                             <div class="d-flex align-items-center gap-1 mb-2">
                                 <i class="bi bi-geo-alt" style="font-size:18px;"></i>
                                 <span class="fw-bold" style="font-family:'Mona Sans',sans-serif; font-size:18px;">
-                                    {{ $user->location_city ?? 'Bogor, Jawa Barat' }}
+                                    {{ $user->domicile ?? 'Bogor, Jawa Barat' }}
                                 </span>
                             </div>
                         </div>
