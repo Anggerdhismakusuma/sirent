@@ -87,9 +87,8 @@
                                     <div class="position-relative flex-grow-1">
                                         <i class="bi bi-whatsapp position-absolute"
                                             style="top:18px; left:16px; color: var(--text-secondary);"></i>
-                                        <input type="text" name="phone" x-model="phone" required
-                                            :disabled="whatsappVerified" class="form-control ps-5"
-                                            placeholder="Ex: 0812345678910"
+                                        <input type="text" name="phone" x-model="phone" required :disabled="false"
+                                            class="form-control ps-5" placeholder="Ex: 0812345678910"
                                             style="height:60px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--border-default);">
                                     </div>
                                     <div>
@@ -121,15 +120,72 @@
                                             style="height:60px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--border-default);">
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" x-data="{ openDropdown: false }">
                                     <label class="fw-semibold mb-2 d-block"
                                         style="font-family:'Mona Sans',sans-serif; font-size:14px;">Domicile</label>
-                                    <div class="position-relative">
+
+                                    <!-- Wrapper utama dengan posisi relatif -->
+                                    <div class="position-relative" @click.away="openDropdown = false">
                                         <i class="bi bi-geo-alt position-absolute"
-                                            style="top:18px; left:16px; color: var(--text-secondary);"></i>
-                                        <input type="text" name="domicile" value="{{ old('domicile') }}" required
-                                            class="form-control ps-5" placeholder="Domicile/Province"
-                                            style="height:60px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--border-default);">
+                                            style="top:18px; left:16px; color: var(--text-secondary); z-index: 3;"></i>
+
+                                        <!-- Input tunggal yang menampung hasil akhir format "Kota, Provinsi" -->
+                                        <input type="text" name="domicile" x-model="domicileInput"
+                                            @click="openDropdown = !openDropdown" readonly required
+                                            class="form-control ps-5 bg-white" placeholder="Select Domicile"
+                                            style="height:60px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--border-default); cursor: pointer;">
+
+                                        <!-- Dropdown bertingkat custom melayang (Floating Panel) -->
+                                        <div x-show="openDropdown"
+                                            class="position-absolute w-100 bg-white border mt-1 shadow-sm p-3"
+                                            style="border-radius: 10px; z-index: 1000; max-height: 300px; overflow-y: auto; border-color: var(--border-default);">
+
+                                            <!-- TAHAP 1: Pilih Provinsi -->
+                                            <div x-show="!selectedProvinceId">
+                                                <div class="fw-semibold text-muted small mb-2"
+                                                    style="font-family:'Mona Sans',sans-serif;">Select Province:</div>
+                                                <div class="list-group list-group-flush">
+                                                    <template x-for="prov in provinces" :key="prov.id">
+                                                        <button type="button" @click="selectProvince(prov.id, prov.name)"
+                                                            class="list-group-item list-group-item-action text-start border-0 py-2"
+                                                            style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                                                            <span x-text="prov.name"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- TAHAP 2: Pilih Kota / Kabupaten -->
+                                            <div x-show="selectedProvinceId">
+                                                <div class="d-flex justify-between align-items-center mb-2">
+                                                    <button type="button" @click="resetRegionSelection()"
+                                                        class="btn btn-sm btn-link p-0 text-decoration-none text-secondary"
+                                                        style="font-size: 12px; font-family:'Mona Sans',sans-serif;">
+                                                        <i class="bi bi-arrow-left"></i> Back to Provinces
+                                                    </button>
+                                                </div>
+
+                                                <!-- Indikator Loading saat fetching data kota -->
+                                                <div x-show="loadingCities" class="text-center py-3 text-muted small"
+                                                    style="font-family:'Mona Sans',sans-serif;">
+                                                    <div class="spinner-border spinner-border-sm me-2 text-secondary"
+                                                        role="status"></div>
+                                                    Loading cities...
+                                                </div>
+
+                                                <!-- Daftar Kota -->
+                                                <div x-show="!loadingCities" class="list-group list-group-flush">
+                                                    <template x-for="city in cities" :key="city.id">
+                                                        <button type="button" @click="selectCity(city.name)"
+                                                            class="list-group-item list-group-item-action text-start border-0 py-2"
+                                                            style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                                                            <span x-text="city.name"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -139,29 +195,37 @@
                                 <label class="fw-semibold mb-2 d-block"
                                     style="font-family:'Mona Sans',sans-serif; font-size:14px;">{{ __('ui.gender') }}</label>
                                 <div class="d-flex gap-3">
-                                    <label class="flex-fill gender-label">
+                                    <!-- Pilihan Male -->
+                                    <label class="flex-fill gender-label position-relative m-0">
                                         <input type="radio" name="gender" value="male"
+                                            class="position-absolute opacity-0 w-0 h-0"
                                             {{ old('gender') === 'male' ? 'checked' : '' }} required>
                                         <div class="rounded-3 border text-center py-3"
-                                            style="cursor:pointer; border-color: var(--border-default); transition:0.2s;">
+                                            style="cursor:pointer; border-color: var(--border-default); transition:0.2s; font-family:'Mona Sans',sans-serif; font-size:14px;">
                                             <i class="bi bi-gender-male d-block mb-1" style="font-size:20px;"></i>
                                             Male
                                         </div>
                                     </label>
-                                    <label class="flex-fill gender-label">
+
+                                    <!-- Pilihan Female -->
+                                    <label class="flex-fill gender-label position-relative m-0">
                                         <input type="radio" name="gender" value="female"
+                                            class="position-absolute opacity-0 w-0 h-0"
                                             {{ old('gender') === 'female' ? 'checked' : '' }}>
                                         <div class="rounded-3 border text-center py-3"
-                                            style="cursor:pointer; border-color: var(--border-default); transition:0.2s;">
+                                            style="cursor:pointer; border-color: var(--border-default); transition:0.2s; font-family:'Mona Sans',sans-serif; font-size:14px;">
                                             <i class="bi bi-gender-female d-block mb-1" style="font-size:20px;"></i>
                                             Female
                                         </div>
                                     </label>
-                                    <label class="flex-fill gender-label">
+
+                                    <!-- Pilihan Prefer Not To Say -->
+                                    <label class="flex-fill gender-label position-relative m-0">
                                         <input type="radio" name="gender" value="other"
+                                            class="position-absolute opacity-0 w-0 h-0"
                                             {{ old('gender') === 'other' ? 'checked' : '' }}>
                                         <div class="rounded-3 border text-center py-3"
-                                            style="cursor:pointer; border-color: var(--border-default); transition:0.2s;">
+                                            style="cursor:pointer; border-color: var(--border-default); transition:0.2s; font-family:'Mona Sans',sans-serif; font-size:14px;">
                                             <i class="bi bi-slash-circle d-block mb-1" style="font-size:20px;"></i>
                                             Prefer not to say
                                         </div>
@@ -208,7 +272,7 @@
                                     <div class="col-6 col-md-3">
                                         <label class="d-block interest-label">
                                             <input type="checkbox" name="interests[]" value="{{ $key }}"
-                                                class="d-none interest-checkbox"
+                                                class="position-absolute opacity-0 w-0 h-0 interest-checkbox"
                                                 {{ in_array($key, (array) $stored) ? 'checked' : '' }}>
                                             <div class="rounded-pill border text-center py-3 d-flex align-items-center justify-content-center gap-2"
                                                 style="cursor:pointer; border-color: var(--border-default); transition:0.2s; height:63px;">
@@ -221,7 +285,8 @@
                             </div>
 
                             <div class="text-center">
-                                <button type="submit" class="btn text-white fw-semibold px-5 py-2" :disabled="loading"
+                                <button type="submit" class="btn text-white fw-semibold px-5 py-2"
+                                    :disabled="loading"
                                     style="background: var(--primary-blue); border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:16px;">
                                     <span x-show="!loading">{{ __('ui.onboarding_next') }}</span>
                                     <span x-show="loading">Saving...</span>
@@ -283,46 +348,6 @@
     </div>
 @endsection
 
-@push('styles')
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
-        .gender-label input[type="radio"],
-        .interest-label input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        /* Efek Default state untuk tombol interest */
-        .interest-label div {
-            background: #f8fafd;
-            color: var(--text-primary, #000);
-        }
-
-        /* Efek Checked State (Menggunakan :has untuk sinkronisasi layout bootstrap) */
-        .gender-label:has(input:checked) div,
-        .interest-label:has(input:checked) div {
-            border-color: var(--primary-blue, #0031e1) !important;
-            background: var(--primary-blue-bg, #ecf2fd) !important;
-            color: var(--primary-blue, #0031e1) !important;
-        }
-
-        .gender-label:has(input:checked) i {
-            color: var(--primary-blue, #0031e1);
-        }
-
-        /* Efek Hover State */
-        .gender-label:hover div,
-        .interest-label:hover div {
-            border-color: var(--primary-blue-light, #204be5) !important;
-        }
-    </style>
-@endpush
-
 @push('scripts')
     <script>
         function onboarding(initialStep) {
@@ -330,12 +355,21 @@
                 step: initialStep,
                 loading: false,
 
+                // --- STATE DROPDOWN WILAYAH (GABUNGAN) ---
+                provinces: [],
+                cities: [],
+                selectedProvinceId: '',
+                selectedProvinceName: '',
+                domicileInput: '{{ old('domicile') }}',
+                loadingCities: false,
+
                 phone: '{{ old('phone', auth()->user()->phone) }}',
                 emailVerified: {{ auth()->user()->hasVerifiedEmail() ? 'true' : 'false' }},
                 whatsappVerified: {{ auth()->user()->phone ? 'true' : 'false' }},
 
                 emailCooldown: 0,
                 whatsappCooldown: 0,
+                emailPollingInterval: null,
 
                 get stepTitle() {
                     const titles = {
@@ -347,13 +381,94 @@
                 },
 
                 init() {
+                    // Daftarkan step awal ke history state saat pertama kali dimuat
+                    window.history.replaceState({
+                        step: this.step
+                    }, '', window.location.search);
+
                     window.addEventListener('popstate', (event) => {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        this.step = parseInt(urlParams.get('step')) || 1;
+                        if (event.state && event.state.step) {
+                            this.step = event.state.step;
+                        } else {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            this.step = parseInt(urlParams.get('step')) || 1;
+                        }
                     });
+
+                    if (!this.emailVerified) {
+                        this.startEmailPolling(4000);
+                    }
+
+                    // Ambil data provinsi saat awal onboarding dimuat
+                    this.fetchProvinces();
                 },
 
-                // 1. FUNGSI VERIFIKASI EMAIL (Sudah sinkron dengan web.php kamu)
+                // --- FUNGSI API WILAYAH (GABUNGAN) ---
+                async fetchProvinces() {
+                    try {
+                        const response = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+                        if (response.ok) {
+                            this.provinces = await response.json();
+                        }
+                    } catch (e) {
+                        console.error('Gagal memuat data provinsi:', e);
+                    }
+                },
+
+                async selectProvince(id, name) {
+                    this.selectedProvinceId = id;
+                    this.selectedProvinceName = name;
+                    this.loadingCities = true;
+                    this.cities = [];
+
+                    try {
+                        const response = await fetch(
+                            `https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${id}.json`);
+                        if (response.ok) {
+                            this.cities = await response.json();
+                        }
+                    } catch (e) {
+                        console.error('Gagal memuat data kota:', e);
+                    } finally {
+                        this.loadingCities = false;
+                    }
+                },
+
+                selectCity(cityName) {
+                    // Masukkan teks dengan format "Kota, Provinsi" ke input field utama
+                    this.domicileInput = `${cityName}, ${this.selectedProvinceName}`;
+
+                    // Reset menu internal agar saat diklik lagi mengulang dari Provinsi
+                    this.resetRegionSelection();
+                },
+
+                resetRegionSelection() {
+                    this.selectedProvinceId = '';
+                    this.selectedProvinceName = '';
+                    this.cities = [];
+                },
+
+                // --- PENGATURAN EMAIL POLLING ---
+                startEmailPolling(ms = 3000) {
+                    if (this.emailPollingInterval) clearInterval(this.emailPollingInterval);
+
+                    this.emailPollingInterval = setInterval(async () => {
+                        try {
+                            const response = await fetch("/api/user/check-email-status");
+                            const data = await response.json();
+
+                            if (data.verified) {
+                                this.emailVerified = true;
+                                clearInterval(this.emailPollingInterval);
+                                alert('Email Anda telah sukses diverifikasi!');
+                            }
+                        } catch (e) {
+                            console.error('Gagal memproses polling status email:', e);
+                        }
+                    }, ms);
+                },
+
+                // --- VERIFIKASI EMAIL ---
                 async verifyEmail() {
                     this.emailCooldown = 60;
                     let interval = setInterval(() => {
@@ -362,11 +477,10 @@
                     }, 1000);
 
                     try {
-                        // Menggunakan name route dari web.php kamu yaitu 'verification.send'
                         const response = await fetch("{{ route('verification.send') }}", {
                             method: 'POST',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute(
                                     'content'),
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
@@ -376,17 +490,22 @@
                         const data = await response.json();
 
                         if (response.ok) {
-                            alert(data.message || 'Tautan verifikasi sukses dikirim ke email kamu!');
-                            this.emailVerified = true;
+                            alert(data.message ||
+                                'Tautan verifikasi sukses dikirim ke email kamu! Silakan cek inbox Anda.');
+                            this.startEmailPolling(2000);
                         } else {
                             alert(data.message || 'Gagal mengirim email verifikasi.');
+                            this.emailCooldown = 0;
+                            clearInterval(interval);
                         }
                     } catch (e) {
                         alert('Gagal tersambung ke server untuk verifikasi email.');
+                        this.emailCooldown = 0;
+                        clearInterval(interval);
                     }
                 },
 
-                // 2. FUNGSI VERIFIKASI WHATSAPP (Sudah menggunakan route() alias)
+                // --- VERIFIKASI WHATSAPP ---
                 async verifyWhatsApp() {
                     if (!this.phone) return alert('Silakan masukkan nomor WhatsApp terlebih dahulu.');
 
@@ -397,11 +516,10 @@
                     }, 1000);
 
                     try {
-                        // Menggunakan name route group dari web.php kamu
                         const response = await fetch("{{ route('onboarding.verify.whatsapp') }}", {
                             method: 'POST',
                             headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute(
                                     'content'),
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json'
@@ -414,23 +532,30 @@
                         const data = await response.json();
                         if (!response.ok) {
                             alert(data.message || 'Gagal mengirim OTP.');
+                            this.whatsappCooldown = 0;
+                            clearInterval(interval);
                             return;
                         }
 
+                        alert('Kode OTP simulasi telah dicatat di log server (storage/logs/laravel.log).');
+
                         let userOtp = prompt("Masukkan 6 digit kode OTP yang dikirimkan ke WhatsApp Anda:");
-                        if (userOtp) {
+                        if (userOtp && userOtp.trim() !== "") {
                             this.whatsappVerified = true;
-                            alert('Nomor WhatsApp terverifikasi sementara di browser.');
+                            alert('Nomor WhatsApp terverifikasi sukses!');
                         } else {
+                            alert('Verifikasi WhatsApp dibatalkan.');
                             this.whatsappCooldown = 0;
                             clearInterval(interval);
                         }
                     } catch (e) {
                         alert('Gagal memproses verifikasi WhatsApp.');
+                        this.whatsappCooldown = 0;
+                        clearInterval(interval);
                     }
                 },
 
-                // 3. SUBMIT FORM PER-STEP (Aman)
+                // --- SUBMIT FORM PER-STEP ---
                 async submitStep(formElement) {
                     if (this.step === 1 && (!this.emailVerified || !this.whatsappVerified)) {
                         alert('Anda harus memverifikasi Email dan WhatsApp terlebih dahulu.');
@@ -455,8 +580,13 @@
                         if (response.ok) {
                             if (this.step < 3) {
                                 this.step++;
-                                window.history.pushState({}, '', '?step=' + this.step);
+                                // Menyimpan state objek agar tombol Back/Forward browser berfungsi mulus
+                                window.history.pushState({
+                                    step: this.step
+                                }, '', '?step=' + this.step);
                             } else {
+                                // Hentikan polling sebelum pindah halaman
+                                if (this.emailPollingInterval) clearInterval(this.emailPollingInterval);
                                 window.location.href = '/dashboard';
                             }
                         } else {

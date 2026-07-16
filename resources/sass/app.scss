@@ -586,6 +586,20 @@ body {
     }
 }
 
+/* Ketika input di dalam gender-label di-check, ubah style div di bawahnya */
+.gender-label input[type="radio"]:checked + div {
+    border-color: #0d6efd !important; /* Warna biru Bootstrap primary */
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.04); /* Sentuhan background biru tipis agar lebih halus */
+}
+
+/* interest label: blue highlight on checked */
+.interest-label input[type="checkbox"]:checked + div {
+    border-color: #0d6efd !important;
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.04);
+}
+
 // ═══ Smooth Theme Transition ═══
 [data-bs-theme] {
     &, *, *::before, *::after {
