@@ -9,6 +9,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\StoreRentalRequestController;
+use App\Http\Controllers\AboutController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -87,18 +88,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/produk', [SearchController::class, 'index'])->name('products.index');
 Route::get('/produk/{slug}', [ProductController::class, 'show'])->name('products.show');
 
-Route::get('/about-us', function () {
-    $products = \App\Models\Product::with(['primaryImage', 'owner'])
-        ->where('status', 'active')
-        ->latest()
-        ->get();
-    return view('about', [
-        'recomended' => $products->take(6),
-        'nearYou' => $products->shuffle()->take(6),
-        'availableNow' => $products->sortByDesc('created_at')->take(6),
-        'featuredProduct' => $products->first(),
-    ]);
-})->name('about.index');
+Route::get('/about-us', [AboutController::class, 'index'])
+    ->name('about');
 
 // ============================================
 // Store Routes (Public — F-BRW-04)
