@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Borrower;
 
+use App\Http\Controllers\Controller;
 use App\Models\RentalRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
