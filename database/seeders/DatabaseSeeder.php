@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ProductSeeder::class,
             ChatSeeder::class,
+            DisputeSeeder::class
         ]);
     }
 }

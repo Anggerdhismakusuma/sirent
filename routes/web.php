@@ -8,8 +8,9 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\StoreRentalRequestController;
+use App\Http\Controllers\Borrower\StoreRentalRequestController;
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\Admin\DisputeController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -103,8 +104,24 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+        // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('dashboard');
+
+        // Dispute Management
+        Route::get('/disputes', [DisputeController::class, 'index'])
+            ->name('disputes.index');
+
+        Route::patch(
+            '/disputes/{dispute}/approve',
+            [DisputeController::class, 'approve']
+        )->name('disputes.approve');
+
+        Route::patch(
+            '/disputes/{dispute}/reject',
+            [DisputeController::class, 'reject']
+        )->name('disputes.reject');
     });
 
 // ============================================
