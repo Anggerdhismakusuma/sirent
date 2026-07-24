@@ -21,9 +21,9 @@ class AdminDashboardController extends Controller
 
             'total_borrowers' => User::where('role', User::ROLE_BORROWER)->count(),
 
-            'total_owners' => User::where('role', User::ROLE_OWNER)->count(),
+            'total_owners' => User::where('is_owner_active', 1)->count(),
 
-            'active_sellers' => User::where('is_owner_active', true)->count(),
+            'suspended_user' => User::where('account_status', 'suspended')->count(),
 
             'total_products' => Product::count(),
 

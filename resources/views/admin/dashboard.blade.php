@@ -52,8 +52,8 @@
             </div>
 
             <div class="admin-stat-card">
-                <small>Active Sellers</small>
-                <h3>{{ $stats['active_sellers'] ?? 0 }}</h3>
+                <small>Suspended User</small>
+                <h3>{{ $stats['suspended_user'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
