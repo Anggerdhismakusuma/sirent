@@ -139,4 +139,59 @@ class StoreRentalRequestController extends Controller
                 'Permintaan peminjaman berhasil ditolak.'
             );
     }
+
+    public function history(Request $request)
+    {
+        $user = $request->user();
+
+        abort_unless($user->is_owner_active, 403);
+
+        $status = $request->input('status', 'all');
+        $month = $request->input('month');
+
+        $transactions = RentalRequest::query()
+            ->with([
+                'product.primaryImage',
+                'borrower',
+                'activeDispute',
+            ])
+            ->whereHas('product', function ($query) use ($user) {
+                /*
+                * Sesuaikan dengan kolom owner pada tabel products.
+                * Kalau products menggunakan user_id, ganti owner_id menjadi user_id.
+                */
+                $query->where('owner_id', $user->id);
+            })
+            ->whereIn('status', [
+                'approved',
+                'ongoing',
+                'completed',
+                'cancelled',
+            ])
+            ->when(
+                $status !== 'all',
+                fn ($query) => $query->where('status', $status)
+            )
+            ->when($month, function ($query, $month) {
+                [$year, $monthNumber] = array_pad(
+                    explode('-', $month),
+                    2,
+                    null
+                );
+
+                if ($year && $monthNumber) {
+                    $query
+                        ->whereYear('start_date', $year)
+                        ->whereMonth('start_date', $monthNumber);
+                }
+            })
+            ->latest('created_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view(
+            'borrower.store.transactions',
+            compact('transactions', 'status', 'month')
+        );
+    }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Borrower\StoreDisputeController;
 use App\Http\Controllers\Borrower\StoreRentalRequestController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\DisputeController;
@@ -168,6 +169,16 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         '/dashboard/store/rental-requests/{rentalRequest}/reject',
         [StoreRentalRequestController::class, 'reject']
     )->name('borrower.store.rental-requests.reject');
+
+    Route::get(
+        '/dashboard/store/transactions',
+        [StoreRentalRequestController::class, 'history']
+    )->name('borrower.store.transactions.history');
+
+    Route::post(
+        '/dashboard/store/transactions/{rentalRequest}/dispute',
+        [StoreDisputeController::class, 'store']
+    )->name('borrower.store.disputes.store');
 
     Route::get('/aktivitas', function () {
         return view('home');

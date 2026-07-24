@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Dispute;
 
 class RentalRequest extends Model
 {
@@ -65,5 +68,12 @@ class RentalRequest extends Model
     public function disputes()
     {
         return $this->hasMany(Dispute::class);
+    }
+
+    public function activeDispute(): HasOne
+    {
+        return $this->hasOne(Dispute::class)
+            ->whereIn('status', ['open', 'in_review'])
+            ->latestOfMany();
     }
 }
