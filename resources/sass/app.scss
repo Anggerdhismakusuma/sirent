@@ -1713,7 +1713,26 @@ body {
     }
 }
 
+.about-final-cta {
+    position: relative;
+}
 
+.about-final-cta__actions {
+    position: relative;
+    z-index: 10;
+}
+
+.about-final-cta::before,
+.about-final-cta::after {
+    pointer-events: none;
+}
+
+.about-btn {
+    position: relative;
+    z-index: 11;
+    pointer-events: auto;
+    cursor: pointer;
+}
 
 // admin dashboard
 
