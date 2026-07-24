@@ -150,32 +150,31 @@
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
-                                <th>Joined</th>
                             </tr>
                         </thead>
 
-                        <tbody>
-                            @forelse ($latestUsers as $user)
+                         <tbody>
+                            @foreach ($latestUsers as $user)
                                 <tr>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
+
                                     <td>
-                                        <span class="admin-badge">
-                                            {{ ucfirst($user->role ?? 'borrower') }}
+                                        {{ ucfirst(strtolower($user->role)) }}
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="user-status-badge
+                                            {{ $user->account_status === \App\Models\User::ACCOUNT_ACTIVE
+                                                ? 'user-status-badge--active'
+                                                : 'user-status-badge--suspended' }}"
+                                        >
+                                            {{ ucfirst(strtolower($user->account_status)) }}
                                         </span>
                                     </td>
-                                    <td>
-                                        <span class="admin-badge {{ ($user->account_status ?? 'active') !== 'active' ? 'danger' : '' }}">
-                                            {{ ucfirst($user->account_status ?? 'active') }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $user->created_at?->format('d M Y') }}</td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-muted">No users found.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -449,75 +448,97 @@
                                 <th>Role</th>
                                 <th>Status</th>
                                 <th>Joined</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
 
-                        <tbody id="allUsersTableBody">
-                            @forelse ($allUsers as $user)
-                                @php
-                                    $role = \Illuminate\Support\Str::headline(
-                                        $user->role ?? 'borrower'
-                                    );
+                        <tbody id="all-users-table-body">
+                            @foreach ($users as $user)
+                                <tr class="all-user-row">
+                                    <td>{{ $user->name }}</td>
 
-                                    $status = \Illuminate\Support\Str::headline(
-                                        $user->account_status ?? 'active'
-                                    );
-
-                                    $searchValue = strtolower(
-                                        implode(' ', [
-                                            $user->name,
-                                            $user->email,
-                                            $role,
-                                            $status,
-                                        ])
-                                    );
-                                @endphp
-
-                                <tr
-                                    class="js-user-row"
-                                    data-search="{{ $searchValue }}"
-                                >
-                                    <td>
-                                        {{ $user->name }}
-                                    </td>
+                                    <td>{{ $user->email }}</td>
 
                                     <td>
-                                        {{ $user->email }}
-                                    </td>
-
-                                    <td>
-                                        <span class="admin-badge">
-                                            {{ $role }}
+                                        <span class="user-role-badge">
+                                            {{ ucfirst(strtolower($user->role)) }}
                                         </span>
                                     </td>
 
                                     <td>
                                         <span
-                                            class="admin-badge
-                                                admin-badge--{{ strtolower(
-                                                    $user->account_status
-                                                        ?? 'active'
-                                                ) }}"
+                                            class="user-status-badge
+                                            {{ $user->account_status === \App\Models\User::ACCOUNT_ACTIVE
+                                                ? 'user-status-badge--active'
+                                                : 'user-status-badge--suspended' }}"
                                         >
-                                            {{ $status }}
+                                            {{ ucfirst(strtolower($user->account_status)) }}
                                         </span>
                                     </td>
 
                                     <td>
-                                        {{ $user->created_at?->format('d M Y')
-                                            ?? '-' }}
+                                        {{ $user->created_at->format('d M Y') }}
+                                    </td>
+
+                                    <td>
+                                        @if (auth()->user()->is($user))
+                                            <span class="admin-user-protected">
+                                                Current User
+                                            </span>
+
+                                        @elseif ($user->role === \App\Models\User::ROLE_ADMIN)
+                                            <span class="admin-user-protected">
+                                                Protected
+                                            </span>
+
+                                        @elseif ($user->account_status === \App\Models\User::ACCOUNT_ACTIVE)
+                                            <form
+                                                action="{{ route('admin.users.update-status', $user) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Suspend akun {{ $user->name }}?')"
+                                            >
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <input
+                                                    type="hidden"
+                                                    name="status"
+                                                    value="{{ \App\Models\User::ACCOUNT_SUSPENDED }}"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="admin-user-action admin-user-action--suspend"
+                                                >
+                                                    Suspend
+                                                </button>
+                                            </form>
+                                        @else
+                                            <form
+                                                action="{{ route('admin.users.update-status', $user) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Aktifkan kembali akun {{ $user->name }}?')"
+                                            >
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <input
+                                                    type="hidden"
+                                                    name="status"
+                                                    value="{{ \App\Models\User::ACCOUNT_ACTIVE }}"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="admin-user-action admin-user-action--activate"
+                                                >
+                                                    Activate
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td
-                                        colspan="5"
-                                        class="admin-table-empty"
-                                    >
-                                        No users found.
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

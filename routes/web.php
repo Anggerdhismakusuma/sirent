@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Borrower\StoreRentalRequestController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\DisputeController;
+use App\Http\Controllers\Admin\AdminUserController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -108,6 +109,12 @@ Route::middleware(['auth', 'admin'])
         // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('dashboard');
+
+        // User Status
+        Route::patch(
+            '/users/{user}/status',
+            [AdminUserController::class, 'updateStatus']
+        )->name('users.update-status');
 
         // Dispute Management
         Route::get('/disputes', [DisputeController::class, 'index'])

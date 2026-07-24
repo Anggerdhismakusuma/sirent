@@ -95,6 +95,8 @@ class AdminDashboardController extends Controller
 
         $totalActiveProducts = $productCategoryCounts->sum();
 
+        $users = User::orderByDesc('created_at')->get();
+
         $oldestDisputes = Dispute::with([
             'reporter',
             'rentalRequest.borrower',
@@ -120,6 +122,7 @@ class AdminDashboardController extends Controller
             'productCategoryLabels',
             'productCategoryCounts',
             'totalActiveProducts',
+            'users',
             'oldestDisputes',
         ));
     }

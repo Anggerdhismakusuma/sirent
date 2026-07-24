@@ -2389,3 +2389,75 @@ body {
         }
     }
 }
+
+.user-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+
+    &--active {
+        color: #1646d8;
+        background: #e8efff;
+    }
+
+    &--suspended {
+        color: #b42318;
+        background: #fee4e2;
+    }
+}
+
+.admin-user-action {
+    min-width: 86px;
+    padding: 7px 12px;
+    border: 0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &--suspend {
+        color: #b42318;
+        background: #fee4e2;
+
+        &:hover {
+            background: #fecdca;
+        }
+    }
+
+    &--activate {
+        color: #067647;
+        background: #dcfae6;
+
+        &:hover {
+            background: #abefc6;
+        }
+    }
+}
+
+.admin-user-protected {
+    color: #667085;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.all-users-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.all-users-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.all-users-table th,
+.all-users-table td {
+    padding: 14px 12px;
+    white-space: nowrap;
+}
