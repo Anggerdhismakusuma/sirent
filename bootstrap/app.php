@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.guest' => \App\Http\Middleware\RedirectIfGuest::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'account.active' => \App\Http\Middleware\EnsureAccountActive::class,
         ]);
 
         $middleware->web(append: [

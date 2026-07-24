@@ -69,7 +69,7 @@ Route::post('/email/verification-notification', [OnboardingController::class, 's
 // ============================================
 // Onboarding Routes (3-step after email verification)
 // ============================================
-Route::middleware('auth')->prefix('onboarding')->name('onboarding.')->group(function () {
+Route::middleware(['auth', 'account.active'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/step-1', [OnboardingController::class, 'step1'])->name('step1');
     Route::post('/step-1', [OnboardingController::class, 'storeStep1'])->name('step1.store');
     Route::post('/step-2', [OnboardingController::class, 'storeStep2'])->name('step2.store');
@@ -101,7 +101,7 @@ Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('stor
 // ============================================
 // Admin Routes
 // ============================================
-Route::middleware(['auth', 'admin'])
+Route::middleware(['auth', 'admin', 'account.active'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -134,7 +134,7 @@ Route::middleware(['auth', 'admin'])
 // ============================================
 // Borrower Routes (Middleware: auth — Phase 1)
 // ============================================
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'account.active'])->group(function () {
     
     // API Endpoint ringan untuk kebutuhan Polling status email dari halaman onboarding
     Route::get('/api/user/check-email-status', function() {

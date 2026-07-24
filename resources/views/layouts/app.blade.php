@@ -47,6 +47,7 @@
 
     {{-- Auth Modal — available on all pages --}}
     <x-auth-modal />
+    <x-account-suspended-modal />
 
     @stack('scripts')
 
