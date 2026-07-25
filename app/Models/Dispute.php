@@ -46,4 +46,30 @@ class Dispute extends Model
     {
         return $this->belongsTo(User::class, 'handled_by');
     }
+
+    public function getReporterTypeAttribute(): string
+    {
+        $rentalRequest = $this->rentalRequest;
+
+        if (!$rentalRequest) {
+            return 'unknown';
+        }
+
+        return (int) $this->reporter_id === (int) $rentalRequest->borrower_id
+            ? 'borrower'
+            : 'store';
+    }
+
+    public function getRespondentAttribute(): ?User
+    {
+        $rentalRequest = $this->rentalRequest;
+
+        if (!$rentalRequest) {
+            return null;
+        }
+
+        return $this->reporter_type === 'borrower'
+            ? $rentalRequest->owner
+            : $rentalRequest->borrower;
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\RentalRequest;
 use App\Models\User;
+use App\Models\Dispute;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -20,9 +21,9 @@ class AdminDashboardController extends Controller
 
             'total_borrowers' => User::where('role', User::ROLE_BORROWER)->count(),
 
-            'total_owners' => User::where('role', User::ROLE_OWNER)->count(),
+            'total_owners' => User::where('is_owner_active', 1)->count(),
 
-            'active_sellers' => User::where('is_owner_active', true)->count(),
+            'suspended_user' => User::where('account_status', 'suspended')->count(),
 
             'total_products' => Product::count(),
 
@@ -49,16 +50,16 @@ class AdminDashboardController extends Controller
                 : 0,
         ];
 
-        $latestUsers = User::latest()
-            ->take(5)
+        $latestUsers = User::query()
+            ->latest('created_at')
+            ->limit(5)
+            ->get();
+
+        $allUsers = User::query()
+            ->latest('created_at')
             ->get();
 
         $latestProducts = Product::with('owner')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $latestRentals = RentalRequest::with(['product', 'owner', 'borrower'])
             ->latest()
             ->take(5)
             ->get();
@@ -73,13 +74,56 @@ class AdminDashboardController extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
+        $productCategoryStats = Product::query()
+            ->selectRaw('category_id, COUNT(*) as total')
+            ->with('category:id,name')
+            ->whereRaw('LOWER(status) = ?', ['active'])
+            ->groupBy('category_id')
+            ->orderByDesc('total')
+            ->get();
+
+        $productCategoryLabels = $productCategoryStats
+            ->map(
+                fn ($item) => $item->category?->name ?? 'Tanpa Kategori'
+            )
+            ->values();
+
+        $productCategoryCounts = $productCategoryStats
+            ->pluck('total')
+            ->map(fn ($total) => (int) $total)
+            ->values();
+
+        $totalActiveProducts = $productCategoryCounts->sum();
+
+        $users = User::orderByDesc('created_at')->get();
+
+        $oldestDisputes = Dispute::with([
+            'reporter',
+            'rentalRequest.borrower',
+            'rentalRequest.owner',
+            'rentalRequest.product',
+        ])
+        ->whereIn('status', [
+            Dispute::STATUS_OPEN,
+            Dispute::STATUS_IN_REVIEW,
+        ])
+        ->oldest('created_at')
+        ->limit(5)
+        ->get();
+
         return view('admin.dashboard', compact(
             'stats',
             'latestUsers',
+            'allUsers',
             'latestProducts',
-            'latestRentals',
             'rentalStatusSummary',
-            'productStatusSummary'
+            'productStatusSummary',
+            'productCategoryStats',
+            'productCategoryLabels',
+            'productCategoryCounts',
+            'totalActiveProducts',
+            'users',
+            'oldestDisputes',
         ));
     }
 }

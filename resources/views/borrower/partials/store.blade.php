@@ -363,6 +363,356 @@
                 @endforelse
             </div>
 
+            {{-- Recent Store Transactions --}}
+            @php
+                $recentTransactions = $recentSellerTransactions ?? collect();
+
+                $transactionStatusClasses = [
+                    'PENDING' => 'bg-warning-subtle text-warning-emphasis',
+                    'APPROVED' => 'bg-primary-subtle text-primary-emphasis',
+                    'ONGOING' => 'bg-info-subtle text-info-emphasis',
+                    'COMPLETED' => 'bg-success-subtle text-success-emphasis',
+                    'CANCELLED' => 'bg-secondary-subtle text-secondary-emphasis',
+                    'REJECTED' => 'bg-danger-subtle text-danger-emphasis',
+                ];
+
+                $disputeStatusClasses = [
+                    'open' => 'bg-warning-subtle text-warning-emphasis',
+                    'in_review' => 'bg-primary-subtle text-primary-emphasis',
+                    'resolved' => 'bg-success-subtle text-success-emphasis',
+                    'rejected' => 'bg-danger-subtle text-danger-emphasis',
+                ];
+            @endphp
+
+            <div class="seller-panel mb-4">
+
+                @if ($errors->has('dispute'))
+                    <div class="alert alert-danger rounded-3">
+                        {{ $errors->first('dispute') }}
+                    </div>
+                @endif
+
+                <div class="seller-panel-header mb-3">
+                    <div>
+                        <h6 class="mb-1">Recent Transactions</h6>
+
+                        <small class="text-muted">
+                            View the latest rental transactions from your store.
+                        </small>
+                    </div>
+
+                    <a
+                        href="{{ route('borrower.store.transactions.history') }}"
+                        class="btn btn-outline-primary rounded-pill px-4 fw-semibold"
+                    >
+                        View All Transactions
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle seller-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Transaction</th>
+                                <th>Item</th>
+                                <th>Renter</th>
+                                <th>Rental Period</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse ($recentTransactions as $transaction)
+                                @php
+                                    $product = $transaction->product;
+                                    $borrower = $transaction->borrower;
+
+                                    $status = strtoupper(
+                                        (string) $transaction->status
+                                    );
+
+                                    $statusClass = $transactionStatusClasses[$status]
+                                        ?? 'bg-light text-dark';
+
+                                    $hasActiveDispute = (bool) $transaction->activeDispute;
+
+                                    $canDispute = in_array(
+                                        $status,
+                                        ['APPROVED', 'ONGOING', 'COMPLETED'],
+                                        true
+                                    ) && !$hasActiveDispute;
+
+                                    $imagePath = $product?->primaryImage?->image_path;
+                                @endphp
+
+                                <tr>
+                                    <td>
+                                        <strong>#{{ $transaction->id }}</strong>
+
+                                        <div class="small text-muted">
+                                            {{ $transaction->created_at?->format('d M Y, H:i') }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img
+                                                src="{{ $imagePath
+                                                    ? asset('storage/' . $imagePath)
+                                                    : asset('images/placeholder-product.png') }}"
+                                                alt="{{ $product?->title ?? 'Rental item' }}"
+                                                class="rounded-3 border"
+                                                style="
+                                                    width: 52px;
+                                                    height: 52px;
+                                                    object-fit: cover;
+                                                "
+                                            >
+
+                                            <div>
+                                                <strong>
+                                                    {{ $product?->title ?? 'Product unavailable' }}
+                                                </strong>
+
+                                                <div class="small text-muted">
+                                                    {{ $product?->category?->name ?? 'No category' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ $borrower?->name ?? 'Unknown renter' }}
+                                        </strong>
+
+                                        <div class="small text-muted">
+                                            {{ $borrower?->email ?? '-' }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div>
+                                            {{ $transaction->start_date?->format('d M Y') }}
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            until {{ $transaction->end_date?->format('d M Y') }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <strong class="text-primary">
+                                            Rp {{ number_format(
+                                                (float) $transaction->total_price,
+                                                0,
+                                                ',',
+                                                '.'
+                                            ) }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge rounded-pill {{ $statusClass }}">
+                                            {{ ucfirst(strtolower($status)) }}
+                                        </span>
+
+                                        @if ($transaction->activeDispute)
+                                            @php
+                                                $disputeStatus = $transaction->activeDispute->status;
+
+                                                $disputeStatusClass = $disputeStatusClasses[$disputeStatus]
+                                                    ?? 'bg-secondary-subtle text-secondary-emphasis';
+                                            @endphp
+
+                                            <div class="mt-1">
+                                                <span class="badge rounded-pill {{ $disputeStatusClass }}">
+                                                    Dispute:
+                                                    {{ ucwords(str_replace('_', ' ', $disputeStatus)) }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-end">
+                                        @if ($canDispute)
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#sellerDisputeModal{{ $transaction->id }}"
+                                            >
+                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                Raise Dispute
+                                            </button>
+                                        @elseif ($hasActiveDispute)
+                                            <span class="small text-muted">
+                                                Waiting for admin
+                                            </span>
+                                        @else
+                                            <span class="small text-muted">
+                                                No action
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="fs-2 text-muted mb-2">
+                                            <i class="bi bi-receipt"></i>
+                                        </div>
+
+                                        <h6 class="fw-bold mb-1">
+                                            No transaction history
+                                        </h6>
+
+                                        <p class="small text-muted mb-0">
+                                            Approved rental transactions will appear here.
+                                        </p>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Recent Transaction Dispute Modals --}}
+            @foreach ($recentTransactions as $transaction)
+                @php
+                    $modalStatus = strtoupper(
+                        (string) $transaction->status
+                    );
+
+                    $modalCanDispute = in_array(
+                        $modalStatus,
+                        ['APPROVED', 'ONGOING', 'COMPLETED'],
+                        true
+                    ) && !$transaction->activeDispute;
+                @endphp
+
+                @if ($modalCanDispute)
+                    <div
+                        class="modal fade"
+                        id="sellerDisputeModal{{ $transaction->id }}"
+                        tabindex="-1"
+                        aria-labelledby="sellerDisputeModalLabel{{ $transaction->id }}"
+                        aria-hidden="true"
+                    >
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 rounded-4">
+                                <form
+                                    action="{{ route( 'borrower.store.disputes.store', $transaction ) }}"
+                                    method="POST"
+                                    enctype="multipart/form-data"
+                                >
+                                    @csrf
+
+                                    <div class="modal-header border-0 px-4 pt-4">
+                                        <div>
+                                            <h5
+                                                class="modal-title fw-bold text-danger"
+                                                id="sellerDisputeModalLabel{{ $transaction->id }}"
+                                            >
+                                                Raise a Dispute
+                                            </h5>
+
+                                            <small class="text-muted">
+                                                Transaction #{{ $transaction->id }}
+                                                · {{ $transaction->product?->title }}
+                                            </small>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"
+                                        ></button>
+                                    </div>
+
+                                    <div class="modal-body px-4">
+                                        <div class="mb-3">
+                                            <label
+                                                for="disputeReason{{ $transaction->id }}"
+                                                class="form-label fw-semibold"
+                                            >
+                                                Dispute Reason
+                                            </label>
+
+                                            <textarea
+                                                id="disputeReason{{ $transaction->id }}"
+                                                name="reason"
+                                                class="form-control"
+                                                rows="5"
+                                                minlength="20"
+                                                maxlength="1000"
+                                                placeholder="Explain the issue clearly, including the date, item condition, and other relevant information."
+                                                required
+                                            >{{ old('reason') }}</textarea>
+
+                                            <small class="text-muted">
+                                                Minimum 20 characters.
+                                            </small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label
+                                                for="disputeEvidence{{ $transaction->id }}"
+                                                class="form-label fw-semibold"
+                                            >
+                                                Supporting Evidence
+                                            </label>
+
+                                            <input
+                                                type="file"
+                                                id="disputeEvidence{{ $transaction->id }}"
+                                                name="evidence"
+                                                class="form-control"
+                                                accept="
+                                                    image/jpeg,
+                                                    image/png,
+                                                    image/webp,
+                                                    application/pdf
+                                                "
+                                            >
+
+                                            <small class="text-muted">
+                                                Optional. Maximum 4 MB, image or PDF.
+                                            </small>
+                                        </div>
+
+                                        <div class="alert alert-warning small mb-0">
+                                            The dispute will be reviewed by an administrator.
+                                            Make sure the information and evidence are accurate.
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer border-0 px-4 pb-4">
+                                        <button
+                                            type="button"
+                                            class="btn btn-light rounded-pill px-4"
+                                            data-bs-dismiss="modal"
+                                        >
+                                            Cancel
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger rounded-pill px-4"
+                                        >
+                                            Submit Dispute
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endforeach
             {{-- DASHBOARD GRID --}}
             <div class="seller-grid">
 

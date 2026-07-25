@@ -114,7 +114,7 @@
 
                 {{-- Bottom --}}
                 <div class="mt-auto pb-4 ps-4">
-                    <a href="{{ route('about.index') }}"
+                    <a href="{{ route('about') }}"
                         class="d-flex align-items-center gap-3 text-decoration-none text-white mb-2 px-2 py-2 rounded-3"
                         style="background:rgba(255,255,255,0.08);">
                         <i class="bi bi-question-circle" style="font-size:20px;"></i>

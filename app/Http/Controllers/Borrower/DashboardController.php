@@ -450,6 +450,29 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $recentSellerTransactions = collect();
+
+        if ($user->is_owner_active) {
+            $recentSellerTransactions = RentalRequest::query()
+                ->with([
+                    'product.primaryImage',
+                    'borrower',
+                    'activeDispute',
+                ])
+                ->whereHas('product', function ($query) use ($user) {
+                    $query->where('owner_id', $user->id);
+                })
+                ->whereIn('status', [
+                    'approved',
+                    'ongoing',
+                    'completed',
+                    'cancelled',
+                ])
+                ->latest('created_at')
+                ->limit(5)
+                ->get();
+        }
+
         return view('borrower.dashboard', compact(
             'user',
             'trustScore',
@@ -469,6 +492,7 @@ class DashboardController extends Controller
             'storeItems',
             'categories',
             'incomingRentalRequests',
+            'recentSellerTransactions'
         ));
     }
 }

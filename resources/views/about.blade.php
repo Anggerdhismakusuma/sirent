@@ -213,12 +213,26 @@
                     Mulai Sewa
                 </a>
 
-                <a
-                    href="{{ route('borrower.dashboard') }}"
-                    class="about-btn about-btn--outline-light"
-                >
-                    Buka Toko
-                </a>
+                @auth
+                    <a
+                        href="{{ route('borrower.dashboard') }}"
+                        class="about-btn about-btn--outline-light"
+                    >
+                        Buka Toko
+                    </a>
+                @else
+                    <button
+                        type="button"
+                        class="about-btn about-btn--outline-light"
+                        onclick="window.dispatchEvent(
+                            new CustomEvent('open-auth-modal', {
+                                detail: { mode: 'login' }
+                            })
+                        )"
+                    >
+                        Buka Toko
+                    </button>
+                @endauth
             </div>
         </div>
     </section>

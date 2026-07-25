@@ -24,6 +24,31 @@ window.submitLogin = async function(form) {
 
         const data = await res.json();
 
+        // Akun sedang disuspend
+        if (
+            res.status === 403 &&
+            data.code === 'ACCOUNT_SUSPENDED'
+        ) {
+            // Tutup modal login
+            window.dispatchEvent(
+                new CustomEvent('close-auth-modal')
+            );
+
+            // Buka popup akun suspended
+            setTimeout(() => {
+                window.dispatchEvent(
+                    new CustomEvent('account-suspended', {
+                        detail: {
+                            message: data.message,
+                        },
+                    })
+                );
+            }, 150);
+
+            return;
+        }
+
+        // login berhasil
         if (res.ok && data.success) {
             window.dispatchEvent(
                 new CustomEvent('close-auth-modal')

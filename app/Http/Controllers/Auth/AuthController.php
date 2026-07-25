@@ -122,34 +122,6 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->only('email', 'password');
-
-        // Cari user sebelum autentikasi untuk mengecek status akun
-        $user = User::where('email', $request->email)->first();
-
-        if ($user && $user->account_status === User::ACCOUNT_BANNED) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akun Anda telah diblokir permanen. Hubungi admin untuk informasi lebih lanjut.',
-            ], 403);
-        }
-
-        if ($user && $user->account_status === User::ACCOUNT_SUSPENDED) {
-            if ($user->suspended_until && now()->lt($user->suspended_until)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Akun Anda ditangguhkan hingga '
-                        . $user->suspended_until->format('d M Y H:i')
-                        . '. Silakan coba lagi nanti.',
-                ], 403);
-            }
-
-            // Aktifkan kembali akun jika masa suspend sudah selesai
-            $user->update([
-                'account_status' => User::ACCOUNT_ACTIVE,
-                'suspended_until' => null,
-            ]);
-        }
-
         $remember = $request->boolean('remember');
 
         if (!Auth::attempt($credentials, $remember)) {
@@ -163,11 +135,29 @@ class AuthController extends Controller
                 ],
             ], 422);
         }
-
-        $request->session()->regenerate();
-
         /** @var User $user */
         $user = Auth::user();
+        
+        /*
+        * User berhasil memasukkan password yang benar,
+        * tetapi akun sedang disuspend.
+        */
+        if ($user->account_status === User::ACCOUNT_SUSPENDED) {
+            Auth::logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json([
+                'success' => false,
+                'code' => 'ACCOUNT_SUSPENDED',
+                'message' => 'Akun Anda sedang disuspend oleh administrator SI-RENT. '
+                    . 'Anda tidak dapat melakukan pemesanan atau menggunakan fitur akun '
+                    . 'sampai akun diaktifkan kembali.',
+            ], 403);
+        }
+
+        $request->session()->regenerate();
 
         // Tentukan halaman tujuan berdasarkan role
         if ($user->role === User::ROLE_ADMIN) {

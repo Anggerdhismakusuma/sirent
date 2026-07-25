@@ -24,10 +24,11 @@
     <link rel="shortcut icon" href="{{ asset('images/logo-sirent.svg') }}" type="image/x-icon">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @stack('styles')
+    @stack('scripts')
 </head>
 <body>
     {{-- Sembunyikan Navbar saat di halaman onboarding --}}
-    @if(!Request::is('onboarding*'))
+    @if(!Request::is('onboarding*') && !Request::is('admin*'))
         @sectionMissing('hide-navbar')
             <x-layout.navbar />
         @endif
@@ -38,7 +39,7 @@
     </main>
 
     {{-- Sembunyikan Footer saat di halaman onboarding --}}
-    @if(!Request::is('onboarding*'))
+    @if(!Request::is('onboarding*') && !Request::is('admin*'))
         @sectionMissing('hide-footer')
             <x-layout.footer />
         @endif
@@ -46,6 +47,7 @@
 
     {{-- Auth Modal — available on all pages --}}
     <x-auth-modal />
+    <x-account-suspended-modal />
 
     @stack('scripts')
 

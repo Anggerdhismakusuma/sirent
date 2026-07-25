@@ -8,8 +8,11 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\StoreRentalRequestController;
+use App\Http\Controllers\Borrower\StoreDisputeController;
+use App\Http\Controllers\Borrower\StoreRentalRequestController;
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\Admin\DisputeController;
+use App\Http\Controllers\Admin\AdminUserController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -66,7 +69,7 @@ Route::post('/email/verification-notification', [OnboardingController::class, 's
 // ============================================
 // Onboarding Routes (3-step after email verification)
 // ============================================
-Route::middleware('auth')->prefix('onboarding')->name('onboarding.')->group(function () {
+Route::middleware(['auth', 'account.active'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/step-1', [OnboardingController::class, 'step1'])->name('step1');
     Route::post('/step-1', [OnboardingController::class, 'storeStep1'])->name('step1.store');
     Route::post('/step-2', [OnboardingController::class, 'storeStep2'])->name('step2.store');
@@ -101,18 +104,40 @@ Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('stor
 // ============================================
 // Admin Routes
 // ============================================
-Route::middleware(['auth', 'admin'])
+Route::middleware(['auth', 'admin', 'account.active'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+        // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('dashboard');
+
+        // User Status
+        Route::patch(
+            '/users/{user}/status',
+            [AdminUserController::class, 'updateStatus']
+        )->name('users.update-status');
+
+        // Dispute Management
+        Route::get('/disputes', [DisputeController::class, 'index'])
+            ->name('disputes.index');
+
+        Route::patch(
+            '/disputes/{dispute}/approve',
+            [DisputeController::class, 'approve']
+        )->name('disputes.approve');
+
+        Route::patch(
+            '/disputes/{dispute}/reject',
+            [DisputeController::class, 'reject']
+        )->name('disputes.reject');
     });
 
 // ============================================
 // Borrower Routes (Middleware: auth — Phase 1)
 // ============================================
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'account.active'])->group(function () {
     
     // API Endpoint ringan untuk kebutuhan Polling status email dari halaman onboarding
     Route::get('/api/user/check-email-status', function() {
@@ -150,6 +175,16 @@ Route::middleware('auth')->group(function () {
         '/dashboard/store/rental-requests/{rentalRequest}/reject',
         [StoreRentalRequestController::class, 'reject']
     )->name('borrower.store.rental-requests.reject');
+
+    Route::get(
+        '/dashboard/store/transactions',
+        [StoreRentalRequestController::class, 'history']
+    )->name('borrower.store.transactions.history');
+
+    Route::post(
+        '/dashboard/store/transactions/{rentalRequest}/dispute',
+        [StoreDisputeController::class, 'store']
+    )->name('borrower.store.disputes.store');
 
     Route::get('/aktivitas', function () {
         return view('home');
