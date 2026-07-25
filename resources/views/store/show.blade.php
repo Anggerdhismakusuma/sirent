@@ -36,18 +36,18 @@
                     <div class="d-flex align-items-center gap-3 mb-2">
                         <span style="font-family:'Mona Sans',sans-serif; font-size:13px; color:#5c5c5c;">
                             <i class="bi bi-geo-alt me-1" style="color:#204be5;"></i>
-                            {{ $owner->location_city ?? 'Indonesia' }}
+                            {{ $storeLocation ?? __('ui.indonesia') }}
                         </span>
                         <span style="font-family:'Mona Sans',sans-serif; font-size:13px; color:#5c5c5c;">
                             <i class="bi bi-calendar3 me-1"></i>
-                            {{ __('ui.joined') }} {{ $owner->created_at ? $owner->created_at->format('F Y') : 'March 2023' }}
+                            {{ __('ui.joined') }} {{ $owner->created_at->translatedFormat('F Y') }}
                         </span>
                     </div>
 
                     {{-- Followers --}}
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <span style="font-family:'Mona Sans',sans-serif; font-size:13px;">
-                            <strong>683</strong> {{ __('ui.followers') }}
+                            <strong>{{ number_format($owner->followers_count) }}</strong> {{ __('ui.followers') }}
                         </span>
                     </div>
 
@@ -67,7 +67,7 @@
 
             {{-- Bio --}}
             <p class="mt-3" style="font-family:'Mona Sans',sans-serif; font-size:14px; color:#5c5c5c; max-width:600px;">
-                {{ $owner->bio ?? 'Premium photography, videography, and outdoor gear rental. Trusted equipment for creators, travelers, and professionals.' }}
+                {{ $owner->bio }}
             </p>
         </div>
     </div>
@@ -110,7 +110,7 @@
 
         {{-- Right Sidebar — Shop Info (shared across tabs) --}}
         <div class="col-lg-3">
-            <x-store.sidebar :owner="$owner" :totalRatings="$totalRatings" :avgRating="$avgRating" :completedRentals="$completedRentals" />
+            <x-store.sidebar :owner="$owner" :totalRatings="$totalRatings" :avgRating="$avgRating" :completedRentals="$completedRentals" :trustScore="$trustScore" :responseRate="$responseRate" :avgResponseMinutes="$avgResponseMinutes" :storeLocation="$storeLocation" />
         </div>
     </div>
 
@@ -124,7 +124,7 @@
                 {{ __('ui.about_store', ['name' => $owner->name]) }}
             </h5>
             <p style="font-family:'Mona Sans',sans-serif; font-size:14px; color:#5c5c5c; line-height:1.6;">
-                {{ $owner->bio ?? 'Premium photography, videography, and outdoor gear rental for creators, travelers, filmmakers, and professionals. We provide trusted, high-quality equipment that is carefully maintained and ready for every project, adventure, or creative journey.' }}
+                {{ $owner->bio }}
             </p>
 
             {{-- Our Commitment --}}
@@ -199,7 +199,7 @@
 
         {{-- Right Sidebar --}}
         <div class="col-lg-3">
-            <x-store.sidebar :owner="$owner" :totalRatings="$totalRatings" :avgRating="$avgRating" :completedRentals="$completedRentals" />
+            <x-store.sidebar :owner="$owner" :totalRatings="$totalRatings" :avgRating="$avgRating" :completedRentals="$completedRentals" :trustScore="$trustScore" :responseRate="$responseRate" :avgResponseMinutes="$avgResponseMinutes" :storeLocation="$storeLocation" />
         </div>
     </div>
 
@@ -322,7 +322,7 @@
         </div>
 
         <div class="col-lg-3">
-            <x-store.sidebar :owner="$owner" :totalRatings="$totalRatings" :avgRating="$avgRating" :completedRentals="$completedRentals" />
+            <x-store.sidebar :owner="$owner" :totalRatings="$totalRatings" :avgRating="$avgRating" :completedRentals="$completedRentals" :trustScore="$trustScore" :responseRate="$responseRate" :avgResponseMinutes="$avgResponseMinutes" :storeLocation="$storeLocation" />
         </div>
     </div>
 

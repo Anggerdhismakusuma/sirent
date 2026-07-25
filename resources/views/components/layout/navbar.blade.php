@@ -22,6 +22,9 @@
 
         <div class="d-flex align-items-center gap-2 ms-auto">
             @auth
+                {{-- Notification Bell --}}
+                <x-layout.notification-bell />
+
                 {{-- Chat Icon --}}
                 <a href="{{ route('chat.index') }}" class="btn btn-link text-primary p-0 position-relative me-2" title="{{ __('ui.messages') }}"
                    x-data

@@ -95,22 +95,6 @@
                     </div>
                 </div>
 
-                {{-- Connected Devices --}}
-                <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-                    <span class="fw-medium d-flex align-items-center gap-2" style="font-family:'Mona Sans',sans-serif; font-size:20px; color:#062375;">
-                        <i class="bi bi-phone"></i> {{ __('ui.connected_devices') }}
-                    </span>
-                    <i class="bi bi-chevron-right text-muted" style="font-size:18px;"></i>
-                </div>
-
-                {{-- Notification --}}
-                <div class="d-flex justify-content-between align-items-center py-3">
-                    <span class="fw-medium d-flex align-items-center gap-2" style="font-family:'Mona Sans',sans-serif; font-size:20px; color:#062375;">
-                        <i class="bi bi-bell"></i> {{ __('ui.notification') }}
-                    </span>
-                    <i class="bi bi-chevron-right text-muted" style="font-size:18px;"></i>
-                </div>
-
                 {{-- Saved indicator --}}
                 <div x-show="saved" class="text-success mt-3 text-end"
                      style="font-family:'Mona Sans',sans-serif; font-size:12px;">

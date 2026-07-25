@@ -78,7 +78,8 @@
                             </div>
                             <div class="text-end">
                                 <a href="#" class="btn btn-outline-primary btn-sm rounded-3 mb-1 d-block"
-                                   style="font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--primary-blue-light); color: var(--primary-blue-light);">
+                                   style="font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--primary-blue-light); color: var(--primary-blue-light);"
+                                   onclick="openTransactionDetail({{ $request->id }}); return false;">
                                     {{ __('ui.transaction_detail') }}
                                 </a>
                                 @if($request->status === 'pending')
@@ -151,13 +152,21 @@
                     </div>
                     <div class="text-end">
                         <a href="#" class="btn btn-outline-primary btn-sm rounded-3 mb-1 d-block"
-                           style="font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--primary-blue-light); color: var(--primary-blue-light);">{{ __('ui.transaction_detail') }}</a>
+                           style="font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--primary-blue-light); color: var(--primary-blue-light);"
+                           onclick="openTransactionDetail({{ $request->id }}); return false;">{{ __('ui.transaction_detail') }}</a>
                         @if($request->status === 'completed')
-                            <button class="btn btn-outline-warning btn-sm rounded-3 d-block"
-                                    style="font-family:'Mona Sans',sans-serif; font-size:14px;"
-                                    onclick="openRatingModal({{ $request->id }}, '{{ $request->product->title ?? 'Product' }}')">
-                                ⭐ {{ __('ui.rate_owner') }}
-                            </button>
+                            @if($request->relationLoaded('ratings') && $request->ratings->isNotEmpty())
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-3 d-block py-1 px-2"
+                                      style="font-family:'Mona Sans',sans-serif; font-size:12px;">
+                                    ✓ {{ __('ui.already_rated') }}
+                                </span>
+                            @else
+                                <button class="btn btn-outline-warning btn-sm rounded-3 d-block"
+                                        style="font-family:'Mona Sans',sans-serif; font-size:14px;"
+                                        onclick="openRatingModal({{ $request->id }}, '{{ $request->product->title ?? 'Product' }}')">
+                                    ⭐ {{ __('ui.rate_owner') }}
+                                </button>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -220,6 +229,156 @@
                 <span class="spinner-border spinner-border-sm me-1"></span>{{ __('ui.sending') }}
             </span>
         </button>
+    </div>
+</div>
+
+{{-- Transaction Detail Modal — Bootstrap 5 --}}
+<div class="modal fade" id="transactionDetailModal" tabindex="-1"
+     aria-labelledby="transactionDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0 px-4 pt-4">
+                <h5 class="modal-title fw-bold" id="transactionDetailModalLabel"
+                    style="font-family:'Mona Sans',sans-serif;">
+                    {{ __('ui.transaction_detail') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 pb-2" id="transactionDetailBody">
+                {{-- Loading --}}
+                <div id="td-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2 mb-0" style="font-family:'Mona Sans',sans-serif;">
+                        {{ __('ui.loading') }}
+                    </p>
+                </div>
+                {{-- Content (hidden until data loads) --}}
+                <div id="td-content" style="display: none;">
+                    {{-- Status badge + Invoice --}}
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div id="td-status-badge"></div>
+                        <small class="text-muted" id="td-order-ref"
+                               style="font-family:'Mona Sans',sans-serif; font-size:12px;"></small>
+                    </div>
+                    {{-- Product Section --}}
+                    <div class="d-flex gap-3 mb-4 p-3 rounded-3" style="background: #f8f9fa;">
+                        <img id="td-product-image" src="" class="rounded-3 border" alt=""
+                             style="width:100px; height:80px; object-fit:cover;">
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-1" id="td-product-title" style="font-family:'Mona Sans',sans-serif;"></h6>
+                            <div class="text-muted small" id="td-product-meta" style="font-family:'Mona Sans',sans-serif;"></div>
+                            <div class="fw-semibold mt-1" id="td-product-price"
+                                 style="font-family:'Mona Sans',sans-serif; color:var(--primary-blue);"></div>
+                            <div class="text-muted small" id="td-product-deposit"
+                                 style="font-family:'Mona Sans',sans-serif;"></div>
+                        </div>
+                    </div>
+                    {{-- Rental Period --}}
+                    <h6 class="fw-bold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                        {{ __('ui.rental_period') }}
+                    </h6>
+                    <div class="row g-2 mb-3 small">
+                        <div class="col-md-6">
+                            <span class="text-muted">{{ __('ui.start_date') }}:</span>
+                            <strong id="td-start-date"></strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted">{{ __('ui.end_date') }}:</span>
+                            <strong id="td-end-date"></strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted">{{ __('ui.duration') }}:</span>
+                            <strong id="td-duration"></strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted">{{ __('ui.quantity') }}:</span>
+                            <strong id="td-quantity"></strong>
+                        </div>
+                    </div>
+                    {{-- Price Breakdown --}}
+                    <h6 class="fw-bold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                        {{ __('ui.payment_summary') }}
+                    </h6>
+                    <div class="mb-3 p-3 rounded-3" style="background:#f8f9fa;">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted" id="td-price-per-day-label"></span>
+                            <span id="td-price-per-day"></span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">{{ __('ui.service_fee') }}:</span>
+                            <span id="td-service-fee"></span>
+                        </div>
+                        <hr class="my-1">
+                        <div class="d-flex justify-content-between fw-semibold">
+                            <span>{{ __('ui.total') }}:</span>
+                            <span id="td-total-price" style="color:var(--primary-blue);"></span>
+                        </div>
+                    </div>
+                    {{-- Payment Info (conditional) --}}
+                    <div id="td-payment-section" style="display:none;">
+                        <h6 class="fw-bold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                            {{ __('ui.payment_info') }}
+                        </h6>
+                        <div class="row g-2 mb-3 small">
+                            <div class="col-md-6">
+                                <span class="text-muted">{{ __('ui.payment_status') }}:</span>
+                                <strong id="td-payment-status"></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted">{{ __('ui.payment_method') }}:</span>
+                                <strong id="td-payment-method"></strong>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted">{{ __('ui.transaction_id') }}:</span>
+                                <strong id="td-transaction-id" class="text-break"></strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted">{{ __('ui.paid_at') }}:</span>
+                                <strong id="td-paid-at"></strong>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- Rejection Reason (conditional) --}}
+                    <div id="td-rejection-section" style="display:none;">
+                        <h6 class="fw-bold mb-2 text-danger" style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                            {{ __('ui.rejection_reason_title') }}
+                        </h6>
+                        <p class="small p-3 rounded-3" id="td-rejection-reason"
+                           style="background:#f8d7da; font-family:'Mona Sans',sans-serif;"></p>
+                    </div>
+                    {{-- Notes (conditional) --}}
+                    <div id="td-notes-section" style="display:none;">
+                        <h6 class="fw-bold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                            {{ __('ui.notes') }}
+                        </h6>
+                        <p class="small p-3 rounded-3" id="td-notes"
+                           style="background:#f8f9fa; font-family:'Mona Sans',sans-serif;"></p>
+                    </div>
+                    {{-- Timeline --}}
+                    <h6 class="fw-bold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px;">
+                        {{ __('ui.timeline') }}
+                    </h6>
+                    <div class="small mb-3" id="td-timeline" style="font-family:'Mona Sans',sans-serif;"></div>
+                    {{-- Owner --}}
+                    <hr>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <img id="td-owner-avatar" src="" class="rounded-circle border" alt=""
+                             style="width:36px; height:36px; object-fit:cover;">
+                        <div>
+                            <div class="fw-semibold small" id="td-owner-name"
+                                 style="font-family:'Mona Sans',sans-serif;"></div>
+                            <div class="text-muted small" id="td-owner-rating"
+                                 style="font-family:'Mona Sans',sans-serif;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">
+                    {{ __('ui.close') }}
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -328,6 +487,176 @@
         if (modal && modal.__x) {
             modal.__x.$data.open(id, title);
         }
+    }
+
+    // ── Transaction Detail Modal ──
+    async function openTransactionDetail(rentalId) {
+        const modalEl = document.getElementById('transactionDetailModal');
+        const loading = document.getElementById('td-loading');
+        const content = document.getElementById('td-content');
+
+        loading.style.display = 'block';
+        content.style.display = 'none';
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+
+        try {
+            const res = await fetch('/peminjaman/' + rentalId, {
+                headers: { 'Accept': 'application/json' },
+            });
+            const json = await res.json();
+
+            if (!json.success) {
+                Swal.fire({
+                    icon: 'error',
+                    title: @js(__('ui.oops')),
+                    text: json.message || @js(__('ui.failed_load_detail')),
+                    confirmButtonColor: '#0031e1',
+                });
+                modal.hide();
+                return;
+            }
+
+            populateTransactionDetail(json.data);
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: @js(__('ui.network_error_title')),
+                text: @js(__('ui.network_error')),
+                confirmButtonColor: '#0031e1',
+            });
+            modal.hide();
+        }
+    }
+
+    function populateTransactionDetail(d) {
+        const rp = (val) => 'Rp' + Number(val || 0).toLocaleString('id-ID');
+        const fmtDate = (val) => {
+            if (!val) return '-';
+            const dt = new Date(val);
+            return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        };
+        const fmtDateTime = (val) => {
+            if (!val) return '-';
+            const dt = new Date(val);
+            return dt.toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit',
+            });
+        };
+
+        // Status badge
+        const statusMap = {
+            pending:   { label: @js(__('ui.status_pending')),   bg: '#fff3cd', color: '#856404' },
+            approved:  { label: @js(__('ui.status_approved')),  bg: '#d4edda', color: '#155724' },
+            rejected:  { label: @js(__('ui.status_rejected')),  bg: '#f8d7da', color: '#721c24' },
+            ongoing:   { label: @js(__('ui.status_ongoing')),   bg: '#cce5ff', color: '#004085' },
+            completed: { label: @js(__('ui.status_completed')), bg: '#d4edda', color: '#155724' },
+            cancelled: { label: @js(__('ui.status_cancelled')), bg: '#e2e3e5', color: '#383d41' },
+        };
+        const s = statusMap[d.status] || statusMap.pending;
+        document.getElementById('td-status-badge').innerHTML =
+            '<span class="d-inline-block px-2 py-0 rounded-pill fw-medium" ' +
+            'style="background:' + s.bg + '; color:' + s.color + '; font-size:12px;">' +
+            s.label + '</span>';
+
+        document.getElementById('td-order-ref').textContent = d.order_ref || '';
+
+        // Product
+        const p = d.product || {};
+        const img = document.getElementById('td-product-image');
+        img.src = p.primary_image || '/images/placeholder-product.png';
+        img.alt = p.title || 'Product';
+        document.getElementById('td-product-title').textContent = p.title || 'Product';
+        document.getElementById('td-product-meta').textContent =
+            (p.category_name || '') + (p.condition ? ' · ' + p.condition : '');
+        document.getElementById('td-product-price').textContent =
+            rp(p.price_per_day) + ' ' + @js(__('ui.per_day'));
+        document.getElementById('td-product-deposit').textContent =
+            @js(__('ui.deposit')) + ': ' + rp(p.deposit_amount);
+
+        // Rental period
+        document.getElementById('td-start-date').textContent = fmtDate(d.start_date);
+        document.getElementById('td-end-date').textContent = fmtDate(d.end_date);
+        document.getElementById('td-duration').textContent = d.total_days + ' ' + @js(__('ui.days'));
+        document.getElementById('td-quantity').textContent = d.quantity + ' ' + @js(__('ui.unit'));
+
+        // Price breakdown
+        const ppd = Number(p.price_per_day || 0);
+        const subtotal = ppd * d.total_days * d.quantity;
+        const serviceFee = d.total_price - subtotal;
+        document.getElementById('td-price-per-day-label').textContent =
+            rp(ppd) + ' x ' + d.total_days + ' ' + @js(__('ui.days')) +
+            (d.quantity > 1 ? ' x ' + d.quantity + ' ' + @js(__('ui.unit')) : '');
+        document.getElementById('td-price-per-day').textContent = rp(subtotal);
+        document.getElementById('td-service-fee').textContent = serviceFee > 0 ? rp(serviceFee) : rp(0);
+        document.getElementById('td-total-price').textContent = rp(d.total_price);
+
+        // Payment section
+        const paySection = document.getElementById('td-payment-section');
+        if (d.payment_status) {
+            paySection.style.display = 'block';
+            const psLabel = d.payment_status === 'paid' ? @js(__('ui.status_completed'))
+                : d.payment_status === 'failed' ? @js(__('ui.rental_failed'))
+                : d.payment_status === 'expired' ? @js(__('ui.payment_expired'))
+                : d.payment_status.charAt(0).toUpperCase() + d.payment_status.slice(1);
+            const psColor = d.payment_status === 'paid' ? 'success'
+                : d.payment_status === 'failed' ? 'danger'
+                : d.payment_status === 'expired' ? 'secondary' : 'warning';
+            document.getElementById('td-payment-status').innerHTML =
+                '<span class="badge bg-' + psColor + ' bg-opacity-10 text-' + psColor + ' rounded-3 px-2 py-1">' +
+                psLabel + '</span>';
+            document.getElementById('td-payment-method').textContent =
+                d.payment_method ? d.payment_method.replace(/_/g, ' ') : '-';
+            document.getElementById('td-transaction-id').textContent = d.transaction_id || '-';
+            document.getElementById('td-paid-at').textContent = d.paid_at ? fmtDateTime(d.paid_at) : '—';
+        } else {
+            paySection.style.display = 'none';
+        }
+
+        // Rejection reason
+        const rejSection = document.getElementById('td-rejection-section');
+        if (d.status === 'rejected' && d.rejection_reason) {
+            rejSection.style.display = 'block';
+            document.getElementById('td-rejection-reason').textContent = d.rejection_reason;
+        } else {
+            rejSection.style.display = 'none';
+        }
+
+        // Notes
+        const notesSection = document.getElementById('td-notes-section');
+        if (d.notes) {
+            notesSection.style.display = 'block';
+            document.getElementById('td-notes').textContent = d.notes;
+        } else {
+            notesSection.style.display = 'none';
+        }
+
+        // Timeline
+        const timelineItems = [
+            { label: @js(__('ui.created_at')),     value: d.created_at },
+            { label: @js(__('ui.approved_at')),    value: d.approved_at },
+            { label: @js(__('ui.paid_at')),        value: d.paid_at },
+            { label: @js(__('ui.completed_at')),   value: d.completed_at },
+        ];
+        document.getElementById('td-timeline').innerHTML = timelineItems
+            .filter(item => item.value)
+            .map(item =>
+                '<div class="d-flex justify-content-between mb-1">' +
+                '<span class="text-muted">' + item.label + ':</span> ' +
+                '<strong>' + fmtDateTime(item.value) + '</strong></div>'
+            ).join('');
+
+        // Owner
+        const o = d.owner || {};
+        document.getElementById('td-owner-avatar').src =
+            o.avatar || '/images/placeholder-avatar.png';
+        document.getElementById('td-owner-name').textContent = o.name || @js(__('ui.unknown'));
+        document.getElementById('td-owner-rating').textContent =
+            o.rating_avg_as_owner ? @js(__('ui.avg_rating')) + ': ' + Number(o.rating_avg_as_owner).toFixed(1) + ' / 5.0' : '';
     }
 </script>
 @endPushOnce

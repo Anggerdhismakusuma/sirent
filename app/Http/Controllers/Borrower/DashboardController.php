@@ -49,6 +49,12 @@ class DashboardController extends Controller
             RentalRequest::STATUS_REJECTED,
         ]);
 
+        // Eager-load ratings by this user so the view can check "already rated"
+        $historyRequests->load(['ratings' => fn($q) => $q
+            ->where('rater_id', $user->id)
+            ->where('type', \App\Models\Rating::TYPE_TO_OWNER),
+        ]);
+
         // =========================
         // Store / Seller Dashboard - Dynamic from DB
         // =========================

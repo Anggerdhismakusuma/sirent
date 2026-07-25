@@ -9,7 +9,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Borrower\StoreDisputeController;
-use App\Http\Controllers\Borrower\StoreRentalRequestController;
+use App\Http\Controllers\Borrower\Borrower\StoreRentalRequestController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\DisputeController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -202,6 +202,16 @@ Route::middleware(['auth', 'account.active'])->group(function () {
     Route::post('/dashboard/settings', [\App\Http\Controllers\Borrower\SettingsController::class, 'update'])
         ->name('borrower.settings.update');
 
+    // ── Profile (text fields + avatar) ──
+    Route::post('/dashboard/profile/info', [\App\Http\Controllers\Borrower\ProfileController::class, 'updateInfo'])
+        ->name('borrower.profile.update-info');
+    Route::post('/dashboard/profile/avatar', [\App\Http\Controllers\Borrower\ProfileController::class, 'updateAvatar'])
+        ->name('borrower.profile.update-avatar');
+    Route::post('/dashboard/profile/banner', [\App\Http\Controllers\Borrower\ProfileController::class, 'updateBanner'])
+        ->name('borrower.profile.update-banner');
+    Route::post('/dashboard/profile/send-email-verification', [\App\Http\Controllers\Borrower\ProfileController::class, 'sendEmailVerification'])
+        ->name('borrower.profile.send-email-verification');
+
     // ── Chat (PRD sections 6.5, 16.5) ──
     Route::prefix('pesan')->name('chat.')->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('index');
@@ -211,13 +221,43 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::post('/{conversation}', [ChatController::class, 'send'])->name('send');
     });
 
+    // ── Notifications ──
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])
+            ->name('index');
+        Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])
+            ->name('unread-count');
+        Route::post('/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])
+            ->name('mark-read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
+            ->name('mark-all-read');
+    });
+
     // ── Peminjaman (PRD section 16.3) ──
     Route::post('/peminjaman', [\App\Http\Controllers\Borrower\RentalController::class, 'store'])
         ->name('rentals.store');
     Route::post('/peminjaman/{id}/batal', [\App\Http\Controllers\Borrower\RentalController::class, 'cancel'])
         ->name('rentals.cancel');
+    Route::get('/peminjaman/{id}', [\App\Http\Controllers\Borrower\RentalController::class, 'show'])
+        ->name('rentals.show');
 
     // ── Rating (PRD section 16.3) ──
     Route::post('/peminjaman/{id}/rating', [\App\Http\Controllers\Borrower\RatingController::class, 'storeForOwner'])
         ->name('ratings.storeForOwner');
+
+    // ── Checkout & Payment (Midtrans Snap) ──
+    Route::prefix('checkout')->name('checkout.')->group(function () {
+        Route::post('/init', [\App\Http\Controllers\CheckoutController::class, 'init'])
+            ->name('init');
+        Route::get('/{token}', [\App\Http\Controllers\CheckoutController::class, 'index'])
+            ->name('index');
+        Route::post('/{token}/pay', [\App\Http\Controllers\CheckoutController::class, 'pay'])
+            ->name('pay');
+    });
 });
+
+// ── Midtrans Webhook (public — no CSRF, no auth; signed by Midtrans) ──
+Route::post('/api/midtrans/webhook', [\App\Http\Controllers\MidtransWebhookController::class, 'handle'])
+    ->name('midtrans.webhook')
+    ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class)
+    ->middleware('throttle:60,1');
