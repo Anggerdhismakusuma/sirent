@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
@@ -9,7 +10,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Borrower\StoreDisputeController;
-use App\Http\Controllers\Borrower\Borrower\StoreRentalRequestController;
+use App\Http\Controllers\Borrower\StoreRentalRequestController;
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\DisputeController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -74,15 +75,7 @@ Route::middleware(['auth', 'account.active'])->prefix('onboarding')->name('onboa
     Route::post('/step-1', [OnboardingController::class, 'storeStep1'])->name('step1.store');
     Route::post('/step-2', [OnboardingController::class, 'storeStep2'])->name('step2.store');
     Route::post('/step-3', [OnboardingController::class, 'storeStep3'])->name('step3.store');
-    
-    // Route AJAX untuk memicu pembuatan Magic Link WhatsApp
-    Route::post('/verify-whatsapp', [OnboardingController::class, 'verifyWhatsApp'])->name('verify.whatsapp');
 });
-
-// Route PUBLIC penampung klik Magic Link dari WhatsApp
-Route::get('/onboarding/verify-whatsapp-link/{user}', [OnboardingController::class, 'verifyWhatsAppLink'])
-    ->name('onboarding.verify-whatsapp-link')
-    ->middleware(['signed']);
 
 // ============================================
 // Public Routes
@@ -100,6 +93,10 @@ Route::get('/about-us', [AboutController::class, 'index'])
 Route::get('/toko/{user}', [StoreController::class, 'show'])->name('store.show');
 Route::get('/toko/{user}/about', [StoreController::class, 'show'])->name('store.about');
 Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('store.reviews');
+
+Route::post('/toko/{user}/follow', [FollowController::class, 'toggle'])
+    ->middleware(['auth', 'account.active'])
+    ->name('store.follow');
 
 // ============================================
 // Admin Routes
@@ -145,10 +142,6 @@ Route::middleware(['auth', 'account.active'])->group(function () {
             'verified' => auth()->user()->hasVerifiedEmail()
         ]);
     });
-
-    // TAMBAHKAN SEPERTI INI: Endpoint Polling Status Verifikasi WhatsApp
-    Route::get('/api/user/check-whatsapp-status', [OnboardingController::class, 'checkWhatsAppStatus'])
-        ->name('api.user.check-whatsapp-status');
 
     Route::get('/dashboard', [\App\Http\Controllers\Borrower\DashboardController::class, 'index'])
         ->name('borrower.dashboard');
@@ -244,6 +237,10 @@ Route::middleware(['auth', 'account.active'])->group(function () {
     // ── Rating (PRD section 16.3) ──
     Route::post('/peminjaman/{id}/rating', [\App\Http\Controllers\Borrower\RatingController::class, 'storeForOwner'])
         ->name('ratings.storeForOwner');
+
+    // ── Dispute (Borrower) ──
+    Route::post('/peminjaman/{rentalRequest}/dispute', [\App\Http\Controllers\Borrower\BorrowerDisputeController::class, 'store'])
+        ->name('borrower.disputes.store');
 
     // ── Checkout & Payment (Midtrans Snap) ──
     Route::prefix('checkout')->name('checkout.')->group(function () {

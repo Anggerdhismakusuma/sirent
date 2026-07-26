@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRentalRequest;
 use App\Models\Product;
 use App\Models\RentalRequest;
+use App\Notifications\NewRentalRequest;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
@@ -22,7 +23,7 @@ class RentalController extends Controller
     public function store(StoreRentalRequest $request): JsonResponse
     {
         // Only verified users can rent
-        if (auth()->user()->verification_status !== \App\Models\User::VERIFICATION_VERIFIED) {
+        if (! auth()->user()->isVerified()) {
             return response()->json([
                 'success' => false,
                 'message' => __('ui.rental_restricted_unverified'),
@@ -51,6 +52,13 @@ class RentalController extends Controller
             'notes'       => $data['notes'] ?? null,
             'status'      => RentalRequest::STATUS_PENDING,
         ]);
+
+        // Notify product owner about the new rental request
+        $product->owner->notify(new NewRentalRequest(
+            rentalId: $rental->id,
+            productName: $product->title,
+            borrowerName: auth()->user()->name,
+        ));
 
         return response()->json([
             'success' => true,

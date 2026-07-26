@@ -32,7 +32,7 @@ class DashboardController extends Controller
         // =========================
         // Borrower Activity
         // =========================
-        $rentalRequests = RentalRequest::with(['product.primaryImage', 'owner'])
+        $rentalRequests = RentalRequest::with(['product.primaryImage', 'owner', 'activeDispute'])
             ->where('borrower_id', $user->id)
             ->latest()
             ->get();

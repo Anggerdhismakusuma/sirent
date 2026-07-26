@@ -93,7 +93,7 @@ class ChatController extends Controller
                     'id' => $otherUser->id,
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
-                    'is_verified' => $otherUser->verification_status === \App\Models\User::VERIFICATION_VERIFIED,
+                    'is_verified' => $otherUser->isVerified(),
                 ],
                 'user_id' => $userId,
             ]);

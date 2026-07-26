@@ -2,6 +2,7 @@
 @extends('layouts.app')
 
 @section('title', __('ui.chat_title'))
+@section('hide-footer', true)
 
 @php
 // Pre-compute complex data untuk menghindari nested ternary di @json()
@@ -20,7 +21,7 @@ if (isset($otherUser)) {
         'id' => $otherUser->id,
         'name' => $otherUser->name,
         'avatar' => $otherUser->avatar,
-        'is_verified' => $otherUser->verification_status === App\Models\User::VERIFICATION_VERIFIED,
+        'is_verified' => $otherUser->isVerified(),
     ];
 }
 
@@ -43,17 +44,10 @@ if (isset($conversation)) {
 @endphp
 
 @section('content')
-<div class="chat-container" x-data='chatApp(@json($chatConfig))'>
+<div class="chat-container" x-data='chatApp(@json($chatConfig))' x-cloak>
 
     {{-- ========== PANEL 1: Conversation List (391px) ========== --}}
     <div class="chat-panel-left" :class="{ 'd-none d-md-flex': activeConversationId }">
-        {{-- Logo + Back --}}
-        <div class="d-flex align-items-center gap-2 px-3 pt-3 pb-2">
-            <a href="{{ url('/') }}" class="text-decoration-none d-flex align-items-center gap-2">
-                <img src="{{ asset('images/logo-sirent.svg') }}" alt="SI-RENT" width="52" height="43">
-                <span class="font-logo text-primary" style="font-size:32px;">SI-RENT</span>
-            </a>
-        </div>
 
         {{-- Search Bar --}}
         <div class="px-3 pb-2">
@@ -110,15 +104,16 @@ if (isset($conversation)) {
                      :class="{ 'chat-conversation-active': conv.id === activeConversationId }"
                      :style="conv.id === activeConversationId ? 'background:#ecf2fd; border-left:2px solid #0031e1;' : 'border-left:2px solid transparent;'"
                      @click="selectConversation(conv.id)">
-                    {{-- Avatar — image with @error fallback to initials --}}
+                    {{-- Avatar: initials always visible, image covers on top when loaded --}}
                     <div class="flex-shrink-0 position-relative" style="width:60px; height:60px;">
-                        <img :src="conv.other_user?.avatar ? '/storage/' + conv.other_user.avatar : ''"
-                             x-on:error="$el.style.display='none'; $el.nextElementSibling.style.display=''"
-                             class="rounded-circle object-fit-cover"
-                             style="width:60px; height:60px;" alt="">
                         <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
-                             style="width:60px; height:60px; font-size:20px; display:none;"
+                             style="width:60px; height:60px; font-size:20px;"
                              x-text="avatarInitial(conv.other_user?.name)"></div>
+                        <img x-show="conv.other_user?.avatar"
+                             :src="'/storage/' + conv.other_user.avatar"
+                             onerror="this.remove()"
+                             class="rounded-circle object-fit-cover position-absolute top-0 start-0"
+                             style="width:60px; height:60px;" alt="">
                     </div>
 
                     {{-- Info --}}
@@ -177,13 +172,14 @@ if (isset($conversation)) {
                     </button>
                     {{-- Avatar --}}
                     <div class="flex-shrink-0 position-relative" style="width:60px; height:60px;">
-                        <img :src="otherUser?.avatar ? '/storage/' + otherUser.avatar : ''"
-                             x-on:error="$el.style.display='none'; $el.nextElementSibling.style.display=''"
-                             class="rounded-circle object-fit-cover"
-                             style="width:60px; height:60px;" alt="">
                         <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
-                             style="width:60px; height:60px; font-size:20px; display:none;"
+                             style="width:60px; height:60px; font-size:20px;"
                              x-text="avatarInitial(otherUser?.name)"></div>
+                        <img x-show="otherUser?.avatar"
+                             :src="'/storage/' + otherUser.avatar"
+                             onerror="this.remove()"
+                             class="rounded-circle object-fit-cover position-absolute top-0 start-0"
+                             style="width:60px; height:60px;" alt="">
                     </div>
                     {{-- Info --}}
                     <div>
@@ -216,7 +212,7 @@ if (isset($conversation)) {
                         <div class="text-center mb-3">
                             <span class="px-3 py-1 rounded-pill"
                                   style="background:#f0f0f0; font-family:'Mona Sans',sans-serif; font-size:11px; color:#545353;"
-                                  x-text="messages[0]?.date_formatted || ''"></span>
+                                  x-text="formatMessageDate(messages[0]?.created_at)"></span>
                         </div>
                     </template>
 
@@ -225,13 +221,14 @@ if (isset($conversation)) {
                         <div class="d-flex mb-3" :class="msg.is_mine ? 'justify-content-end' : 'justify-content-start'">
                             {{-- Other user avatar --}}
                             <div x-show="!msg.is_mine" class="flex-shrink-0 me-2 position-relative" style="width:37px; height:37px;">
-                                <img :src="otherUser?.avatar ? '/storage/' + otherUser.avatar : ''"
-                                     x-on:error="$el.style.display='none'; $el.nextElementSibling.style.display=''"
-                                     class="rounded-circle object-fit-cover"
-                                     style="width:37px; height:37px;" alt="">
                                 <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
-                                     style="width:37px; height:37px; font-size:14px; display:none;"
+                                     style="width:37px; height:37px; font-size:14px;"
                                      x-text="avatarInitial(otherUser?.name)"></div>
+                                <img x-show="otherUser?.avatar"
+                                     :src="'/storage/' + otherUser.avatar"
+                                     onerror="this.remove()"
+                                     class="rounded-circle object-fit-cover position-absolute top-0 start-0"
+                                     style="width:37px; height:37px;" alt="">
                             </div>
 
                             <div class="d-flex flex-column" :class="msg.is_mine ? 'align-items-end' : 'align-items-start'" style="max-width:70%;">
@@ -254,7 +251,7 @@ if (isset($conversation)) {
                                 <div class="d-flex align-items-center gap-1 mt-1">
                                     <span style="font-family:'Mona Sans',sans-serif; font-size:10px;"
                                           :style="msg.is_mine ? 'color:rgba(0,0,0,0.5);' : 'color:#888;'"
-                                          x-text="msg.time_formatted"></span>
+                                          x-text="formatMessageTime(msg.created_at)"></span>
                                     <span x-show="msg.is_sending" class="spinner-border spinner-border-sm"
                                           style="width:10px; height:10px;" role="status"></span>
                                     <i x-show="msg.is_mine && !msg.is_sending"
@@ -311,13 +308,14 @@ if (isset($conversation)) {
             {{-- Profile --}}
             <div class="d-flex align-items-center gap-3 mb-3">
                 <div class="flex-shrink-0 position-relative" style="width:60px; height:60px;">
-                    <img :src="otherUser?.avatar ? '/storage/' + otherUser.avatar : ''"
-                         x-on:error="$el.style.display='none'; $el.nextElementSibling.style.display=''"
-                         class="rounded-circle object-fit-cover"
-                         style="width:60px; height:60px;" alt="">
                     <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
-                         style="width:60px; height:60px; font-size:20px; display:none;"
+                         style="width:60px; height:60px; font-size:20px;"
                          x-text="avatarInitial(otherUser?.name)"></div>
+                    <img x-show="otherUser?.avatar"
+                         :src="'/storage/' + otherUser.avatar"
+                         onerror="this.remove()"
+                         class="rounded-circle object-fit-cover position-absolute top-0 start-0"
+                         style="width:60px; height:60px;" alt="">
                 </div>
                 <div>
                     <div class="fw-semibold" style="font-family:'Mona Sans',sans-serif; font-size:14px; color:#000;"
@@ -406,9 +404,7 @@ if (isset($conversation)) {
         </div>
     </div>
 </div>
-@endsection
 
-@push('scripts')
 <script>
 function chatApp(config) {
     return {
@@ -476,6 +472,18 @@ function chatApp(config) {
             } else {
                 return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
             }
+        },
+
+        // Format time from ISO string for message bubbles (browser local timezone)
+        formatMessageTime: function (dateStr) {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        },
+
+        // Format date from ISO string for date dividers (browser local timezone)
+        formatMessageDate: function (dateStr) {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         },
 
         formatPrice: function (price) {
@@ -550,8 +558,6 @@ function chatApp(config) {
                 attachment_url: this.attachmentPreview,
                 is_read: false,
                 created_at: new Date().toISOString(),
-                time_formatted: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-                date_formatted: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
                 is_mine: true,
                 is_sending: true,
                 sender_name: '{{ __('ui.you') }}',
@@ -667,8 +673,6 @@ function chatApp(config) {
                             attachment_url: data.attachment_url,
                             is_read: data.is_read,
                             created_at: data.created_at,
-                            time_formatted: data.time_formatted,
-                            date_formatted: data.date_formatted,
                             is_mine: false,
                             is_sending: false,
                             sender_name: data.sender_name,
@@ -726,4 +730,4 @@ function chatApp(config) {
     };
 }
 </script>
-@endpush
+@endsection

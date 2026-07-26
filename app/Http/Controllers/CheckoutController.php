@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductAvailability;
 use App\Models\RentalRequest;
 use App\Models\User;
+use App\Notifications\NewRentalRequest;
 use App\Services\MidtransService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -118,7 +119,7 @@ class CheckoutController extends Controller
         $user = auth()->user();
 
         abort_if(
-            $user->verification_status !== User::VERIFICATION_VERIFIED,
+            ! $user->isVerified(),
             403,
             __('ui.rental_restricted_unverified')
         );
@@ -153,6 +154,13 @@ class CheckoutController extends Controller
                 'payment_status' => RentalRequest::PAYMENT_PENDING,
             ]);
         });
+
+        // Notify product owner about the new rental request
+        $product->owner->notify(new NewRentalRequest(
+            rentalId: $rentalRequest->id,
+            productName: $product->title,
+            borrowerName: $user->name,
+        ));
 
         // ── Generate Midtrans Snap token ──
         try {

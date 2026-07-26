@@ -37,9 +37,6 @@
                             {{ __('ui.browse') }}
                         </h5>
                     @endif
-                    <p class="mb-0" style="font-family:'Mona Sans',sans-serif; font-size:13px; color: var(--text-tertiary);">
-                        {{ $products->total() }} {{ __('ui.items_found', ['count' => $products->total()]) }}
-                    </p>
                 </div>
 
                 {{-- Sort Dropdown --}}

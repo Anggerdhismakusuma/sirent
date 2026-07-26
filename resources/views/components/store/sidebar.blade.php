@@ -79,9 +79,9 @@
 
         <div class="d-flex justify-content-between mb-2">
             <span style="font-size:11px; color: var(--text-muted);">{{ __('ui.id_verification') }}</span>
-            <span style="font-size:11px; color:{{ $owner->verification_status === App\Models\User::VERIFICATION_VERIFIED ? '#00bc10' : '#dc3545' }};">
-                <i class="bi {{ $owner->verification_status === App\Models\User::VERIFICATION_VERIFIED ? 'bi-check-circle' : 'bi-x-circle' }} me-1"></i>
-                {{ $owner->verification_status === App\Models\User::VERIFICATION_VERIFIED ? __('ui.verified') : __('ui.unverified') }}
+            <span style="font-size:11px; color:{{ $owner->isVerified() ? '#00bc10' : '#dc3545' }};">
+                <i class="bi {{ $owner->isVerified() ? 'bi-check-circle' : 'bi-x-circle' }} me-1"></i>
+                {{ $owner->isVerified() ? __('ui.verified') : __('ui.unverified') }}
             </span>
         </div>
         <div class="d-flex justify-content-between mb-2">

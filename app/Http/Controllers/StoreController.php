@@ -60,7 +60,7 @@ class StoreController extends Controller
 
         $ratingComponent = $totalRatings > 0 ? ($avgRating / 5.0) * 60 : 0;
         $rentalComponent = min(25, $completedRentals * 2);
-        $verifiedComponent = $owner->verification_status === User::VERIFICATION_VERIFIED ? 15 : 0;
+        $verifiedComponent = $owner->isVerified() ? 15 : 0;
 
         $trustScore = (int) round($ratingComponent + $rentalComponent + $verifiedComponent);
 
@@ -118,6 +118,14 @@ class StoreController extends Controller
                 ->first()?->location_city
             ?? null;
 
+        $isFollowing = false;
+        if (auth()->check() && auth()->id() !== $owner->id) {
+            $isFollowing = $owner->followers()->where('follower_id', auth()->id())->exists();
+        }
+
+        // First product ID for chat start
+        $firstProductId = $products->first()?->id;
+
         return view('store.show', compact(
             'owner',
             'products',
@@ -131,6 +139,8 @@ class StoreController extends Controller
             'responseRate',
             'avgResponseMinutes',
             'storeLocation',
+            'isFollowing',
+            'firstProductId',
         ));
     }
 

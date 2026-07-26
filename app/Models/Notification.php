@@ -41,6 +41,8 @@ class Notification extends DatabaseNotification
             'App\Notifications\RentalRequestStatusChanged' => __('ui.notif_rental_status'),
             'App\Notifications\PaymentStatusChanged'       => __('ui.notif_payment_status'),
             'App\Notifications\NewMessageReceived'         => __('ui.notif_new_message'),
+            'App\Notifications\NewRentalRequest'           => __('ui.notif_new_rental'),
+            'App\Notifications\DisputeStatusChanged'       => __('ui.notif_dispute_status'),
             default => __('ui.notif_general'),
         };
     }
@@ -54,6 +56,8 @@ class Notification extends DatabaseNotification
             'App\Notifications\RentalRequestStatusChanged' => 'bi bi-box-arrow-in-right',
             'App\Notifications\PaymentStatusChanged'       => 'bi bi-credit-card',
             'App\Notifications\NewMessageReceived'         => 'bi bi-chat-dots',
+            'App\Notifications\NewRentalRequest'           => 'bi bi-inbox',
+            'App\Notifications\DisputeStatusChanged'       => 'bi bi-shield-exclamation',
             default => 'bi bi-bell',
         };
     }
@@ -70,6 +74,12 @@ class Notification extends DatabaseNotification
                 ? route('borrower.dashboard', ['tab' => 'activity'])
                 : null,
             'App\Notifications\PaymentStatusChanged' => isset($data['rental_id'])
+                ? route('borrower.dashboard', ['tab' => 'activity'])
+                : null,
+            'App\Notifications\NewRentalRequest' => isset($data['rental_id'])
+                ? route('borrower.dashboard', ['tab' => 'incoming'])
+                : null,
+            'App\Notifications\DisputeStatusChanged' => isset($data['dispute_id'])
                 ? route('borrower.dashboard', ['tab' => 'activity'])
                 : null,
             'App\Notifications\NewMessageReceived' => isset($data['conversation_id'])

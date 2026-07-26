@@ -13,3 +13,8 @@ Schedule::command('payments:expire-pending')
     ->hourly()
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('rentals:auto-reject-expired')
+    ->dailyAt('23:59')
+    ->withoutOverlapping()
+    ->runInBackground();

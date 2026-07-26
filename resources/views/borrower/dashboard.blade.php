@@ -41,11 +41,6 @@
 
                     {{-- BAGIAN ATAS (Statis - Tidak Ikut Scroll) --}}
                     <div>
-                        {{-- Logo --}}
-                        <div class="d-flex align-items-center gap-2 mb-4 ps-2">
-                            <img src="{{ asset('images/logo-sirent.svg') }}" alt="SI-RENT" width="42" height="35">
-                            <span class="font-logo text-white" style="font-size:32px;">SI-RENT</span>
-                        </div>
 
                         {{-- User Avatar --}}
                         <div class="text-center mb-3">
@@ -124,7 +119,7 @@
 
                     {{-- BAGIAN BAWAH (Statis - Terkunci di Paling Bawah) --}}
                     <div class="mt-auto pt-2 px-2" style="border-top: 1px solid rgba(255,255,255,0.1);">
-                        <a href="{{ route('about.index') }}"
+                        <a href="{{ route('about') }}"
                             class="d-flex align-items-center gap-3 text-decoration-none text-white mb-2 px-2 py-2 rounded-3"
                             style="background:rgba(255,255,255,0.08);">
                             <i class="bi bi-question-circle" style="font-size:20px;"></i>

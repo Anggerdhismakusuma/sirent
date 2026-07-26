@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Borrower;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -48,6 +49,7 @@ class ProfileController extends Controller
         // If email changed, require re-verification
         if (isset($validated['email']) && $validated['email'] !== $user->email) {
             $user->email_verified_at = null;
+            $user->verification_status = User::VERIFICATION_UNVERIFIED;
         }
 
         // If phone changed, reset WhatsApp verification

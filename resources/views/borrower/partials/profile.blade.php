@@ -229,13 +229,6 @@
                     </div>
                 </div>
                 <div class="col-sm-4 text-end">
-                    <span x-show="editing !== 'phone'"
-                          class="d-inline-block px-2 py-0 rounded-2 fw-bold me-1"
-                          :class="whatsappVerified ? 'bg-success' : 'bg-warning'"
-                          :style="whatsappVerified ? 'background:#b5d4ff!important; color:#0a1e78!important; font-family:\'Mona Sans\',sans-serif; font-size:13px;' : 'background:#fff3cd!important; color:#856404!important; font-family:\'Mona Sans\',sans-serif; font-size:13px;'">
-                        <span x-show="whatsappVerified">{{ __('ui.verified') }}</span>
-                        <span x-show="!whatsappVerified">{{ __('ui.unverified') }}</span>
-                    </span>
                     <template x-if="editing !== 'phone'">
                         <a href="#" @click.prevent="startEdit('phone')" style="font-family:'Mona Sans',sans-serif; font-size:13px; color: var(--text-primary); text-decoration:none;">{{ __('ui.edit') }}</a>
                     </template>
