@@ -44,7 +44,6 @@ Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Http\Request $requ
         event(new \Illuminate\Auth\Events\Verified($user));
     }
 
-    // Auto-login setelah email verification jika session sempat hilang
     \Illuminate\Support\Facades\Auth::login($user);
 
     return "
@@ -76,7 +75,7 @@ Route::middleware(['auth', 'account.active'])->prefix('onboarding')->name('onboa
     Route::post('/step-2', [OnboardingController::class, 'storeStep2'])->name('step2.store');
     Route::post('/step-3', [OnboardingController::class, 'storeStep3'])->name('step3.store');
     
-    // Route AJAX baru untuk memicu OTP WhatsApp dari Alpine.js
+    // Route AJAX untuk memicu pembuatan Magic Link WhatsApp
     Route::post('/verify-whatsapp', [OnboardingController::class, 'verifyWhatsApp'])->name('verify.whatsapp');
 });
 
@@ -91,14 +90,16 @@ Route::post('/locale/{locale}', function (string $locale) {
 
     return back();
 })->name('locale.switch');
+// Route PUBLIC penampung klik Magic Link dari WhatsApp
+Route::get('/onboarding/verify-whatsapp-link/{user}', [OnboardingController::class, 'verifyWhatsAppLink'])
+    ->name('onboarding.verify-whatsapp-link')
+    ->middleware(['signed']);
 
 // ============================================
 // Public Routes
 // ============================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
 Route::get('/produk', [SearchController::class, 'index'])->name('products.index');
-
 Route::get('/produk/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 Route::get('/about-us', [AboutController::class, 'index'])
@@ -155,6 +156,10 @@ Route::middleware(['auth', 'account.active'])->group(function () {
             'verified' => auth()->user()->hasVerifiedEmail()
         ]);
     });
+
+    // TAMBAHKAN SEPERTI INI: Endpoint Polling Status Verifikasi WhatsApp
+    Route::get('/api/user/check-whatsapp-status', [OnboardingController::class, 'checkWhatsAppStatus'])
+        ->name('api.user.check-whatsapp-status');
 
     Route::get('/dashboard', [\App\Http\Controllers\Borrower\DashboardController::class, 'index'])
         ->name('borrower.dashboard');

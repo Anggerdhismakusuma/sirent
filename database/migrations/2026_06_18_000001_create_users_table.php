@@ -15,6 +15,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password', 255);
             $table->string('phone', 20);
+            $table->timestamp('whatsapp_verified_at')->nullable();
             $table->string('avatar', 255)->nullable();
             $table->text('bio')->nullable();
             $table->enum('role', ['borrower', 'owner', 'admin'])->default('borrower');

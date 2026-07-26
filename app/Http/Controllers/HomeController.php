@@ -11,12 +11,12 @@ class HomeController extends Controller
     public function index()
     {
         // Redirect unverified users to onboarding
-        if (Auth::check()
-            && Auth::user()->hasVerifiedEmail()
-            && Auth::user()->verification_status === \App\Models\User::VERIFICATION_UNVERIFIED
-        ) {
-            return redirect()->route('onboarding.step1');
-        }
+        // if (Auth::check()
+        //     && Auth::user()->hasVerifiedEmail()
+        //     && Auth::user()->verification_status === \App\Models\User::VERIFICATION_UNVERIFIED
+        // ) {
+        //     return redirect()->route('onboarding.step1');
+        // }
 
         // Recomended: paginated, 12 per page
         $recomended = Product::with(['primaryImage', 'owner', 'category'])
