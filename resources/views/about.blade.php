@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Tentang SI-RENT')
+@section('title', __('ui.about.page_title'))
 
 @section('content')
 <main class="about-page">
@@ -16,17 +16,19 @@
             {{-- LEFT CONTENT --}}
             <div class="about-hero__copy">
                 <span class="about-eyebrow about-eyebrow--light">
-                    TENTANG SI-RENT
+                    {{ __('ui.about.hero.eyebrow') }}
                 </span>
 
                 <h1 class="about-hero__title">
-                    Barang yang kamu butuhkan,
-                    <span>tanpa harus selalu membeli.</span>
+                    {{ __('ui.about.hero.title') }}
+
+                    <span>
+                        {{ __('ui.about.hero.title_highlight') }}
+                    </span>
                 </h1>
 
                 <p class="about-hero__description">
-                    SI-RENT menghubungkan penyewa dengan pemilik barang dalam
-                    satu platform rental yang praktis, terjangkau, dan terpercaya.
+                    {{ __('ui.about.hero.description') }}
                 </p>
 
                 <div class="about-hero__actions">
@@ -34,14 +36,14 @@
                         href="{{ route('products.index') }}"
                         class="about-btn about-btn--primary"
                     >
-                        Mulai Sewa
+                        {{ __('ui.about.hero.start_renting') }}
                     </a>
 
                     <a
                         href="#our-business"
                         class="about-btn about-btn--outline-light"
                     >
-                        Kenali SI-RENT
+                        {{ __('ui.about.hero.learn_more') }}
                     </a>
                 </div>
             </div>
@@ -50,7 +52,7 @@
             <div class="about-hero__visual">
                 <img
                     src="{{ asset('images/logo-sirent.png') }}"
-                    alt="Logo SI-RENT"
+                    alt="{{ __('ui.about.hero.logo_alt') }}"
                     class="about-hero__logo"
                 >
             </div>
@@ -60,7 +62,7 @@
         <a
             href="#statistics"
             class="about-scroll-indicator"
-            aria-label="Lihat informasi SI-RENT"
+            aria-label="{{ __('ui.about.hero.scroll_label') }}"
         >
             <span></span>
         </a>
@@ -70,44 +72,67 @@
     {{-- =====================================================
          STATISTICS SECTION
          ===================================================== --}}
-    <section class="about-statistics" id="statistics">
+    <section
+        class="about-statistics"
+        id="statistics"
+    >
         <div class="container">
             <div class="about-statistics__wrapper">
 
                 <div class="about-statistics__intro">
                     <span class="about-eyebrow">
-                        EKOSISTEM KAMI
+                        {{ __('ui.about.statistics.eyebrow') }}
                     </span>
 
                     <h2>
-                        Membangun akses rental untuk
+                        {{ __('ui.about.statistics.title') }}
+
                         <span>
-                            menghubungkan penyewa dan pemilik barang.
+                            {{ __('ui.about.statistics.title_highlight') }}
                         </span>
                     </h2>
 
                     <p>
-                        Kami membantu masyarakat mendapatkan barang yang
-                        dibutuhkan tanpa harus membelinya, sekaligus membuka
-                        peluang bagi pemilik barang untuk memperoleh penghasilan.
+                        {{ __('ui.about.statistics.description') }}
                     </p>
                 </div>
 
                 <div class="about-statistics__grid">
-                    @foreach ($stats as $stat)
-                        <article class="about-statistic">
-                            <div class="about-statistic__number">
-                                {{ number_format($stat['value'], 0, ',', '.') }}
+                @php
+                    $statLabelKeys = [
+                        'ui.about.statistics.labels.users',
+                        'ui.about.statistics.labels.products',
+                        'ui.about.statistics.labels.stores',
+                        'ui.about.statistics.labels.transactions',
+                    ];
+                @endphp
 
-                                @if (!empty($stat['suffix']))
-                                    <sup>{{ $stat['suffix'] }}</sup>
-                                @endif
-                            </div>
+                            @foreach ($stats as $stat)
+                                <article class="about-statistic">
+                                    <div class="about-statistic__number">
+                                        {{ number_format(
+                                            $stat['value'],
+                                            0,
+                                            ',',
+                                            '.'
+                                        ) }}
 
-                            <p>{{ $stat['label'] }}</p>
-                        </article>
-                    @endforeach
-                </div>
+                                        @if (! empty($stat['suffix']))
+                                            <sup>
+                                                {{ $stat['suffix'] }}
+                                            </sup>
+                                        @endif
+                                    </div>
+
+                                    <p>
+                                        {{ __(
+                                            $statLabelKeys[$loop->index]
+                                            ?? $stat['label']
+                                        ) }}
+                                    </p>
+                                </article>
+                            @endforeach
+                        </div>
 
             </div>
         </div>
@@ -117,66 +142,70 @@
     {{-- =====================================================
          BUSINESS / VALUE SECTION
          ===================================================== --}}
-    <section class="about-business" id="our-business">
+    <section
+        class="about-business"
+        id="our-business"
+    >
         <div class="container">
 
             <header class="about-section-header">
                 <span class="about-eyebrow">
-                    KENAPA SI-RENT?
+                    {{ __('ui.about.business.eyebrow') }}
                 </span>
 
                 <h2>
-                    Satu platform untuk pengalaman rental yang
-                    lebih sederhana dan bernilai.
+                    {{ __('ui.about.business.title') }}
                 </h2>
 
                 <p>
-                    SI-RENT dirancang untuk memberikan lebih banyak pilihan,
-                    biaya yang lebih efisien, dan transaksi yang lebih aman.
+                    {{ __('ui.about.business.description') }}
                 </p>
             </header>
 
             <div class="about-value-grid">
 
+                {{-- Diverse --}}
                 <article class="about-value-card">
                     <span class="about-value-card__number">
                         01
                     </span>
 
-                    <h3>Beragam</h3>
+                    <h3>
+                        {{ __('ui.about.business.values.diverse.title') }}
+                    </h3>
 
                     <p>
-                        Temukan berbagai kategori barang dari banyak toko
-                        dalam satu platform, mulai dari kebutuhan sehari-hari,
-                        elektronik, perlengkapan acara, hingga hobi.
+                        {{ __('ui.about.business.values.diverse.description') }}
                     </p>
                 </article>
 
+                {{-- Affordable --}}
                 <article class="about-value-card">
                     <span class="about-value-card__number">
                         02
                     </span>
 
-                    <h3>Terjangkau</h3>
+                    <h3>
+                        {{ __('ui.about.business.values.affordable.title') }}
+                    </h3>
 
                     <p>
-                        Gunakan barang sesuai kebutuhan tanpa harus mengeluarkan
-                        biaya penuh untuk membelinya. Lebih hemat untuk penyewa
-                        dan lebih produktif bagi pemilik barang.
+                        {{ __('ui.about.business.values.affordable.description') }}
                     </p>
                 </article>
 
+                {{-- Trusted --}}
                 <article class="about-value-card">
                     <span class="about-value-card__number">
                         03
                     </span>
 
-                    <h3>Terpercaya</h3>
+                    <h3>
+                        {{ __('ui.about.business.values.trusted.title') }}
+                    </h3>
 
                     <p>
-                        Profil toko, informasi barang, riwayat transaksi,
-                        dan sistem rating membantu pengguna mengambil keputusan
-                        rental dengan lebih yakin.
+                        {{ __('ui.about.business.values.trusted.description') }}
                     </p>
                 </article>
 
@@ -193,16 +222,15 @@
 
         <div class="container about-final-cta__content">
             <span class="about-eyebrow about-eyebrow--light">
-                MULAI BERSAMA SI-RENT
+                {{ __('ui.about.final_cta.eyebrow') }}
             </span>
 
             <h2>
-                Siap menjadi bagian dari ekosistem rental yang lebih cerdas?
+                {{ __('ui.about.final_cta.title') }}
             </h2>
 
             <p>
-                Temukan barang yang kamu butuhkan atau mulai menghasilkan
-                pendapatan dari barang yang kamu miliki.
+                {{ __('ui.about.final_cta.description') }}
             </p>
 
             <div class="about-final-cta__actions">
@@ -210,27 +238,34 @@
                     href="{{ route('products.index') }}"
                     class="about-btn about-btn--light"
                 >
-                    Mulai Sewa
+                    {{ __('ui.about.final_cta.start_renting') }}
                 </a>
 
                 @auth
                     <a
-                        href="{{ route('borrower.dashboard') }}"
+                        href="{{ route(
+                            'borrower.dashboard',
+                            ['tab' => 'store']
+                        ) }}"
                         class="about-btn about-btn--outline-light"
                     >
-                        Buka Toko
+                        {{ __('ui.about.final_cta.open_store') }}
                     </a>
                 @else
                     <button
                         type="button"
                         class="about-btn about-btn--outline-light"
-                        onclick="window.dispatchEvent(
-                            new CustomEvent('open-auth-modal', {
-                                detail: { mode: 'login' }
-                            })
-                        )"
+                        onclick="
+                            window.dispatchEvent(
+                                new CustomEvent('open-auth-modal', {
+                                    detail: {
+                                        mode: 'login'
+                                    }
+                                })
+                            )
+                        "
                     >
-                        Buka Toko
+                        {{ __('ui.about.final_cta.open_store') }}
                     </button>
                 @endauth
             </div>

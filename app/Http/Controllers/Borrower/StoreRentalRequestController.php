@@ -42,6 +42,13 @@ class StoreRentalRequestController extends Controller
                 ]);
             }
 
+            if ($lockedRental->hasExpiredApprovalWindow()) {
+                throw ValidationException::withMessages([
+                    'rental_request' =>
+                        'Permintaan tidak dapat disetujui karena tanggal mulai peminjaman sudah lewat.',
+                ]);
+            }
+
             /*
              * Validasi ulang saat approval.
              *
@@ -134,6 +141,13 @@ class StoreRentalRequestController extends Controller
                 ]);
             }
 
+            if ($lockedRental->hasExpiredApprovalWindow()) {
+                throw ValidationException::withMessages([
+                    'rental_request' =>
+                        'Permintaan tidak dapat diproses karena tanggal mulai peminjaman sudah lewat.',
+                ]);
+            }
+
             $lockedRental->update([
                 'status' => RentalRequest::STATUS_REJECTED,
                 'rejection_reason' => $validated['rejection_reason'],
@@ -170,14 +184,11 @@ class StoreRentalRequestController extends Controller
         $transactions = RentalRequest::query()
             ->with([
                 'product.primaryImage',
+                'product.category',
                 'borrower',
-                'activeDispute',
+                'latestDispute',
             ])
             ->whereHas('product', function ($query) use ($user) {
-                /*
-                * Sesuaikan dengan kolom owner pada tabel products.
-                * Kalau products menggunakan user_id, ganti owner_id menjadi user_id.
-                */
                 $query->where('owner_id', $user->id);
             })
             ->whereIn('status', [

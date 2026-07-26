@@ -16,19 +16,21 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = null;
+        $supportedLocales = ['en', 'id'];
 
-        if (session()->has('locale')) {
-            $locale = session()->get('locale');
-        } elseif (auth()->check() && auth()->user()->language) {
+        $locale = session('locale');
+
+        if (! $locale && auth()->check()) {
             $locale = auth()->user()->language;
-            session()->put('locale', $locale);
         }
 
-        if ($locale) {
-            App::setLocale($locale);
-            Carbon::setLocale($locale);
+        if (! in_array($locale, $supportedLocales, true)) {
+            $locale = config('app.locale', 'en');
         }
+
+        App::setLocale($locale);
+
+        session()->put('locale', $locale);
 
         return $next($request);
     }

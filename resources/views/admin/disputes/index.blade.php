@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dispute Management — SI-RENT')
+@section('title', __('ui.dispute_management') . ' — SI-RENT')
 
 @section('content')
 <main class="admin-disputes-page">
@@ -13,14 +13,13 @@
                     href="{{ route('admin.dashboard') }}"
                     class="admin-page-header__back"
                 >
-                    ← Back to Dashboard
+                    ← {{ __('ui.dispute_back_to_dashboard') }}
                 </a>
 
-                <h1>Dispute Management</h1>
+                <h1>{{ __('ui.dispute_management') }}</h1>
 
                 <p>
-                    Review and manage dispute reports submitted by borrowers
-                    and store owners.
+                    {{ __('ui.dispute_subtitle') }}
                 </p>
             </div>
         </div>
@@ -35,7 +34,7 @@
         {{-- VALIDATION ERROR --}}
         @if ($errors->any())
             <div class="alert alert-danger mb-4">
-                <strong>Action failed.</strong>
+                <strong>{{ __('ui.dispute_action_failed') }}</strong>
 
                 <ul class="mb-0 mt-2">
                     @foreach ($errors->all() as $error)
@@ -54,7 +53,7 @@
             >
                 <div class="admin-filter-form__search">
                     <label for="disputeSearch">
-                        Search
+                        {{ __('ui.dispute_search') }}
                     </label>
 
                     <input
@@ -62,47 +61,47 @@
                         name="search"
                         id="disputeSearch"
                         value="{{ request('search') }}"
-                        placeholder="Search reporter, product, or reason..."
+                        placeholder="{{ __('ui.dispute_search_placeholder') }}"
                     >
                 </div>
 
                 <div class="admin-filter-form__status">
                     <label for="disputeStatusFilter">
-                        Status
+                        {{ __('ui.dispute_status') }}
                     </label>
 
                     <select
                         name="status"
                         id="disputeStatusFilter"
                     >
-                        <option value="">All Statuses</option>
+                        <option value="">{{ __('ui.dispute_all_statuses') }}</option>
 
                         <option
                             value="open"
                             @selected(request('status') === 'open')
                         >
-                            Open
+                            {{ __('ui.dispute_status_open') }}
                         </option>
 
                         <option
                             value="in_review"
                             @selected(request('status') === 'in_review')
                         >
-                            In Review
+                            {{ __('ui.dispute_status_in_review') }}
                         </option>
 
                         <option
                             value="resolved"
                             @selected(request('status') === 'resolved')
                         >
-                            Resolved
+                            {{ __('ui.dispute_status_resolved') }}
                         </option>
 
                         <option
                             value="rejected"
                             @selected(request('status') === 'rejected')
                         >
-                            Rejected
+                            {{ __('ui.dispute_status_rejected') }}
                         </option>
                     </select>
                 </div>
@@ -112,7 +111,7 @@
                         type="submit"
                         class="admin-filter-button"
                     >
-                        Apply Filter
+                        {{ __('ui.dispute_apply_filter') }}
                     </button>
 
                     @if (request()->filled('search') || request()->filled('status'))
@@ -120,7 +119,7 @@
                             href="{{ route('admin.disputes.index') }}"
                             class="admin-filter-reset"
                         >
-                            Reset
+                            {{ __('ui.dispute_reset') }}
                         </a>
                     @endif
                 </div>
@@ -131,12 +130,14 @@
         <section class="admin-table-card admin-dispute-section">
             <div class="admin-table-card__header">
                 <div>
-                    <h2>All Dispute Reports</h2>
+                    <h2>{{ __('ui.dispute_all_reports') }}</h2>
 
                     <p>
-                        {{ $disputes->total() }}
-                        dispute report{{ $disputes->total() === 1 ? '' : 's' }}
-                        found.
+                        {{ trans_choice(
+                            'ui.dispute_reports_found',
+                            $disputes->total(),
+                            ['count' => $disputes->total()]
+                        ) }}
                     </p>
                 </div>
             </div>
@@ -145,15 +146,15 @@
                 <table class="admin-data-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Reporter</th>
-                            <th>Role</th>
-                            <th>Reported Party</th>
-                            <th>Product</th>
-                            <th>Reason</th>
-                            <th>Submitted</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th>{{ __('ui.dispute_column_id') }}</th>
+                            <th>{{ __('ui.dispute_column_reporter') }}</th>
+                            <th>{{ __('ui.dispute_column_role') }}</th>
+                            <th>{{ __('ui.dispute_column_reported_party') }}</th>
+                            <th>{{ __('ui.dispute_column_product') }}</th>
+                            <th>{{ __('ui.dispute_column_reason') }}</th>
+                            <th>{{ __('ui.dispute_column_submitted') }}</th>
+                            <th>{{ __('ui.dispute_column_status') }}</th>
+                            <th>{{ __('ui.dispute_column_action') }}</th>
                         </tr>
                     </thead>
 
@@ -167,8 +168,8 @@
                                     (int) $rentalRequest?->borrower_id;
 
                                 $reporterRole = $isBorrowerReporter
-                                    ? 'Borrower'
-                                    : 'Store';
+                                    ? __('ui.dispute_role_borrower')
+                                    : __('ui.dispute_role_store');
 
                                 $reportedParty = $isBorrowerReporter
                                     ? $rentalRequest?->owner
@@ -185,9 +186,16 @@
                                     strtolower($dispute->status)
                                 );
 
-                                $statusLabel = ucwords(
-                                    str_replace('_', ' ', $dispute->status)
-                                );
+                                $statusKey =
+                                    'ui.dispute_status_' .
+                                    strtolower($dispute->status);
+
+                                $statusLabel =
+                                    \Illuminate\Support\Facades\Lang::has($statusKey)
+                                        ? __($statusKey)
+                                        : str($dispute->status)
+                                            ->replace('_', ' ')
+                                            ->title();
                             @endphp
 
                             <tr>
@@ -228,7 +236,7 @@
                                 </td>
 
                                 <td>
-                                    {{ $dispute->created_at->format('d M Y') }}
+                                    {{ $dispute->created_at->locale(app()->getLocale())->translatedFormat('d M Y') }}
                                 </td>
 
                                 <td>
@@ -247,21 +255,17 @@
                                         data-bs-toggle="modal"
                                         data-bs-target="#disputeModal{{ $dispute->id }}"
                                     >
-                                        View Detail
+                                        {{ __('ui.dispute_view_detail') }}
                                     </button>
                                 </td>
                             </tr>
-                            @include(
-                                'admin.disputes.partials.detail-modal',
-                                ['dispute' => $dispute]
-                            )
                         @empty
                             <tr>
                                 <td
                                     colspan="9"
                                     class="admin-table-empty"
                                 >
-                                    No dispute reports found.
+                                    {{ __('ui.dispute_no_reports') }}
                                 </td>
                             </tr>
                         @endforelse

@@ -130,6 +130,8 @@
                         $requestProduct = $rentalRequest->product;
                         $requestImagePath = $requestProduct?->primaryImage?->image_path;
                         $requestBorrower = $rentalRequest->borrower;
+
+                        $isExpired = $rentalRequest->hasExpiredApprovalWindow();
                     @endphp
 
                     <div class="border rounded-4 p-3 mb-3">
@@ -151,9 +153,16 @@
                                         {{ $requestProduct?->title ?? 'Product unavailable' }}
                                     </h6>
 
-                                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis">
-                                        Pending Approval
-                                    </span>
+                                    @if ($isExpired)
+                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">
+                                            <i class="bi bi-clock-history me-1"></i>
+                                            Expired
+                                        </span>
+                                    @else
+                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis">
+                                            Pending Approval
+                                        </span>
+                                    @endif
                                 </div>
 
                                 <div class="small text-muted mb-2">
@@ -216,35 +225,52 @@
 
                             <div class="col-12 col-lg-auto">
                                 <div class="d-flex flex-wrap flex-lg-column gap-2">
-                                    <form
-                                        action="{{ route(
-                                            'borrower.store.rental-requests.approve',
-                                            $rentalRequest
-                                        ) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Setujui permintaan peminjaman ini?')"
-                                    >
-                                        @csrf
-                                        @method('PATCH')
+
+                                    @if ($isExpired)
+                                        <div
+                                            class="border rounded-3 px-3 py-2 text-center bg-light"
+                                            style="min-width: 160px;"
+                                        >
+                                            <div class="fw-semibold text-secondary">
+                                                <i class="bi bi-clock-history me-1"></i>
+                                                Request Expired
+                                            </div>
+
+                                            <small class="text-muted">
+                                                Start date has passed
+                                            </small>
+                                        </div>
+                                    @else
+                                        <form
+                                            action="{{ route(
+                                                'borrower.store.rental-requests.approve',
+                                                $rentalRequest
+                                            ) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Setujui permintaan peminjaman ini?')"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-success rounded-pill px-4 w-100"
+                                            >
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Approve
+                                            </button>
+                                        </form>
 
                                         <button
-                                            type="submit"
-                                            class="btn btn-success rounded-pill px-4 w-100"
+                                            type="button"
+                                            class="btn btn-outline-danger rounded-pill px-4"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#rejectRentalRequestModal{{ $rentalRequest->id }}"
                                         >
-                                            <i class="bi bi-check-circle me-1"></i>
-                                            Approve
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Reject
                                         </button>
-                                    </form>
-
-                                    <button
-                                        type="button"
-                                        class="btn btn-outline-danger rounded-pill px-4"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#rejectRentalRequestModal{{ $rentalRequest->id }}"
-                                    >
-                                        <i class="bi bi-x-circle me-1"></i>
-                                        Reject
-                                    </button>
+                                    @endif
 
                                     @if ($requestProduct?->slug)
                                         <a
@@ -261,107 +287,109 @@
                         </div>
                     </div>
 
-                    {{-- Reject Rental Request Modal --}}
-                    <div
-                        class="modal fade"
-                        id="rejectRentalRequestModal{{ $rentalRequest->id }}"
-                        tabindex="-1"
-                        aria-labelledby="rejectRentalRequestModalLabel{{ $rentalRequest->id }}"
-                        aria-hidden="true"
-                    >
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 rounded-4">
-                                <form
-                                    action="{{ route(
-                                        'borrower.store.rental-requests.reject',
-                                        $rentalRequest
-                                    ) }}"
-                                    method="POST"
-                                >
-                                    @csrf
-                                    @method('PATCH')
+                    @if (! $isExpired)
+                        {{-- Reject Rental Request Modal --}}
+                        <div
+                            class="modal fade"
+                            id="rejectRentalRequestModal{{ $rentalRequest->id }}"
+                            tabindex="-1"
+                            aria-labelledby="rejectRentalRequestModalLabel{{ $rentalRequest->id }}"
+                            aria-hidden="true"
+                        >
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4">
+                                    <form
+                                        action="{{ route(
+                                            'borrower.store.rental-requests.reject',
+                                            $rentalRequest
+                                        ) }}"
+                                        method="POST"
+                                    >
+                                        @csrf
+                                        @method('PATCH')
 
-                                    <div class="modal-header border-0 px-4 pt-4">
-                                        <div>
-                                            <h5
-                                                class="modal-title fw-bold text-danger"
-                                                id="rejectRentalRequestModalLabel{{ $rentalRequest->id }}"
-                                            >
-                                                Reject Rental Request
-                                            </h5>
+                                        <div class="modal-header border-0 px-4 pt-4">
+                                            <div>
+                                                <h5
+                                                    class="modal-title fw-bold text-danger"
+                                                    id="rejectRentalRequestModalLabel{{ $rentalRequest->id }}"
+                                                >
+                                                    Reject Rental Request
+                                                </h5>
 
-                                            <small class="text-muted">
-                                                Explain why this request cannot be accepted.
-                                            </small>
+                                                <small class="text-muted">
+                                                    Explain why this request cannot be accepted.
+                                                </small>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                class="btn-close"
+                                                data-bs-dismiss="modal"
+                                                aria-label="Close"
+                                            ></button>
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="modal"
-                                            aria-label="Close"
-                                        ></button>
-                                    </div>
+                                        <div class="modal-body px-4">
+                                            <div class="mb-3">
+                                                <label
+                                                    for="rejectionReason{{ $rentalRequest->id }}"
+                                                    class="form-label fw-semibold"
+                                                >
+                                                    Rejection Reason
+                                                </label>
 
-                                    <div class="modal-body px-4">
-                                        <div class="mb-3">
-                                            <label
-                                                for="rejectionReason{{ $rentalRequest->id }}"
-                                                class="form-label fw-semibold"
-                                            >
-                                                Rejection Reason
-                                            </label>
+                                                <textarea
+                                                    id="rejectionReason{{ $rentalRequest->id }}"
+                                                    name="rejection_reason"
+                                                    class="form-control"
+                                                    rows="4"
+                                                    maxlength="500"
+                                                    placeholder="Example: The item is undergoing maintenance during the selected period."
+                                                    required
+                                                ></textarea>
 
-                                            <textarea
-                                                id="rejectionReason{{ $rentalRequest->id }}"
-                                                name="rejection_reason"
-                                                class="form-control"
-                                                rows="4"
-                                                maxlength="500"
-                                                placeholder="Example: The item is undergoing maintenance during the selected period."
-                                                required
-                                            ></textarea>
-
-                                            <small class="text-muted">
-                                                This reason will be shown to the renter.
-                                            </small>
+                                                <small class="text-muted">
+                                                    This reason will be shown to the renter.
+                                                </small>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="modal-footer border-0 px-4 pb-4">
-                                        <button
-                                            type="button"
-                                            class="btn btn-light rounded-pill px-4"
-                                            data-bs-dismiss="modal"
-                                        >
-                                            Cancel
-                                        </button>
+                                        <div class="modal-footer border-0 px-4 pb-4">
+                                            <button
+                                                type="button"
+                                                class="btn btn-light rounded-pill px-4"
+                                                data-bs-dismiss="modal"
+                                            >
+                                                Cancel
+                                            </button>
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-danger rounded-pill px-4"
-                                        >
-                                            Reject Request
-                                        </button>
-                                    </div>
-                                </form>
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger rounded-pill px-4"
+                                            >
+                                                Reject Request
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <div class="text-center border rounded-4 p-4">
-                        <div class="fs-2 text-muted mb-2">
-                            <i class="bi bi-inbox"></i>
+                @endif
+                    @empty
+                        <div class="text-center border rounded-4 p-4">
+                            <div class="fs-2 text-muted mb-2">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+
+                            <h6 class="fw-bold mb-1">No pending rental requests</h6>
+
+                            <p class="text-muted small mb-0">
+                                New rental requests for your store will appear here.
+                            </p>
                         </div>
-
-                        <h6 class="fw-bold mb-1">No pending rental requests</h6>
-
-                        <p class="text-muted small mb-0">
-                            New rental requests for your store will appear here.
-                        </p>
-                    </div>
-                @endforelse
-            </div>
+                    @endforelse
+                </div>
 
             {{-- Recent Store Transactions --}}
             @php
@@ -381,6 +409,13 @@
                     'in_review' => 'bg-primary-subtle text-primary-emphasis',
                     'resolved' => 'bg-success-subtle text-success-emphasis',
                     'rejected' => 'bg-danger-subtle text-danger-emphasis',
+                ];
+
+                $disputeStatusLabels = [
+                    'open' => 'Open',
+                    'in_review' => 'In Review',
+                    'resolved' => 'Approved',
+                    'rejected' => 'Rejected',
                 ];
             @endphp
 
@@ -436,13 +471,33 @@
                                     $statusClass = $transactionStatusClasses[$status]
                                         ?? 'bg-light text-dark';
 
-                                    $hasActiveDispute = (bool) $transaction->activeDispute;
+                                    $latestDispute = $transaction->latestDispute;
+
+                                    $hasDispute = (bool) $latestDispute;
+
+                                    $isDisputePending = $latestDispute && in_array(
+                                        $latestDispute->status,
+                                        [
+                                            \App\Models\Dispute::STATUS_OPEN,
+                                            \App\Models\Dispute::STATUS_IN_REVIEW,
+                                        ],
+                                        true
+                                    );
+
+                                    $isDisputeFinished = $latestDispute && in_array(
+                                        $latestDispute->status,
+                                        [
+                                            \App\Models\Dispute::STATUS_RESOLVED,
+                                            \App\Models\Dispute::STATUS_REJECTED,
+                                        ],
+                                        true
+                                    );
 
                                     $canDispute = in_array(
                                         $status,
                                         ['APPROVED', 'ONGOING', 'COMPLETED'],
                                         true
-                                    ) && !$hasActiveDispute;
+                                    ) && ! $hasDispute;
 
                                     $imagePath = $product?->primaryImage?->image_path;
                                 @endphp
@@ -519,18 +574,25 @@
                                             {{ ucfirst(strtolower($status)) }}
                                         </span>
 
-                                        @if ($transaction->activeDispute)
+                                        @if ($latestDispute)
                                             @php
-                                                $disputeStatus = $transaction->activeDispute->status;
+                                                $disputeStatus = $latestDispute->status;
 
                                                 $disputeStatusClass = $disputeStatusClasses[$disputeStatus]
                                                     ?? 'bg-secondary-subtle text-secondary-emphasis';
+
+                                                $disputeStatusLabel = $disputeStatusLabels[$disputeStatus]
+                                                    ?? ucwords(str_replace('_', ' ', $disputeStatus));
                                             @endphp
 
                                             <div class="mt-1">
-                                                <span class="badge rounded-pill {{ $disputeStatusClass }}">
-                                                    Dispute:
-                                                    {{ ucwords(str_replace('_', ' ', $disputeStatus)) }}
+                                                <span
+                                                    class="badge rounded-pill {{ $disputeStatusClass }}"
+                                                    @if ($latestDispute->resolution)
+                                                        title="{{ $latestDispute->resolution }}"
+                                                    @endif
+                                                >
+                                                    Dispute: {{ $disputeStatusLabel }}
                                                 </span>
                                             </div>
                                         @endif
@@ -547,10 +609,18 @@
                                                 <i class="bi bi-exclamation-triangle me-1"></i>
                                                 Raise Dispute
                                             </button>
-                                        @elseif ($hasActiveDispute)
+
+                                        @elseif ($isDisputePending)
                                             <span class="small text-muted">
+                                                <i class="bi bi-hourglass-split me-1"></i>
                                                 Waiting for admin
                                             </span>
+
+                                        @elseif ($isDisputeFinished)
+                                            <span class="small text-muted">
+                                                —
+                                            </span>
+
                                         @else
                                             <span class="small text-muted">
                                                 No action
@@ -591,7 +661,7 @@
                         $modalStatus,
                         ['APPROVED', 'ONGOING', 'COMPLETED'],
                         true
-                    ) && !$transaction->activeDispute;
+                    ) && ! $transaction->latestDispute;
                 @endphp
 
                 @if ($modalCanDispute)

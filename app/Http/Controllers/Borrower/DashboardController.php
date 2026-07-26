@@ -462,8 +462,9 @@ class DashboardController extends Controller
             $recentSellerTransactions = RentalRequest::query()
                 ->with([
                     'product.primaryImage',
+                    'product.category',
                     'borrower',
-                    'activeDispute',
+                    'latestDispute',
                 ])
                 ->whereHas('product', function ($query) use ($user) {
                     $query->where('owner_id', $user->id);
