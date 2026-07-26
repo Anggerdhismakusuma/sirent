@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Dashboard — SI-RENT')
+@section('title', __('ui.admin_dashboard_title') . ' — SI-RENT')
 
 @section('content')
 <div class="admin-dashboard-wrapper">
@@ -9,85 +9,123 @@
         {{-- HEADER --}}
         <div class="admin-header">
             <div>
-                <h1>Admin Dashboard</h1>
-                <p>Operational control center for SI-RENT platform.</p>
+                <h1>{{ __('ui.admin_dashboard_title') }}</h1>
+                <p>{{ __('ui.admin_dashboard_subtitle') }}</p>
             </div>
 
-            <form
-                action="{{ route('auth.logout') }}"
-                method="POST"
-                class="admin-logout-form"
-            >
-                @csrf
+            <div class="admin-header__actions">
 
-                <button
-                    type="submit"
-                    class="admin-logout-button"
+                {{-- LANGUAGE SWITCHER --}}
+                <div class="admin-language-switcher">
+                    <form
+                        action="{{ route('locale.switch', 'en') }}"
+                        method="POST"
+                    >
+                        @csrf
+
+                        <button
+                            type="submit"
+                            class="admin-language-button
+                                {{ app()->isLocale('en') ? 'active' : '' }}"
+                        >
+                            EN
+                        </button>
+                    </form>
+
+                    <form
+                        action="{{ route('locale.switch', 'id') }}"
+                        method="POST"
+                    >
+                        @csrf
+
+                        <button
+                            type="submit"
+                            class="admin-language-button
+                                {{ app()->isLocale('id') ? 'active' : '' }}"
+                        >
+                            ID
+                        </button>
+                    </form>
+                </div>
+
+                {{-- LOGOUT --}}
+                <form
+                    action="{{ route('auth.logout') }}"
+                    method="POST"
+                    class="admin-logout-form"
                 >
-                    Logout
-                </button>
-            </form>
+                    @csrf
+
+                    <button
+                        type="submit"
+                        class="admin-logout-button"
+                    >
+                        {{ __('ui.logout') }}
+                    </button>
+                </form>
+
+            </div>
         </div>
 
         {{-- STATS --}}
         <div class="admin-stats-grid">
             <div class="admin-stat-card">
-                <small>Total Users</small>
+                <small>{{ __('ui.admin_total_users') }}</small>
                 <h3>{{ $stats['total_users'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Borrowers</small>
+                <small>{{ __('ui.admin_borrowers') }}</small>
                 <h3>{{ $stats['total_borrowers'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Owners</small>
+                <small>{{ __('ui.admin_owners') }}</small>
                 <h3>{{ $stats['total_owners'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Admins</small>
+                <small>{{ __('ui.admin_admins') }}</small>
                 <h3>{{ $stats['total_admins'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Suspended User</small>
+                <small>{{ __('ui.admin_suspended_users') }}</small>
                 <h3>{{ $stats['suspended_user'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Total Products</small>
+                <small>{{ __('ui.admin_total_products') }}</small>
                 <h3>{{ $stats['total_products'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Active Products</small>
+                <small>{{ __('ui.admin_active_products') }}</small>
                 <h3>{{ $stats['active_products'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Total Rentals</small>
+                <small>{{ __('ui.admin_total_rentals') }}</small>
                 <h3>{{ $stats['total_rentals'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Pending Rentals</small>
+                <small>{{ __('ui.admin_pending_rentals') }}</small>
                 <h3>{{ $stats['pending_rentals'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Ongoing Rentals</small>
+                <small>{{ __('ui.admin_ongoing_rentals') }}</small>
                 <h3>{{ $stats['ongoing_rentals'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Completed Rentals</small>
+                <small>{{ __('ui.admin_completed_rentals') }}</small>
                 <h3>{{ $stats['completed_rentals'] ?? 0 }}</h3>
             </div>
 
             <div class="admin-stat-card">
-                <small>Completed Revenue</small>
+                <small>{{ __('ui.admin_completed_revenue') }}</small>
                 <h3>Rp {{ number_format($stats['total_completed_revenue'] ?? 0, 0, ',', '.') }}</h3>
             </div>
         </div>
@@ -95,31 +133,47 @@
         {{-- SUMMARY ROW --}}
         <div class="admin-summary-grid">
             <div class="admin-panel">
-                <h5>Rental Status Summary</h5>
+                <h5>{{ __('ui.admin_rental_status_summary') }}</h5>
 
                 <div class="admin-status-list">
                     @forelse (($rentalStatusSummary ?? []) as $status => $total)
+                        @php
+                            $statusKey = 'ui.status_' . strtolower($status);
+
+                            $statusLabel = \Illuminate\Support\Facades\Lang::has($statusKey)
+                                ? __($statusKey)
+                                : str($status)->replace('_', ' ')->title();
+                        @endphp
+
                         <div class="admin-status-item">
-                            <span>{{ ucfirst($status) }}</span>
+                            <span>{{ $statusLabel }}</span>
                             <strong>{{ $total }}</strong>
                         </div>
                     @empty
-                        <p class="text-muted mb-0">No rental data found.</p>
+                        <p class="text-muted mb-0">{{ __('ui.admin_no_rental_data') }}</p>
                     @endforelse
                 </div>
             </div>
 
             <div class="admin-panel">
-                <h5>Product Status Summary</h5>
+                <h5>{{ __('ui.admin_product_status_summary') }}</h5>
 
                 <div class="admin-status-list">
                     @forelse (($productStatusSummary ?? []) as $status => $total)
+                        @php
+                            $statusKey = 'ui.status_' . strtolower($status);
+
+                            $statusLabel = \Illuminate\Support\Facades\Lang::has($statusKey)
+                                ? __($statusKey)
+                                : str($status)->replace('_', ' ')->title();
+                        @endphp
+
                         <div class="admin-status-item">
-                            <span>{{ ucfirst($status) }}</span>
+                            <span>{{ $statusLabel }}</span>
                             <strong>{{ $total }}</strong>
                         </div>
                     @empty
-                        <p class="text-muted mb-0">No product data found.</p>
+                        <p class="text-muted mb-0">{{ __('ui.admin_no_product_data') }}</p>
                     @endforelse
                 </div>
             </div>
@@ -131,14 +185,14 @@
             {{-- Latest Users --}}
             <div class="admin-panel">
                 <div class="admin-panel-header">
-                    <h5>Latest Users</h5>
+                    <h5>{{ __('ui.admin_latest_users') }}</h5>
                     <button
                         type="button"
                         class="admin-card-action"
                         data-bs-toggle="modal"
                         data-bs-target="#allUsersModal"
                     >
-                        View All Users
+                        {{ __('ui.admin_view_all_users') }}
                     </button>
                 </div>
 
@@ -146,10 +200,10 @@
                     <table class="table admin-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
+                                <th>{{ __('ui.name') }}</th>
+                                <th>{{ __('ui.email') }}</th>
+                                <th>{{ __('ui.admin_role') }}</th>
+                                <th>{{ __('ui.admin_status') }}</th>
                             </tr>
                         </thead>
 
@@ -159,8 +213,14 @@
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
 
+                                    @php
+                                        $roleKey = 'ui.admin_role_' . strtolower($user->role);
+                                    @endphp
+
                                     <td>
-                                        {{ ucfirst(strtolower($user->role)) }}
+                                        {{ \Illuminate\Support\Facades\Lang::has($roleKey)
+                                            ? __($roleKey)
+                                            : ucfirst(strtolower($user->role)) }}
                                     </td>
 
                                     <td>
@@ -170,7 +230,15 @@
                                                 ? 'user-status-badge--active'
                                                 : 'user-status-badge--suspended' }}"
                                         >
-                                            {{ ucfirst(strtolower($user->account_status)) }}
+                                            @php
+                                                $accountStatusKey =
+                                                    'ui.admin_status_' .
+                                                    strtolower($user->account_status);
+                                            @endphp
+
+                                            {{ \Illuminate\Support\Facades\Lang::has($accountStatusKey)
+                                                ? __($accountStatusKey)
+                                                : ucfirst(strtolower($user->account_status)) }}
                                         </span>
                                     </td>
                                 </tr>
@@ -184,15 +252,15 @@
             <div class="admin-panel product-category-card">
                 <div class="admin-panel-header">
                     <div>
-                        <h5>Products by Category</h5>
+                        <h5>{{ __('ui.admin_products_by_category') }}</h5>
                         <p class="product-category-card__subtitle">
-                            Distribution of active products.
+                            {{ __('ui.admin_active_product_distribution') }}
                         </p>
                     </div>
 
                     <div class="product-category-card__total">
                         <strong>{{ $totalActiveProducts ?? 0 }}</strong>
-                        <span>Active Products</span>
+                        <span>{{ __('ui.admin_active_products') }}</span>
                     </div>
                 </div>
 
@@ -203,7 +271,7 @@
                         <div class="product-category-card__chart">
                             <canvas
                                 id="productCategoryChart"
-                                aria-label="Product distribution by category"
+                                aria-label="{{ __('ui.admin_product_distribution_aria') }}"
                                 role="img"
                             ></canvas>
                         </div>
@@ -214,7 +282,7 @@
                                 @php
                                     $categoryName =
                                         $stat->category?->name
-                                        ?? 'Tanpa Kategori';
+                                        ?? __('ui.admin_uncategorized');
 
                                     $percentage = ($totalActiveProducts ?? 0) > 0
                                         ? round(
@@ -245,7 +313,7 @@
                     </div>
                 @else
                     <div class="product-category-card__empty">
-                        No active products found.
+                        {{ __('ui.admin_no_active_products') }}
                     </div>
                 @endif
             </div>
@@ -257,10 +325,10 @@
 
                 <div class="admin-table-card__header">
                     <div>
-                        <h2>Disputes Requiring Attention</h2>
+                        <h2>{{ __('ui.admin_disputes_attention') }}</h2>
 
                         <p>
-                            Oldest unresolved dispute reports.
+                            {{ __('ui.admin_oldest_unresolved_disputes') }}
                         </p>
                     </div>
 
@@ -268,7 +336,7 @@
                         href="{{ route('admin.disputes.index') }}"
                         class="admin-table-card__link"
                     >
-                        View All Disputes
+                        {{ __('ui.admin_view_all_disputes') }}
                     </a>
                 </div>
 
@@ -277,14 +345,14 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Reporter</th>
-                                <th>Role</th>
-                                <th>Reported Party</th>
-                                <th>Product</th>
-                                <th>Reason</th>
-                                <th>Age</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th>{{ __('ui.dispute_column_reporter') }}</th>
+                                <th>{{ __('ui.admin_role') }}</th>
+                                <th>{{ __('ui.dispute_column_reported_party') }}</th>
+                                <th>{{ __('ui.dispute_column_product') }}</th>
+                                <th>{{ __('ui.dispute_column_reason') }}</th>
+                                <th>{{ __('ui.admin_age') }}</th>
+                                <th>{{ __('ui.admin_status') }}</th>
+                                <th>{{ __('ui.admin_action') }}</th>
                             </tr>
                         </thead>
 
@@ -298,8 +366,8 @@
                                         (int) $rentalRequest?->borrower_id;
 
                                     $reporterRole = $isBorrowerReporter
-                                        ? 'Borrower'
-                                        : 'Store';
+                                        ? __('ui.dispute_role_borrower')
+                                        : __('ui.dispute_role_store');
 
                                     $reportedParty = $isBorrowerReporter
                                         ? $rentalRequest?->owner
@@ -309,6 +377,19 @@
                                         $rentalRequest?->product?->name
                                         ?? $rentalRequest?->product?->title
                                         ?? '-';
+
+                                    $disputeStatusKey =
+                                        'ui.dispute_status_' .
+                                        strtolower($dispute->status);
+
+                                    $disputeStatusLabel =
+                                        \Illuminate\Support\Facades\Lang::has(
+                                            $disputeStatusKey
+                                        )
+                                            ? __($disputeStatusKey)
+                                            : str($dispute->status)
+                                                ->replace('_', ' ')
+                                                ->title();
                                 @endphp
 
                                 <tr>
@@ -347,7 +428,7 @@
                                     </td>
 
                                     <td>
-                                        {{ $dispute->created_at->diffForHumans() }}
+                                        {{ $dispute->created_at->locale(app()->getLocale())->diffForHumans() }}
                                     </td>
 
                                     <td>
@@ -359,9 +440,7 @@
                                                     $dispute->status
                                                 ) }}"
                                         >
-                                            {{ str($dispute->status)
-                                                ->replace('_', ' ')
-                                                ->title() }}
+                                            {{ $disputeStatusLabel }}
                                         </span>
                                     </td>
 
@@ -372,19 +451,15 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#disputeModal{{ $dispute->id }}"
                                         >
-                                            View
+                                            {{ __('ui.dispute_view') }}
                                         </button>
                                     </td>
                                 </tr>
 
-                                @include(
-                                    'admin.disputes.partials.detail-modal',
-                                    ['dispute' => $dispute]
-                                )
                             @empty
                                 <tr>
                                     <td colspan="9" class="admin-table-empty">
-                                        No unresolved disputes.
+                                        {{ __('ui.admin_no_unresolved_disputes') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -396,6 +471,15 @@
         </div>
     </div>
 </div>
+
+{{-- Dispute modals are outside the table to keep the HTML structure valid. --}}
+@foreach ($oldestDisputes as $dispute)
+    @include(
+        'admin.disputes.partials.detail-modal',
+        ['dispute' => $dispute]
+    )
+@endforeach
+
 <div
     class="modal fade"
     id="allUsersModal"
@@ -412,11 +496,15 @@
                         class="modal-title"
                         id="allUsersModalLabel"
                     >
-                        All Users
+                        {{ __('ui.admin_all_users') }}
                     </h5>
 
                     <p>
-                        {{ $allUsers->count() }} registered users
+                        {{ trans_choice(
+                            'ui.admin_registered_users',
+                            $allUsers->count(),
+                            ['count' => $allUsers->count()]
+                        ) }}
                     </p>
                 </div>
 
@@ -424,7 +512,7 @@
                     type="button"
                     class="btn-close"
                     data-bs-dismiss="modal"
-                    aria-label="Close"
+                    aria-label="{{ __('ui.close') }}"
                 ></button>
             </div>
 
@@ -434,7 +522,7 @@
                     <input
                         type="search"
                         id="allUsersSearch"
-                        placeholder="Search name, email, role, or status..."
+                        placeholder="{{ __('ui.admin_search_users_placeholder') }}"
                         autocomplete="off"
                     >
                 </div>
@@ -443,12 +531,12 @@
                     <table class="admin-data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th>Action</th>
+                                <th>{{ __('ui.name') }}</th>
+                                <th>{{ __('ui.email') }}</th>
+                                <th>{{ __('ui.admin_role') }}</th>
+                                <th>{{ __('ui.admin_status') }}</th>
+                                <th>{{ __('ui.admin_joined') }}</th>
+                                <th>{{ __('ui.admin_action') }}</th>
                             </tr>
                         </thead>
 
@@ -460,8 +548,16 @@
                                     <td>{{ $user->email }}</td>
 
                                     <td>
+                                        @php
+                                            $roleKey =
+                                                'ui.admin_role_' .
+                                                strtolower($user->role);
+                                        @endphp
+
                                         <span class="user-role-badge">
-                                            {{ ucfirst(strtolower($user->role)) }}
+                                            {{ \Illuminate\Support\Facades\Lang::has($roleKey)
+                                                ? __($roleKey)
+                                                : ucfirst(strtolower($user->role)) }}
                                         </span>
                                     </td>
 
@@ -472,30 +568,42 @@
                                                 ? 'user-status-badge--active'
                                                 : 'user-status-badge--suspended' }}"
                                         >
-                                            {{ ucfirst(strtolower($user->account_status)) }}
+                                            @php
+                                                $accountStatusKey =
+                                                    'ui.admin_status_' .
+                                                    strtolower($user->account_status);
+                                            @endphp
+
+                                            {{ \Illuminate\Support\Facades\Lang::has($accountStatusKey)
+                                                ? __($accountStatusKey)
+                                                : ucfirst(strtolower($user->account_status)) }}
                                         </span>
                                     </td>
 
                                     <td>
-                                        {{ $user->created_at->format('d M Y') }}
+                                        {{ $user->created_at->locale(app()->getLocale())->translatedFormat('d M Y') }}
                                     </td>
 
                                     <td>
                                         @if (auth()->user()->is($user))
                                             <span class="admin-user-protected">
-                                                Current User
+                                                {{ __('ui.admin_current_user') }}
                                             </span>
 
                                         @elseif ($user->role === \App\Models\User::ROLE_ADMIN)
                                             <span class="admin-user-protected">
-                                                Protected
+                                                {{ __('ui.admin_protected') }}
                                             </span>
 
                                         @elseif ($user->account_status === \App\Models\User::ACCOUNT_ACTIVE)
                                             <form
                                                 action="{{ route('admin.users.update-status', $user) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Suspend akun {{ $user->name }}?')"
+                                                onsubmit="return confirm(@js(
+                                                    __('ui.admin_confirm_suspend', [
+                                                        'name' => $user->name,
+                                                    ])
+                                                ))"
                                             >
                                                 @csrf
                                                 @method('PATCH')
@@ -510,14 +618,18 @@
                                                     type="submit"
                                                     class="admin-user-action admin-user-action--suspend"
                                                 >
-                                                    Suspend
+                                                    {{ __('ui.admin_suspend') }}
                                                 </button>
                                             </form>
                                         @else
                                             <form
                                                 action="{{ route('admin.users.update-status', $user) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Aktifkan kembali akun {{ $user->name }}?')"
+                                                onsubmit="return confirm(@js(
+                                                    __('ui.admin_confirm_activate', [
+                                                        'name' => $user->name,
+                                                    ])
+                                                ))"
                                             >
                                                 @csrf
                                                 @method('PATCH')
@@ -532,7 +644,7 @@
                                                     type="submit"
                                                     class="admin-user-action admin-user-action--activate"
                                                 >
-                                                    Activate
+                                                    {{ __('ui.admin_activate') }}
                                                 </button>
                                             </form>
                                         @endif
@@ -547,7 +659,7 @@
                     id="allUsersEmptySearch"
                     class="admin-users-modal__empty d-none"
                 >
-                    No users match your search.
+                    {{ __('ui.admin_no_users_match') }}
                 </div>
 
             </div>

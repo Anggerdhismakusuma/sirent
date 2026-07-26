@@ -2461,3 +2461,63 @@ body {
     padding: 14px 12px;
     white-space: nowrap;
 }
+
+.admin-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-language-switcher {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    form {
+        margin: 0;
+    }
+}
+
+.admin-language-button {
+    min-width: 42px;
+    padding: 8px 12px;
+
+    border: 1px solid var(--border-default, #d4d4d4);
+    border-radius: 8px;
+
+    background: var(--bg-surface, #ffffff);
+    color: var(--text-secondary, #5c5c5c);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+
+    &:hover {
+        border-color: var(--primary-blue, #0031e1);
+        color: var(--primary-blue, #0031e1);
+    }
+
+    &.active {
+        border-color: var(--primary-blue, #0031e1);
+        background: var(--primary-blue, #0031e1);
+        color: #ffffff;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .admin-header__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

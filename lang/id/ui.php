@@ -147,14 +147,65 @@ return [
     // ============================================
     // About Page
     // ============================================
-    'about_title' => 'Tentang Kami — SI-RENT',
-    'about_hero' => 'Kami adalah platform multi-vendor yang menyediakan layanan penyewaan peralatan hobi, seperti kamera, drone, dan alat lainnya, dengan menjaga dan menjamin keamanan antara penyewa dan pemilik barang.',
-    'variety' => 'Beragam',
-    'variety_desc' => 'Temukan semua jenis perlengkapan hobi dalam satu tempat.',
-    'affordable' => 'Terjangkau',
-    'affordable_desc' => 'Sewa peralatan berkualitas tanpa mengeluarkan biaya berlebih.',
-    'trusted' => 'Terpercaya',
-    'trusted_desc' => 'Transaksi aman antara penyewa dan pemilik.',
+    'about' => [
+        'page_title' => 'Tentang SI-RENT',
+
+        'hero' => [
+            'eyebrow' => 'TENTANG SI-RENT',
+            'title' => 'Barang yang kamu butuhkan,',
+            'title_highlight' => 'tanpa harus selalu membeli.',
+            'description' => 'SI-RENT menghubungkan penyewa dengan pemilik barang dalam satu platform rental yang praktis, terjangkau, dan terpercaya.',
+            'start_renting' => 'Mulai Sewa',
+            'learn_more' => 'Kenali SI-RENT',
+            'logo_alt' => 'Logo SI-RENT',
+            'scroll_label' => 'Lihat informasi SI-RENT',
+        ],
+
+        'statistics' => [
+            'eyebrow' => 'EKOSISTEM KAMI',
+            'title' => 'Membangun akses rental untuk',
+            'title_highlight' => 'menghubungkan penyewa dan pemilik barang.',
+            'description' => 'Kami membantu masyarakat mendapatkan barang yang dibutuhkan tanpa harus membelinya, sekaligus membuka peluang bagi pemilik barang untuk memperoleh penghasilan.',
+
+            'labels' => [
+                'users' => 'Pengguna Terdaftar',
+                'products' => 'Barang Tersedia',
+                'stores' => 'Toko Aktif',
+                'transactions' => 'Transaksi Rental',
+            ],
+        ],
+
+        'business' => [
+            'eyebrow' => 'KENAPA SI-RENT?',
+            'title' => 'Satu platform untuk pengalaman rental yang lebih sederhana dan bernilai.',
+            'description' => 'SI-RENT dirancang untuk memberikan lebih banyak pilihan, biaya yang lebih efisien, dan transaksi yang lebih aman.',
+
+            'values' => [
+                'diverse' => [
+                    'title' => 'Beragam',
+                    'description' => 'Temukan berbagai kategori barang dari banyak toko dalam satu platform, mulai dari kebutuhan sehari-hari, elektronik, perlengkapan acara, hingga hobi.',
+                ],
+
+                'affordable' => [
+                    'title' => 'Terjangkau',
+                    'description' => 'Gunakan barang sesuai kebutuhan tanpa harus mengeluarkan biaya penuh untuk membelinya. Lebih hemat untuk penyewa dan lebih produktif bagi pemilik barang.',
+                ],
+
+                'trusted' => [
+                    'title' => 'Terpercaya',
+                    'description' => 'Profil toko, informasi barang, riwayat transaksi, dan sistem rating membantu pengguna mengambil keputusan rental dengan lebih yakin.',
+                ],
+            ],
+        ],
+
+        'final_cta' => [
+            'eyebrow' => 'MULAI BERSAMA SI-RENT',
+            'title' => 'Siap menjadi bagian dari ekosistem rental yang lebih cerdas?',
+            'description' => 'Temukan barang yang kamu butuhkan atau mulai menghasilkan pendapatan dari barang yang kamu miliki.',
+            'start_renting' => 'Mulai Sewa',
+            'open_store' => 'Buka Toko',
+        ],
+    ],
 
     // ============================================
     // Dashboard
@@ -406,4 +457,111 @@ return [
     'reviews_tab' => 'Ulasan',
     'about_tab' => 'Tentang',
     'all_time' => 'Semua Waktu',
+
+    // ============================================
+    // Dashboard Admin & Manajemen Sengketa
+    // ============================================
+    'admin_dashboard_title' => 'Dashboard Admin',
+    'admin_dashboard_subtitle' => 'Pusat kendali operasional platform SI-RENT.',
+    'admin_total_users' => 'Total Pengguna',
+    'admin_borrowers' => 'Peminjam',
+    'admin_owners' => 'Pemilik Toko',
+    'admin_admins' => 'Admin',
+    'admin_suspended_users' => 'Pengguna Ditangguhkan',
+    'admin_total_products' => 'Total Produk',
+    'admin_active_products' => 'Produk Aktif',
+    'admin_total_rentals' => 'Total Penyewaan',
+    'admin_pending_rentals' => 'Penyewaan Menunggu',
+    'admin_ongoing_rentals' => 'Penyewaan Berjalan',
+    'admin_completed_rentals' => 'Penyewaan Selesai',
+    'admin_completed_revenue' => 'Pendapatan Selesai',
+    'admin_rental_status_summary' => 'Ringkasan Status Penyewaan',
+    'admin_product_status_summary' => 'Ringkasan Status Produk',
+    'admin_no_rental_data' => 'Data penyewaan tidak ditemukan.',
+    'admin_no_product_data' => 'Data produk tidak ditemukan.',
+    'admin_latest_users' => 'Pengguna Terbaru',
+    'admin_view_all_users' => 'Lihat Semua Pengguna',
+    'admin_role' => 'Peran',
+    'admin_status' => 'Status',
+    'admin_products_by_category' => 'Produk Berdasarkan Kategori',
+    'admin_active_product_distribution' => 'Distribusi produk aktif.',
+    'admin_product_distribution_aria' => 'Distribusi produk berdasarkan kategori',
+    'admin_uncategorized' => 'Tanpa Kategori',
+    'admin_no_active_products' => 'Produk aktif tidak ditemukan.',
+    'admin_disputes_attention' => 'Sengketa yang Memerlukan Perhatian',
+    'admin_oldest_unresolved_disputes' => 'Laporan sengketa belum selesai yang paling lama.',
+    'admin_view_all_disputes' => 'Lihat Semua Sengketa',
+    'admin_age' => 'Umur Laporan',
+    'admin_action' => 'Aksi',
+    'admin_no_unresolved_disputes' => 'Tidak ada sengketa yang belum diselesaikan.',
+    'admin_all_users' => 'Semua Pengguna',
+    'admin_registered_users' => '{0} Tidak ada pengguna terdaftar|[1,*] :count pengguna terdaftar',
+    'admin_search_users_placeholder' => 'Cari nama, email, peran, atau status...',
+    'admin_joined' => 'Bergabung',
+    'admin_current_user' => 'Pengguna Saat Ini',
+    'admin_protected' => 'Dilindungi',
+    'admin_suspend' => 'Tangguhkan',
+    'admin_activate' => 'Aktifkan',
+    'admin_confirm_suspend' => 'Tangguhkan akun :name?',
+    'admin_confirm_activate' => 'Aktifkan kembali akun :name?',
+    'admin_no_users_match' => 'Tidak ada pengguna yang sesuai dengan pencarian.',
+    'admin_role_admin' => 'Admin',
+    'admin_role_owner' => 'Pemilik Toko',
+    'admin_role_borrower' => 'Peminjam',
+    'admin_role_store' => 'Toko',
+    'admin_status_active' => 'Aktif',
+    'admin_status_suspended' => 'Ditangguhkan',
+    'status_active' => 'Aktif',
+    'status_inactive' => 'Tidak Aktif',
+    'dispute_management' => 'Manajemen Sengketa',
+    'dispute_subtitle' => 'Tinjau dan kelola laporan sengketa yang diajukan oleh peminjam dan pemilik toko.',
+    'dispute_back_to_dashboard' => 'Kembali ke Dashboard',
+    'dispute_action_failed' => 'Aksi gagal.',
+    'dispute_search' => 'Cari',
+    'dispute_search_placeholder' => 'Cari pelapor, produk, atau alasan...',
+    'dispute_status' => 'Status',
+    'dispute_all_statuses' => 'Semua Status',
+    'dispute_apply_filter' => 'Terapkan Filter',
+    'dispute_reset' => 'Reset',
+    'dispute_all_reports' => 'Semua Laporan Sengketa',
+    'dispute_reports_found' => '{0} Tidak ada laporan sengketa ditemukan.|[1,*] :count laporan sengketa ditemukan.',
+    'dispute_column_id' => 'ID',
+    'dispute_column_reporter' => 'Pelapor',
+    'dispute_column_role' => 'Peran',
+    'dispute_column_reported_party' => 'Pihak Terlapor',
+    'dispute_column_product' => 'Produk',
+    'dispute_column_reason' => 'Alasan',
+    'dispute_column_submitted' => 'Diajukan',
+    'dispute_column_status' => 'Status',
+    'dispute_column_action' => 'Aksi',
+    'dispute_role_borrower' => 'Peminjam',
+    'dispute_role_store' => 'Toko',
+    'dispute_status_open' => 'Terbuka',
+    'dispute_status_in_review' => 'Sedang Ditinjau',
+    'dispute_status_resolved' => 'Terselesaikan',
+    'dispute_status_rejected' => 'Ditolak',
+    'dispute_view' => 'Lihat',
+    'dispute_view_detail' => 'Lihat Detail',
+    'dispute_no_reports' => 'Laporan sengketa tidak ditemukan.',
+    'dispute_evidence' => 'Bukti',
+
+    // ============================================
+    // Modal Detail Sengketa
+    // ============================================
+    'dispute_details_title' => 'Detail Sengketa',
+    'dispute_reporter_role' => 'Peran Pelapor',
+    'dispute_evidence_alt' => 'Bukti sengketa',
+    'dispute_no_evidence' => 'Tidak ada bukti yang dilampirkan.',
+    'dispute_admin_resolution' => 'Penyelesaian Admin',
+    'dispute_no_resolution' => 'Belum ada penyelesaian yang diberikan.',
+    'dispute_decision_placeholder' => 'Jelaskan alasan keputusan admin...',
+    'dispute_reject_claim' => 'Tolak Klaim',
+    'dispute_approve_claim' => 'Setujui Klaim',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Harus sesuai dengan nilai status database
+    |--------------------------------------------------------------------------
+    */
+    'dispute_status_in_review' => 'Sedang Ditinjau',
 ];

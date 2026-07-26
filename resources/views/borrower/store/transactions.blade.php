@@ -42,6 +42,13 @@
             'resolved' => 'bg-success-subtle text-success-emphasis',
             'rejected' => 'bg-danger-subtle text-danger-emphasis',
         ];
+
+        $disputeStatusLabels = [
+            'open' => 'Open',
+            'in_review' => 'In Review',
+            'resolved' => 'Approved',
+            'rejected' => 'Rejected',
+        ];
     @endphp
 
     {{-- Filters --}}
@@ -181,14 +188,33 @@
                                         'bg-light text-dark',
                                 };
 
-                                $hasActiveDispute =
-                                    (bool) $transaction->activeDispute;
+                                $latestDispute = $transaction->latestDispute;
+
+                                $hasDispute = (bool) $latestDispute;
+
+                                $isDisputePending = $latestDispute && in_array(
+                                    $latestDispute->status,
+                                    [
+                                        \App\Models\Dispute::STATUS_OPEN,
+                                        \App\Models\Dispute::STATUS_IN_REVIEW,
+                                    ],
+                                    true
+                                );
+
+                                $isDisputeFinished = $latestDispute && in_array(
+                                    $latestDispute->status,
+                                    [
+                                        \App\Models\Dispute::STATUS_RESOLVED,
+                                        \App\Models\Dispute::STATUS_REJECTED,
+                                    ],
+                                    true
+                                );
 
                                 $canDispute = in_array(
                                     $transactionStatus,
                                     ['APPROVED', 'ONGOING', 'COMPLETED'],
                                     true
-                                ) && !$hasActiveDispute;
+                                ) && ! $hasDispute;
 
                                 $imagePath =
                                     $product?->primaryImage?->image_path;
@@ -285,19 +311,25 @@
                                         ) }}
                                     </span>
 
-                                    @if ($hasActiveDispute)
+                                    @if ($latestDispute)
+                                        @php
+                                            $disputeStatus = $latestDispute->status;
+
+                                            $disputeStatusClass = $disputeStatusClasses[$disputeStatus]
+                                                ?? 'bg-secondary-subtle text-secondary-emphasis';
+
+                                            $disputeStatusLabel = $disputeStatusLabels[$disputeStatus]
+                                                ?? ucwords(str_replace('_', ' ', $disputeStatus));
+                                        @endphp
+
                                         <div class="mt-1">
                                             <span
-                                                class="badge rounded-pill text-bg-danger"
+                                                class="badge rounded-pill {{ $disputeStatusClass }}"
+                                                @if ($latestDispute->resolution)
+                                                    title="{{ $latestDispute->resolution }}"
+                                                @endif
                                             >
-                                                Dispute
-                                                {{ ucfirst(
-                                                    strtolower(
-                                                        $transaction
-                                                            ->activeDispute
-                                                            ->status
-                                                    )
-                                                ) }}
+                                                Dispute: {{ $disputeStatusLabel }}
                                             </span>
                                         </div>
                                     @endif
@@ -314,10 +346,18 @@
                                             <i class="bi bi-exclamation-triangle me-1"></i>
                                             Raise Dispute
                                         </button>
-                                    @elseif ($hasActiveDispute)
+
+                                    @elseif ($isDisputePending)
                                         <span class="small text-muted">
+                                            <i class="bi bi-hourglass-split me-1"></i>
                                             Waiting for admin
                                         </span>
+
+                                    @elseif ($isDisputeFinished)
+                                        <span class="small text-muted">
+                                            —
+                                        </span>
+
                                     @else
                                         <span class="small text-muted">
                                             No action available
@@ -366,7 +406,7 @@
             $modalStatus,
             ['APPROVED', 'ONGOING', 'COMPLETED'],
             true
-        ) && !$transaction->activeDispute;
+        ) && !$transaction->latestDispute;
     @endphp
 
     @if ($modalCanDispute)

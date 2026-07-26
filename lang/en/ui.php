@@ -147,14 +147,65 @@ return [
     // ============================================
     // About Page
     // ============================================
-    'about_title' => 'About Us — SI-RENT',
-    'about_hero' => 'We are a multi-vendor platform that provides hobby equipment rental services, such as cameras, drones, and other tools, while maintaining and guaranteeing security between renters and owners.',
-    'variety' => 'Variety',
-    'variety_desc' => 'Find all kinds of hobby gear in one place.',
-    'affordable' => 'Affordable',
-    'affordable_desc' => 'Rent high quality equipment without overspending.',
-    'trusted' => 'Trusted',
-    'trusted_desc' => 'Secure transactions between renters and owners.',
+    'about' => [
+        'page_title' => 'About SI-RENT',
+
+        'hero' => [
+            'eyebrow' => 'ABOUT SI-RENT',
+            'title' => 'Get the items you need,',
+            'title_highlight' => 'without always having to buy them.',
+            'description' => 'SI-RENT connects renters with item owners through a practical, affordable, and trusted rental platform.',
+            'start_renting' => 'Start Renting',
+            'learn_more' => 'Discover SI-RENT',
+            'logo_alt' => 'SI-RENT Logo',
+            'scroll_label' => 'View SI-RENT information',
+        ],
+
+        'statistics' => [
+            'eyebrow' => 'OUR ECOSYSTEM',
+            'title' => 'Building accessible rental services to',
+            'title_highlight' => 'connect renters and item owners.',
+            'description' => 'We help people access the items they need without having to purchase them, while creating income opportunities for item owners.',
+
+            'labels' => [
+                'users' => 'Registered Users',
+                'products' => 'Available Items',
+                'stores' => 'Active Stores',
+                'transactions' => 'Rental Transactions',
+            ],
+        ],
+
+        'business' => [
+            'eyebrow' => 'WHY SI-RENT?',
+            'title' => 'One platform for a simpler and more valuable rental experience.',
+            'description' => 'SI-RENT is designed to provide more choices, greater cost efficiency, and safer transactions.',
+
+            'values' => [
+                'diverse' => [
+                    'title' => 'Diverse',
+                    'description' => 'Discover a wide range of items from multiple stores in one platform, from everyday essentials and electronics to event equipment and hobby products.',
+                ],
+
+                'affordable' => [
+                    'title' => 'Affordable',
+                    'description' => 'Use items only when you need them without paying the full purchase cost. It is more economical for renters and more productive for item owners.',
+                ],
+
+                'trusted' => [
+                    'title' => 'Trusted',
+                    'description' => 'Store profiles, item information, transaction history, and rating systems help users make rental decisions with greater confidence.',
+                ],
+            ],
+        ],
+
+        'final_cta' => [
+            'eyebrow' => 'GET STARTED WITH SI-RENT',
+            'title' => 'Ready to become part of a smarter rental ecosystem?',
+            'description' => 'Find the items you need or start generating income from the items you own.',
+            'start_renting' => 'Start Renting',
+            'open_store' => 'Open a Store',
+        ],
+    ],
 
     // ============================================
     // Dashboard
@@ -406,4 +457,111 @@ return [
     'reviews_tab' => 'Reviews',
     'about_tab' => 'About',
     'all_time' => 'All Time',
+
+    // ============================================
+    // Admin Dashboard & Dispute Management
+    // ============================================
+    'admin_dashboard_title' => 'Admin Dashboard',
+    'admin_dashboard_subtitle' => 'Operational control center for the SI-RENT platform.',
+    'admin_total_users' => 'Total Users',
+    'admin_borrowers' => 'Borrowers',
+    'admin_owners' => 'Owners',
+    'admin_admins' => 'Admins',
+    'admin_suspended_users' => 'Suspended Users',
+    'admin_total_products' => 'Total Products',
+    'admin_active_products' => 'Active Products',
+    'admin_total_rentals' => 'Total Rentals',
+    'admin_pending_rentals' => 'Pending Rentals',
+    'admin_ongoing_rentals' => 'Ongoing Rentals',
+    'admin_completed_rentals' => 'Completed Rentals',
+    'admin_completed_revenue' => 'Completed Revenue',
+    'admin_rental_status_summary' => 'Rental Status Summary',
+    'admin_product_status_summary' => 'Product Status Summary',
+    'admin_no_rental_data' => 'No rental data found.',
+    'admin_no_product_data' => 'No product data found.',
+    'admin_latest_users' => 'Latest Users',
+    'admin_view_all_users' => 'View All Users',
+    'admin_role' => 'Role',
+    'admin_status' => 'Status',
+    'admin_products_by_category' => 'Products by Category',
+    'admin_active_product_distribution' => 'Distribution of active products.',
+    'admin_product_distribution_aria' => 'Product distribution by category',
+    'admin_uncategorized' => 'Uncategorized',
+    'admin_no_active_products' => 'No active products found.',
+    'admin_disputes_attention' => 'Disputes Requiring Attention',
+    'admin_oldest_unresolved_disputes' => 'Oldest unresolved dispute reports.',
+    'admin_view_all_disputes' => 'View All Disputes',
+    'admin_age' => 'Time',
+    'admin_action' => 'Action',
+    'admin_no_unresolved_disputes' => 'No unresolved disputes.',
+    'admin_all_users' => 'All Users',
+    'admin_registered_users' => '{0} No registered users|{1} :count registered user|[2,*] :count registered users',
+    'admin_search_users_placeholder' => 'Search name, email, role, or status...',
+    'admin_joined' => 'Joined',
+    'admin_current_user' => 'Current User',
+    'admin_protected' => 'Protected',
+    'admin_suspend' => 'Suspend',
+    'admin_activate' => 'Activate',
+    'admin_confirm_suspend' => 'Suspend :name’s account?',
+    'admin_confirm_activate' => 'Reactivate :name’s account?',
+    'admin_no_users_match' => 'No users match your search.',
+    'admin_role_admin' => 'Admin',
+    'admin_role_owner' => 'Owner',
+    'admin_role_borrower' => 'Borrower',
+    'admin_role_store' => 'Store',
+    'admin_status_active' => 'Active',
+    'admin_status_suspended' => 'Suspended',
+    'status_active' => 'Active',
+    'status_inactive' => 'Inactive',
+    'dispute_management' => 'Dispute Management',
+    'dispute_subtitle' => 'Review and manage dispute reports submitted by borrowers and store owners.',
+    'dispute_back_to_dashboard' => 'Back to Dashboard',
+    'dispute_action_failed' => 'Action failed.',
+    'dispute_search' => 'Search',
+    'dispute_search_placeholder' => 'Search reporter, product, or reason...',
+    'dispute_status' => 'Status',
+    'dispute_all_statuses' => 'All Statuses',
+    'dispute_apply_filter' => 'Apply Filter',
+    'dispute_reset' => 'Reset',
+    'dispute_all_reports' => 'All Dispute Reports',
+    'dispute_reports_found' => '{0} No dispute reports found.|{1} :count dispute report found.|[2,*] :count dispute reports found.',
+    'dispute_column_id' => 'ID',
+    'dispute_column_reporter' => 'Reporter',
+    'dispute_column_role' => 'Role',
+    'dispute_column_reported_party' => 'Reported Party',
+    'dispute_column_product' => 'Product',
+    'dispute_column_reason' => 'Reason',
+    'dispute_column_submitted' => 'Submitted',
+    'dispute_column_status' => 'Status',
+    'dispute_column_action' => 'Action',
+    'dispute_role_borrower' => 'Borrower',
+    'dispute_role_store' => 'Store',
+    'dispute_status_open' => 'Open',
+    'dispute_status_in_review' => 'In Review',
+    'dispute_status_resolved' => 'Resolved',
+    'dispute_status_rejected' => 'Rejected',
+    'dispute_view' => 'View',
+    'dispute_view_detail' => 'View Detail',
+    'dispute_no_reports' => 'No dispute reports found.',
+
+    // ============================================
+    // Dispute Detail Modal
+    // ============================================
+    'dispute_details_title' => 'Dispute Detail',
+    'dispute_reporter_role' => 'Reporter Role',
+    'dispute_evidence_alt' => 'Dispute evidence',
+    'dispute_no_evidence' => 'No evidence attached.',
+    'dispute_admin_resolution' => 'Admin Resolution',
+    'dispute_no_resolution' => 'No resolution provided.',
+    'dispute_decision_placeholder' => 'Explain the admin decision...',
+    'dispute_reject_claim' => 'Reject Claim',
+    'dispute_approve_claim' => 'Approve Claim',
+    'dispute_evidence' => 'Evidence',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Harus sesuai dengan nilai status database
+    |--------------------------------------------------------------------------
+    */
+    'dispute_status_in_review' => 'In Review',
 ];

@@ -76,4 +76,19 @@ class RentalRequest extends Model
             ->whereIn('status', ['open', 'in_review'])
             ->latestOfMany();
     }
+
+    public function latestDispute(): HasOne
+    {
+        return $this->hasOne(Dispute::class)
+            ->latestOfMany();
+    }
+
+    public function hasExpiredApprovalWindow(): bool
+    {
+        if (! $this->start_date) {
+            return false;
+        }
+
+        return $this->start_date->lt(today());
+    }
 }
