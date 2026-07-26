@@ -43,15 +43,14 @@ class StoreDisputeController extends Controller
             ]);
         }
 
-        $hasActiveDispute = Dispute::query()
+        $hasExistingDispute = Dispute::query()
             ->where('rental_request_id', $rentalRequest->id)
-            ->whereIn('status', ['open', 'in_review'])
             ->exists();
 
-        if ($hasActiveDispute) {
+        if ($hasExistingDispute) {
             return back()->withErrors([
                 'dispute' =>
-                    'Transaksi ini sudah memiliki dispute yang sedang diproses.',
+                    'Transaksi ini sudah pernah memiliki dispute dan tidak dapat diajukan kembali.',
             ]);
         }
 

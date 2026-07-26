@@ -79,6 +79,17 @@ Route::middleware(['auth', 'account.active'])->prefix('onboarding')->name('onboa
     Route::post('/verify-whatsapp', [OnboardingController::class, 'verifyWhatsApp'])->name('verify.whatsapp');
 });
 
+// Route pergantian bahasa
+Route::post('/locale/{locale}', function (string $locale) {
+    abort_unless(
+        in_array($locale, ['en', 'id'], true),
+        400
+    );
+
+    session()->put('locale', $locale);
+
+    return back();
+})->name('locale.switch');
 // Route PUBLIC penampung klik Magic Link dari WhatsApp
 Route::get('/onboarding/verify-whatsapp-link/{user}', [OnboardingController::class, 'verifyWhatsAppLink'])
     ->name('onboarding.verify-whatsapp-link')
