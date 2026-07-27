@@ -11,7 +11,7 @@
 
             {{-- Step Progress Bars --}}
             <div class="d-flex gap-2 justify-content-center mb-4">
-                <template x-for="i in 3" :key="i">
+                <template x-for="i in 2" :key="i">
                     <div class="flex-grow-0"
                         style="width: 260px; height: 8px; border-radius: 28px; transition: background-color 0.3s;"
                         :style="{ background: step >= i ? 'var(--primary-blue, #0031e1)' : '#d9d9d9' }"></div>
@@ -19,7 +19,7 @@
             </div>
 
             <div class="text-center mb-4">
-                <span x-text="'{{ __('ui.onboarding_title') }} — {{ __('ui.step') }} ' + step + ' {{ __('ui.of') }} 3'"
+                <span x-text="'{{ __('ui.onboarding_title') }} — {{ __('ui.step') }} ' + step + ' {{ __('ui.of') }} 2'"
                     style="font-family: 'Mona Sans', sans-serif; font-size: 14px; color: var(--text-secondary, #5c5c5c);"></span>
             </div>
 
@@ -78,32 +78,18 @@
                                 </div>
                             </div>
 
-                            {{-- Phone / WhatsApp Number Verification Row --}}
+                            {{-- Phone Number --}}
                             <div class="mb-3">
                                 <label class="fw-semibold mb-2 d-block"
-                                    style="font-family:'Mona Sans',sans-serif; font-size:14px;">{{ __('ui.phone_number') }}
-                                    (WhatsApp)</label>
+                                    style="font-family:'Mona Sans',sans-serif; font-size:14px;">{{ __('ui.phone_number') }}</label>
                                 <div class="d-flex gap-2 align-items-center">
                                     <div class="position-relative flex-grow-1">
-                                        <i class="bi bi-whatsapp position-absolute"
+                                        <i class="bi bi-telephone position-absolute"
                                             style="top:18px; left:16px; color: var(--text-secondary);"></i>
                                         <input type="text" name="phone" x-model="phone" required
-                                            ="whatsappVerified" class="form-control ps-5"
+                                            class="form-control ps-5"
                                             placeholder="Ex: 0812345678910"
                                             style="height:60px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px; border-color: var(--border-default);">
-                                    </div>
-                                    <div>
-                                        <button type="button" @click="verifyWhatsApp()"
-                                            :disabled="whatsappVerified || whatsappCooldown > 0 || !phone"
-                                            class="btn fw-semibold px-4 d-flex align-items-center justify-content-center gap-2"
-                                            :class="whatsappVerified ? 'btn-success text-white' : 'btn-outline-success'"
-                                            style="height:60px; min-width:140px; border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:14px;">
-                                            <span x-show="whatsappVerified"><i class="bi bi-check-circle-fill"></i>
-                                                Verified</span>
-                                            <span x-show="!whatsappVerified && whatsappCooldown === 0">Verify WA</span>
-                                            <span x-show="!whatsappVerified && whatsappCooldown > 0"
-                                                x-text="'Resend (' + whatsappCooldown + 's)'"></span>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -237,14 +223,14 @@
                             {{-- Next Button --}}
                             <div class="text-center">
                                 <button type="submit" class="btn text-white fw-semibold px-5 py-2"
-                                    :disabled="loading || !emailVerified || !whatsappVerified"
+                                    :disabled="loading || !emailVerified"
                                     style="background: var(--primary-blue); border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:16px;">
                                     <span x-show="!loading">{{ __('ui.onboarding_next') }}</span>
                                     <span x-show="loading">Saving...</span>
                                 </button>
-                                <small x-show="!emailVerified || !whatsappVerified" class="d-block text-danger mt-2"
+                                <small x-show="!emailVerified" class="d-block text-danger mt-2"
                                     style="font-size: 12px;">
-                                    * Selesaikan verifikasi Email dan WhatsApp terlebih dahulu untuk melanjutkan.
+                                    * Selesaikan verifikasi Email terlebih dahulu untuk melanjutkan.
                                 </small>
                             </div>
                         </form>
@@ -296,52 +282,6 @@
                         </form>
                     </div>
 
-                    {{-- ====== STEP 3: Upload KTP ====== --}}
-                    <div x-show="step === 3" x-transition>
-                        <form method="POST" action="{{ route('onboarding.step3.store') }}"
-                            enctype="multipart/form-data" x-data="{ fileName: '', preview: '' }" @submit.prevent="submitStep($el)">
-                            @csrf
-                            <div class="text-center mb-4">
-                                <div class="border rounded-4 d-flex flex-column align-items-center justify-content-center mx-auto position-relative"
-                                    style="max-width:678px; height:357px; border-radius:50px; border:2px dashed var(--border-default); cursor:pointer;"
-                                    @click="$refs.ktpInput.click()" @dragover.prevent
-                                    @drop.prevent="$refs.ktpInput.files = $event.dataTransfer.files; $refs.ktpInput.dispatchEvent(new Event('change'))">
-                                    <input type="file" name="identity_doc" x-ref="ktpInput" class="d-none"
-                                        accept="image/*" required
-                                        @change="fileName = $el.files[0]?.name || ''; if ($el.files[0]) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL($el.files[0]) }">
-                                    <template x-if="!preview">
-                                        <div>
-                                            <i class="bi bi-cloud-upload d-block mb-2"
-                                                style="font-size:64px; color: var(--primary-blue);"></i>
-                                            <p class="fw-semibold"
-                                                style="font-family:'Mona Sans',sans-serif; color: var(--text-primary, #000);">
-                                                {{ __('ui.drag_drop_hint') }}</p>
-                                            <p class="text-muted" style="font-family:'Mona Sans',sans-serif;">
-                                                {{ __('ui.supported_formats') }}</p>
-                                            <span class="btn btn-outline-primary mt-2 rounded-3"
-                                                style="font-family:'Mona Sans',sans-serif;">{{ __('ui.upload_file') }}</span>
-                                        </div>
-                                    </template>
-                                    <template x-if="preview">
-                                        <img :src="preview"
-                                            style="max-height:300px; max-width:100%; border-radius:20px; object-fit:contain;">
-                                    </template>
-                                </div>
-                                <p x-show="fileName" x-text="fileName" class="mt-2 text-muted"
-                                    style="font-family:'Mona Sans',sans-serif;"></p>
-                            </div>
-
-                            <div class="text-center">
-                                <button type="submit" class="btn text-white fw-semibold px-5 py-2"
-                                    :disabled="loading"
-                                    style="background: var(--primary-blue); border-radius:10px; font-family:'Mona Sans',sans-serif; font-size:16px;">
-                                    <span x-show="!loading">{{ __('ui.onboarding_submit') }}</span>
-                                    <span x-show="loading">Submitting...</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
                 </div>
             </div>
 
@@ -366,17 +306,15 @@
 
                 phone: '{{ old('phone', auth()->user()->phone) }}',
                 emailVerified: {{ auth()->user()->hasVerifiedEmail() ? 'true' : 'false' }},
-                whatsappVerified: {{ auth()->user()->phone ? 'true' : 'false' }},
+                whatsappVerified: {{ !is_null(auth()->user()->whatsapp_verified_at) ? 'true' : 'false' }},
 
                 emailCooldown: 0,
-                whatsappCooldown: 0,
                 emailPollingInterval: null,
 
                 get stepTitle() {
                     const titles = {
                         1: '{{ __('ui.onboarding_step1_title') }}',
                         2: '{{ __('ui.onboarding_step2_title') }}',
-                        3: '{{ __('ui.onboarding_step3_title') }}',
                     };
                     return titles[this.step] || '';
                 },
@@ -461,7 +399,7 @@
                             if (data.verified) {
                                 this.emailVerified = true;
                                 clearInterval(this.emailPollingInterval);
-                                alert('Email Anda telah sukses diverifikasi!');
+                                Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Email Anda telah sukses diverifikasi!', confirmButtonColor: '#0031e1' });
                             }
                         } catch (e) {
                             console.error('Gagal memproses polling status email:', e);
@@ -491,75 +429,25 @@
                         const data = await response.json();
 
                         if (response.ok) {
-                            alert(data.message ||
-                                'Tautan verifikasi sukses dikirim ke email kamu! Silakan cek inbox Anda.');
+                            Swal.fire({ icon: 'success', title: 'Berhasil!', text: data.message ||
+                                'Tautan verifikasi sukses dikirim ke email kamu! Silakan cek inbox Anda.', confirmButtonColor: '#0031e1' });
                             this.startEmailPolling(2000);
                         } else {
-                            alert(data.message || 'Gagal mengirim email verifikasi.');
+                            Swal.fire({ icon: 'error', title: 'Oops...', text: data.message || 'Gagal mengirim email verifikasi.', confirmButtonColor: '#0031e1' });
                             this.emailCooldown = 0;
                             clearInterval(interval);
                         }
                     } catch (e) {
-                        alert('Gagal tersambung ke server untuk verifikasi email.');
+                        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Gagal tersambung ke server untuk verifikasi email.', confirmButtonColor: '#0031e1' });
                         this.emailCooldown = 0;
-                        clearInterval(interval);
-                    }
-                },
-
-                // --- VERIFIKASI WHATSAPP ---
-                async verifyWhatsApp() {
-                    if (!this.phone) return alert('Silakan masukkan nomor WhatsApp terlebih dahulu.');
-
-                    this.whatsappCooldown = 60;
-                    let interval = setInterval(() => {
-                        this.whatsappCooldown--;
-                        if (this.whatsappCooldown <= 0) clearInterval(interval);
-                    }, 1000);
-
-                    try {
-                        const response = await fetch("{{ route('onboarding.verify.whatsapp') }}", {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute(
-                                    'content'),
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                phone: this.phone
-                            })
-                        });
-
-                        const data = await response.json();
-                        if (!response.ok) {
-                            alert(data.message || 'Gagal mengirim OTP.');
-                            this.whatsappCooldown = 0;
-                            clearInterval(interval);
-                            return;
-                        }
-
-                        alert('Kode OTP simulasi telah dicatat di log server (storage/logs/laravel.log).');
-
-                        let userOtp = prompt("Masukkan 6 digit kode OTP yang dikirimkan ke WhatsApp Anda:");
-                        if (userOtp && userOtp.trim() !== "") {
-                            this.whatsappVerified = true;
-                            alert('Nomor WhatsApp terverifikasi sukses!');
-                        } else {
-                            alert('Verifikasi WhatsApp dibatalkan.');
-                            this.whatsappCooldown = 0;
-                            clearInterval(interval);
-                        }
-                    } catch (e) {
-                        alert('Gagal memproses verifikasi WhatsApp.');
-                        this.whatsappCooldown = 0;
                         clearInterval(interval);
                     }
                 },
 
                 // --- SUBMIT FORM PER-STEP ---
                 async submitStep(formElement) {
-                    if (this.step === 1 && (!this.emailVerified || !this.whatsappVerified)) {
-                        alert('Anda harus memverifikasi Email dan WhatsApp terlebih dahulu.');
+                    if (this.step === 1 && !this.emailVerified) {
+                        Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Anda harus memverifikasi Email terlebih dahulu.', confirmButtonColor: '#0031e1' });
                         return;
                     }
 
@@ -579,7 +467,7 @@
                         });
 
                         if (response.ok) {
-                            if (this.step < 3) {
+                            if (this.step < 2) {
                                 this.step++;
                                 // Menyimpan state objek agar tombol Back/Forward browser berfungsi mulus
                                 window.history.pushState({
@@ -592,11 +480,11 @@
                             }
                         } else {
                             const errorData = await response.json();
-                            alert(errorData.message || 'Terjadi kesalahan pada validasi data.');
+                            Swal.fire({ icon: 'error', title: 'Oops...', text: errorData.message || 'Terjadi kesalahan pada validasi data.', confirmButtonColor: '#0031e1' });
                         }
                     } catch (error) {
                         console.error('AJAX Error:', error);
-                        alert('Gagal tersambung ke server.');
+                        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Gagal tersambung ke server.', confirmButtonColor: '#0031e1' });
                     } finally {
                         this.loading = false;
                     }

@@ -14,14 +14,16 @@ class AboutController extends Controller
         $stats = [
             [
                 'label' => 'Barang tersedia untuk disewa',
-                'value' => Product::where('status', 'active')->count(),
+                // 'value' => Product::where('status', 'active')->count(),
+                'value' => "10000",
                 'suffix' => '+',
             ],
             [
                 'label' => 'Toko aktif di SI-RENT',
-                'value' => User::where('role', User::ROLE_OWNER)
-                    ->where('is_owner_active', true)
-                    ->count(),
+                // 'value' => User::where('role', User::ROLE_OWNER)
+                //     ->where('is_owner_active', true)
+                //     ->count(),
+                'value' => "500",
                 'suffix' => '+',
             ],
             [
@@ -31,7 +33,8 @@ class AboutController extends Controller
             ],
             [
                 'label' => 'Pengguna terdaftar',
-                'value' => User::count(),
+                // 'value' => User::count(),
+                'value' => "5000",
                 'suffix' => '+',
             ],
         ];

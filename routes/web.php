@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
@@ -74,9 +75,6 @@ Route::middleware(['auth', 'account.active'])->prefix('onboarding')->name('onboa
     Route::post('/step-1', [OnboardingController::class, 'storeStep1'])->name('step1.store');
     Route::post('/step-2', [OnboardingController::class, 'storeStep2'])->name('step2.store');
     Route::post('/step-3', [OnboardingController::class, 'storeStep3'])->name('step3.store');
-    
-    // Route AJAX untuk memicu pembuatan Magic Link WhatsApp
-    Route::post('/verify-whatsapp', [OnboardingController::class, 'verifyWhatsApp'])->name('verify.whatsapp');
 });
 
 // Route pergantian bahasa
@@ -90,11 +88,6 @@ Route::post('/locale/{locale}', function (string $locale) {
 
     return back();
 })->name('locale.switch');
-// Route PUBLIC penampung klik Magic Link dari WhatsApp
-Route::get('/onboarding/verify-whatsapp-link/{user}', [OnboardingController::class, 'verifyWhatsAppLink'])
-    ->name('onboarding.verify-whatsapp-link')
-    ->middleware(['signed']);
-
 // ============================================
 // Public Routes
 // ============================================
@@ -111,6 +104,10 @@ Route::get('/about-us', [AboutController::class, 'index'])
 Route::get('/toko/{user}', [StoreController::class, 'show'])->name('store.show');
 Route::get('/toko/{user}/about', [StoreController::class, 'show'])->name('store.about');
 Route::get('/toko/{user}/reviews', [StoreController::class, 'show'])->name('store.reviews');
+
+Route::post('/toko/{user}/follow', [FollowController::class, 'toggle'])
+    ->middleware(['auth', 'account.active'])
+    ->name('store.follow');
 
 // ============================================
 // Admin Routes
@@ -156,10 +153,6 @@ Route::middleware(['auth', 'account.active'])->group(function () {
             'verified' => auth()->user()->hasVerifiedEmail()
         ]);
     });
-
-    // TAMBAHKAN SEPERTI INI: Endpoint Polling Status Verifikasi WhatsApp
-    Route::get('/api/user/check-whatsapp-status', [OnboardingController::class, 'checkWhatsAppStatus'])
-        ->name('api.user.check-whatsapp-status');
 
     Route::get('/dashboard', [\App\Http\Controllers\Borrower\DashboardController::class, 'index'])
         ->name('borrower.dashboard');
@@ -213,6 +206,16 @@ Route::middleware(['auth', 'account.active'])->group(function () {
     Route::post('/dashboard/settings', [\App\Http\Controllers\Borrower\SettingsController::class, 'update'])
         ->name('borrower.settings.update');
 
+    // ── Profile (text fields + avatar) ──
+    Route::post('/dashboard/profile/info', [\App\Http\Controllers\Borrower\ProfileController::class, 'updateInfo'])
+        ->name('borrower.profile.update-info');
+    Route::post('/dashboard/profile/avatar', [\App\Http\Controllers\Borrower\ProfileController::class, 'updateAvatar'])
+        ->name('borrower.profile.update-avatar');
+    Route::post('/dashboard/profile/banner', [\App\Http\Controllers\Borrower\ProfileController::class, 'updateBanner'])
+        ->name('borrower.profile.update-banner');
+    Route::post('/dashboard/profile/send-email-verification', [\App\Http\Controllers\Borrower\ProfileController::class, 'sendEmailVerification'])
+        ->name('borrower.profile.send-email-verification');
+
     // ── Chat (PRD sections 6.5, 16.5) ──
     Route::prefix('pesan')->name('chat.')->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('index');
@@ -222,13 +225,47 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::post('/{conversation}', [ChatController::class, 'send'])->name('send');
     });
 
+    // ── Notifications ──
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])
+            ->name('index');
+        Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])
+            ->name('unread-count');
+        Route::post('/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])
+            ->name('mark-read');
+        Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
+            ->name('mark-all-read');
+    });
+
     // ── Peminjaman (PRD section 16.3) ──
     Route::post('/peminjaman', [\App\Http\Controllers\Borrower\RentalController::class, 'store'])
         ->name('rentals.store');
     Route::post('/peminjaman/{id}/batal', [\App\Http\Controllers\Borrower\RentalController::class, 'cancel'])
         ->name('rentals.cancel');
+    Route::get('/peminjaman/{id}', [\App\Http\Controllers\Borrower\RentalController::class, 'show'])
+        ->name('rentals.show');
 
     // ── Rating (PRD section 16.3) ──
     Route::post('/peminjaman/{id}/rating', [\App\Http\Controllers\Borrower\RatingController::class, 'storeForOwner'])
         ->name('ratings.storeForOwner');
+
+    // ── Dispute (Borrower) ──
+    Route::post('/peminjaman/{rentalRequest}/dispute', [\App\Http\Controllers\Borrower\BorrowerDisputeController::class, 'store'])
+        ->name('borrower.disputes.store');
+
+    // ── Checkout & Payment (Midtrans Snap) ──
+    Route::prefix('checkout')->name('checkout.')->group(function () {
+        Route::post('/init', [\App\Http\Controllers\CheckoutController::class, 'init'])
+            ->name('init');
+        Route::get('/{token}', [\App\Http\Controllers\CheckoutController::class, 'index'])
+            ->name('index');
+        Route::post('/{token}/pay', [\App\Http\Controllers\CheckoutController::class, 'pay'])
+            ->name('pay');
+    });
 });
+
+// ── Midtrans Webhook (public — no CSRF, no auth; signed by Midtrans) ──
+Route::post('/api/midtrans/webhook', [\App\Http\Controllers\MidtransWebhookController::class, 'handle'])
+    ->name('midtrans.webhook')
+    ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class)
+    ->middleware('throttle:60,1');

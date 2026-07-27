@@ -8,7 +8,7 @@
     {{-- =====================================================
          HERO SECTION
          ===================================================== --}}
-    <section class="about-hero">
+    <section class="about-hero p-5">
         <div class="about-hero__overlay"></div>
 
         <div class="container about-hero__content">

@@ -14,10 +14,10 @@ $initials = collect(explode(' ', $name))->filter()->take(2)->map(fn($n) => mb_su
 @if($imagePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath))
     <img src="{{ asset('storage/' . $imagePath) }}" alt="{{ $name }}"
          width="{{ $s['w'] }}" height="{{ $s['h'] }}"
-         class="rounded-circle object-fit-cover"
+         class="rounded-circle object-fit-cover user-avatar-img"
          style="width:{{ $s['w'] }}px; height:{{ $s['h'] }}px;">
 @else
-    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold avatar-fallback"
          style="width:{{ $s['w'] }}px; height:{{ $s['h'] }}px; font-size:{{ $s['font'] }}px;">
         {{ strtoupper($initials) }}
     </div>
