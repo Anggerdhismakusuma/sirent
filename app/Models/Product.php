@@ -129,7 +129,7 @@ class Product extends Model
     {
         if ($verified) {
             return $query->whereHas('owner', function ($q) {
-                $q->where('verification_status', User::VERIFICATION_VERIFIED);
+                $q->whereNotNull('email_verified_at');
             });
         }
         return $query;

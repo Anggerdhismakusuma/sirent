@@ -16,22 +16,6 @@
                style="border-radius:10px; font-size:13px; font-family:'Mona Sans',sans-serif;">
     </div>
 
-    {{-- 2. Owner Verification --}}
-    <div class="mb-4">
-        <h6 class="fw-semibold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px; color: var(--text-primary);">
-            {{ __('ui.owner_verification') }}
-        </h6>
-        <div class="form-check">
-            <input type="checkbox" name="verified" value="1" class="form-check-input"
-                   id="filter-verified" {{ request('verified') ? 'checked' : '' }}
-                   style="cursor:pointer;">
-            <label class="form-check-label" for="filter-verified"
-                   style="font-family:'Mona Sans',sans-serif; font-size:13px; color: var(--text-primary); cursor:pointer;">
-                {{ __('ui.verified_only') }}
-            </label>
-        </div>
-    </div>
-
     {{-- 3. Location --}}
     <div class="mb-4">
         <h6 class="fw-semibold mb-2" style="font-family:'Mona Sans',sans-serif; font-size:14px; color: var(--text-primary);">

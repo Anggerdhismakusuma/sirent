@@ -49,6 +49,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'suspended_until',
         'theme',
         'language',
+        'banner',
     ];
 
     protected $hidden = [
@@ -60,12 +61,32 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return [
             'email_verified_at' => 'datetime',
+            'whatsapp_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_owner_active' => 'boolean',
             'rating_avg_as_borrower' => 'decimal:2',
             'rating_avg_as_owner' => 'decimal:2',
             'suspended_until' => 'datetime',
         ];
+    }
+
+    /**
+     * Override the MustVerifyEmail trait method so that email verification
+     * also sets the identity verification_status to 'verified'.
+     */
+    public function markEmailAsVerified(): bool
+    {
+        $this->verification_status = self::VERIFICATION_VERIFIED;
+        return parent::markEmailAsVerified();
+    }
+
+    /**
+     * A user is considered "verified" when their email is verified.
+     * No KTP or WhatsApp verification is required.
+     */
+    public function isVerified(): bool
+    {
+        return $this->hasVerifiedEmail();
     }
 
     // Relations
@@ -107,6 +128,19 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function messages()
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    // ── Follow system ──
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'followee_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followee_id')
+            ->withTimestamps();
     }
 
     public function disputesReported()

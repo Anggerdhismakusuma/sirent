@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Borrower;
 
 use App\Http\Controllers\Controller;
 use App\Models\RentalRequest;
+use App\Notifications\RentalRequestStatusChanged;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,6 +81,14 @@ class StoreRentalRequestController extends Controller
                 'approved_at' => now(),
                 'rejection_reason' => null,
             ]);
+
+            // Notify borrower
+            $lockedRental->load('product');
+            $lockedRental->borrower->notify(new RentalRequestStatusChanged(
+                rentalId: $lockedRental->id,
+                productName: $lockedRental->product->title ?? 'Produk',
+                status: 'approved',
+            ));
         });
 
         return redirect()
@@ -144,6 +153,15 @@ class StoreRentalRequestController extends Controller
                 'rejection_reason' => $validated['rejection_reason'],
                 'approved_at' => null,
             ]);
+
+            // Notify borrower
+            $lockedRental->load('product');
+            $lockedRental->borrower->notify(new RentalRequestStatusChanged(
+                rentalId: $lockedRental->id,
+                productName: $lockedRental->product->title ?? 'Produk',
+                status: 'rejected',
+                reason: $validated['rejection_reason'],
+            ));
         });
 
         return redirect()

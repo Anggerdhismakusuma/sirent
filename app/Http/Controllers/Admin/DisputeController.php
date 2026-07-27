@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispute;
+use App\Notifications\DisputeStatusChanged;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -69,6 +70,17 @@ class DisputeController extends Controller
             'resolved_at' => now(),
         ]);
 
+        // Notify the reporter
+        $dispute->load('rentalRequest.product');
+        $productName = $dispute->rentalRequest?->product?->title ?? 'Unknown Product';
+
+        $dispute->reporter->notify(new DisputeStatusChanged(
+            disputeId: $dispute->id,
+            productName: $productName,
+            status: 'resolved',
+            resolution: $validated['resolution'],
+        ));
+
         return back()->with(
             'success',
             'The dispute claim has been approved.'
@@ -106,6 +118,17 @@ class DisputeController extends Controller
             'handled_by' => $request->user()->id,
             'resolved_at' => now(),
         ]);
+
+        // Notify the reporter
+        $dispute->load('rentalRequest.product');
+        $productName = $dispute->rentalRequest?->product?->title ?? 'Unknown Product';
+
+        $dispute->reporter->notify(new DisputeStatusChanged(
+            disputeId: $dispute->id,
+            productName: $productName,
+            status: 'rejected',
+            resolution: $validated['resolution'],
+        ));
 
         return back()->with(
             'success',

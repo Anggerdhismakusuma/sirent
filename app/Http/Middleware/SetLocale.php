@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale

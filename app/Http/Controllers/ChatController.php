@@ -7,6 +7,7 @@ use App\Http\Requests\ChatMessageRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Product;
+use App\Notifications\NewMessageReceived;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -92,7 +93,7 @@ class ChatController extends Controller
                     'id' => $otherUser->id,
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
-                    'is_verified' => $otherUser->verification_status === \App\Models\User::VERIFICATION_VERIFIED,
+                    'is_verified' => $otherUser->isVerified(),
                 ],
                 'user_id' => $userId,
             ]);
@@ -139,6 +140,20 @@ class ChatController extends Controller
 
         // Broadcast event (ke participant lain, bukan ke pengirim)
         broadcast(new MessageSent($message))->toOthers();
+
+        // Notify the other participant
+        $recipientId = $conversation->borrower_id === $userId
+            ? $conversation->owner_id
+            : $conversation->borrower_id;
+        $recipient = \App\Models\User::find($recipientId);
+        if ($recipient) {
+            $preview = $data['body'] ?? ($attachmentPath ? '[Gambar]' : '');
+            $recipient->notify(new NewMessageReceived(
+                conversationId: $conversation->id,
+                senderName: $request->user()->name,
+                preview: mb_substr($preview, 0, 100),
+            ));
+        }
 
         $message->load('sender');
 

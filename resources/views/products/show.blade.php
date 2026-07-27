@@ -140,7 +140,7 @@
                             </a>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <x-shared.verified-badge :isVerified="$product->owner->verification_status === App\Models\User::VERIFICATION_VERIFIED" />
+                            <x-shared.verified-badge :isVerified="$product->owner->isVerified()" />
                             <span style="font-family:'Mona Sans',sans-serif; font-size:11px; color: var(--text-secondary);">
                                 {{ __('ui.years_on_sirent', ['count' => 3]) }}
                             </span>
@@ -269,15 +269,11 @@
 
                 {{-- Rent Now Button or Verification Notice --}}
                 @auth
-                    @if(auth()->user()->verification_status !== \App\Models\User::VERIFICATION_VERIFIED)
+                    @if(!auth()->user()->isVerified())
                         <div class="text-center mb-3 p-3 rounded-3" style="background: #fff3cd; border: 1px solid #ffc107;">
                             <i class="bi bi-shield-exclamation d-block mb-1" style="font-size:24px; color: #856404;"></i>
                             <p class="mb-0 fw-medium" style="font-family:'Mona Sans',sans-serif; font-size:13px; color: #856404;">
-                                @if(auth()->user()->verification_status === \App\Models\User::VERIFICATION_UNVERIFIED)
-                                    {{ __('ui.rental_restricted_unverified') }}
-                                @else
-                                    {{ __('ui.waiting_verification') }}
-                                @endif
+                                {{ __('ui.rental_restricted_unverified') }}
                             </p>
                         </div>
                     @else
@@ -287,7 +283,7 @@
                                 :style="canSubmit ? 'background:#0031e1;' : 'background:#a0b4f0;'"
                                 style="font-family:'Mona Sans',sans-serif; font-size:14px; height:40px;"
                                 @click="submitRental">
-                            <span x-show="!submitting">{{ __('ui.rent_now_button') }}</span>
+                            <span x-show="!submitting">{{ __('ui.proceed_to_checkout') }}</span>
                             <span x-show="submitting">
                                 <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                                 {{ __('ui.processing') }}
@@ -301,7 +297,7 @@
                             :style="canSubmit ? 'background:#0031e1;' : 'background:#a0b4f0;'"
                             style="font-family:'Mona Sans',sans-serif; font-size:14px; height:40px;"
                             @click="submitRental">
-                        <span x-show="!submitting">{{ __('ui.rent_now_button') }}</span>
+                        <span x-show="!submitting">{{ __('ui.proceed_to_checkout') }}</span>
                         <span x-show="submitting">
                             <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                             {{ __('ui.processing') }}
@@ -434,7 +430,7 @@
             @endforelse
 
             @if($reviews->count() > 0)
-                <a href="#" class="fw-semibold text-decoration-none" style="font-family:'Mona Sans',sans-serif; font-size:11px; color: var(--primary-blue-light);">
+                <a href="{{ route('store.reviews', $product->owner) }}" class="fw-semibold text-decoration-none" style="font-family:'Mona Sans',sans-serif; font-size:11px; color: var(--primary-blue-light);">
                     {{ __('ui.see_all_reviews') }} <i class="bi bi-arrow-right" style="font-size:10px;"></i>
                 </a>
             @endif
@@ -567,7 +563,7 @@
                 const csrf = document.getElementById('_csrf').value;
 
                 try {
-                    const res = await fetch('{{ route("rentals.store") }}', {
+                    const res = await fetch('{{ route("checkout.init") }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -591,9 +587,7 @@
                     }
 
                     if (data.success) {
-                        Swal.fire({ icon: 'success', title: 'Success', text: data.message, confirmButtonColor: '#0031e1' }).then(() => {
-                            window.location.href = '{{ route("borrower.dashboard") }}#activity';
-                        });
+                        window.location.href = data.redirect_url;
                     } else {
                         Swal.fire({ icon: 'error', title: 'Oops...', text: data.message || '{{ __('ui.rental_failed') }}', confirmButtonColor: '#0031e1' });
                     }

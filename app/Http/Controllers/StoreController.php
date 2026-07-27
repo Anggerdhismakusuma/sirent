@@ -18,6 +18,7 @@ class StoreController extends Controller
         $owner = User::withCount([
             'products' => fn($q) => $q->where('status', Product::STATUS_ACTIVE),
             'ratingsReceived as ratings_count' => fn($q) => $q->where('type', Rating::TYPE_TO_OWNER),
+            'followers',
         ])->findOrFail($userId);
 
         // Owner's active products
@@ -38,7 +39,9 @@ class StoreController extends Controller
         // Rating distribution (1-5 stars count)
         $ratingDistribution = [];
         for ($i = 5; $i >= 1; $i--) {
-            $ratingDistribution[$i] = $totalRatings > 0 ? $ownerRatings->where('score', $i)->count() : 0;
+            $ratingDistribution[$i] = $totalRatings > 0
+                ? $ownerRatings->where('score', $i)->count()
+                : 0;
         }
 
         // Reviews with rater info
@@ -49,11 +52,80 @@ class StoreController extends Controller
             ->latest()
             ->paginate(5);
 
-        // Trust score (simplified: based on avg rating, response rate, completed rentals)
+        // ── Dynamic Trust Score ──
+        //     Based on: avg rating (60%), completed rentals volume (25%),
+        //     verification status (15%)
         $completedRentals = RentalRequest::where('owner_id', $owner->id)
             ->where('status', RentalRequest::STATUS_COMPLETED)
             ->count();
-        $trustScore = $totalRatings > 0 ? min(100, (int)($avgRating * 20 + min($completedRentals, 20))) : 0;
+
+        $ratingComponent = $totalRatings > 0 ? ($avgRating / 5.0) * 60 : 0;
+        $rentalComponent = min(25, $completedRentals * 2);
+        $verifiedComponent = $owner->isVerified() ? 15 : 0;
+
+        $trustScore = (int) round($ratingComponent + $rentalComponent + $verifiedComponent);
+
+        // ── Dynamic Response Rate ──
+        //     % of conversations where owner has replied at least once
+        $ownerConversations = \App\Models\Conversation::where('owner_id', $owner->id)->pluck('id');
+        $totalConversations = $ownerConversations->count();
+
+        if ($totalConversations > 0) {
+            $respondedConversations = \App\Models\Message::whereIn('conversation_id', $ownerConversations)
+                ->where('sender_id', $owner->id)
+                ->distinct('conversation_id')
+                ->count('conversation_id');
+            $responseRate = (int) round(($respondedConversations / $totalConversations) * 100);
+        } else {
+            $responseRate = null; // No data yet — view will show "—"
+        }
+
+        // ── Dynamic Response Time ──
+        //     Average minutes until owner's first reply in each conversation
+        if ($totalConversations > 0) {
+            $responseTimes = [];
+            foreach ($ownerConversations as $convId) {
+                $firstIncoming = \App\Models\Message::where('conversation_id', $convId)
+                    ->where('sender_id', '!=', $owner->id)
+                    ->oldest()
+                    ->first();
+
+                $firstReply = \App\Models\Message::where('conversation_id', $convId)
+                    ->where('sender_id', $owner->id)
+                    ->oldest()
+                    ->first();
+
+                if ($firstIncoming && $firstReply) {
+                    $responseTimes[] = $firstIncoming->created_at
+                        ->diffInMinutes($firstReply->created_at);
+                }
+            }
+
+            $avgResponseMinutes = !empty($responseTimes)
+                ? (int) round(array_sum($responseTimes) / count($responseTimes))
+                : null;
+        } else {
+            $avgResponseMinutes = null;
+        }
+
+        // ── Location ──
+        //     Use domicile (from onboarding), or most common product city
+        $storeLocation = $owner->domicile
+            ?? Product::where('owner_id', $owner->id)
+                ->where('status', Product::STATUS_ACTIVE)
+                ->selectRaw('location_city, COUNT(*) as count')
+                ->groupBy('location_city')
+                ->orderByDesc('count')
+                ->first()?->location_city
+            ?? null;
+
+        $isFollowing = false;
+        if (auth()->check() && auth()->id() !== $owner->id) {
+            $isFollowing = $owner->followers()->where('follower_id', auth()->id())->exists();
+        }
+
+        // First product ID for chat start
+        $firstProductId = $products->first()?->id;
 
         return view('store.show', compact(
             'owner',
@@ -64,7 +136,12 @@ class StoreController extends Controller
             'ratingDistribution',
             'reviews',
             'trustScore',
-            'completedRentals'
+            'completedRentals',
+            'responseRate',
+            'avgResponseMinutes',
+            'storeLocation',
+            'isFollowing',
+            'firstProductId',
         ));
     }
 

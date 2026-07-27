@@ -97,6 +97,7 @@ class AuthController extends Controller
             'password' => $userData['password'],
             'role' => User::ROLE_BORROWER, // Default sebagai penyewa
             'email_verified_at' => now(), // Langsung tandai terverifikasi karena via OTP
+            'verification_status' => User::VERIFICATION_VERIFIED, // Email verified = user is verified
         ]);
 
         // Memicu event registered bawaan laravel (opsional)

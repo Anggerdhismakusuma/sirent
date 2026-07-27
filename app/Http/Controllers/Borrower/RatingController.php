@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Borrower;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RatingRequest;
+use App\Models\Product;
 use App\Models\Rating;
 use App\Models\RentalRequest;
 use App\Models\User;
@@ -68,12 +69,28 @@ class RatingController extends Controller
             ]);
 
             // ── Recalculate rating_avg_as_owner pada user owner ──
-            $avg = Rating::where('ratee_id', $rental->owner_id)
+            $ownerAvg = Rating::where('ratee_id', $rental->owner_id)
                 ->where('type', Rating::TYPE_TO_OWNER)
                 ->avg('score');
 
             User::where('id', $rental->owner_id)->update([
-                'rating_avg_as_owner' => round((float) $avg, 2),
+                'rating_avg_as_owner' => round((float) $ownerAvg, 2),
+            ]);
+
+            // ── Recalculate product rating_avg ──
+            $productAvg = Rating::whereIn('rental_request_id',
+                RentalRequest::where('product_id', $rental->product_id)
+                    ->where('status', RentalRequest::STATUS_COMPLETED)
+                    ->pluck('id')
+            )->where('type', Rating::TYPE_TO_OWNER)->avg('score');
+
+            $totalRented = RentalRequest::where('product_id', $rental->product_id)
+                ->where('status', RentalRequest::STATUS_COMPLETED)
+                ->count();
+
+            Product::where('id', $rental->product_id)->update([
+                'rating_avg'   => round((float) $productAvg, 2),
+                'total_rented' => $totalRented,
             ]);
         });
 

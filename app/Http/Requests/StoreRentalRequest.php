@@ -20,6 +20,7 @@ class StoreRentalRequest extends FormRequest
             'product_id' => ['required', 'exists:products,id'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
+            'quantity'   => ['required', 'integer', 'min:1'],
             'notes'      => ['nullable', 'string', 'max:500'],
         ];
     }
@@ -35,6 +36,9 @@ class StoreRentalRequest extends FormRequest
             'end_date.required'      => 'Tanggal selesai wajib diisi.',
             'end_date.date'          => 'Format tanggal selesai tidak valid.',
             'end_date.after_or_equal'=> 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+            'quantity.required'      => 'Jumlah unit wajib diisi.',
+            'quantity.integer'       => 'Jumlah unit harus berupa angka.',
+            'quantity.min'           => 'Jumlah unit minimal 1.',
             'notes.max'              => 'Catatan maksimal 500 karakter.',
         ];
     }
