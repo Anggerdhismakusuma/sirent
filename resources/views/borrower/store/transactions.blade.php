@@ -210,6 +210,10 @@
                                     true
                                 );
 
+                                $canCancelDispute =
+                                    $isDisputePending
+                                    && (int) $latestDispute->reporter_id === (int) auth()->id();
+
                                 $canDispute = in_array(
                                     $transactionStatus,
                                     ['APPROVED', 'ONGOING', 'COMPLETED'],
@@ -348,10 +352,36 @@
                                         </button>
 
                                     @elseif ($isDisputePending)
-                                        <span class="small text-muted">
-                                            <i class="bi bi-hourglass-split me-1"></i>
-                                            Waiting for admin
-                                        </span>
+                                        <div class="d-inline-flex flex-column align-items-end gap-2">
+                                            <span class="small text-muted">
+                                                <i class="bi bi-hourglass-split me-1"></i>
+                                                Waiting for admin
+                                            </span>
+
+                                            @if ($canCancelDispute)
+                                                <form
+                                                    action="{{ route(
+                                                        'borrower.store.disputes.destroy',
+                                                        $latestDispute
+                                                    ) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm(
+                                                        'Cancel this dispute? The report and its evidence will be permanently deleted.'
+                                                    )"
+                                                >
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                    >
+                                                        <i class="bi bi-x-circle me-1"></i>
+                                                        Cancel Dispute
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
 
                                     @elseif ($isDisputeFinished)
                                         <span class="small text-muted">
@@ -503,7 +533,7 @@
 
                                 <textarea
                                     id="historyDisputeDescription{{ $transaction->id }}"
-                                    name="description"
+                                    name="reason"
                                     class="form-control"
                                     rows="5"
                                     minlength="20"

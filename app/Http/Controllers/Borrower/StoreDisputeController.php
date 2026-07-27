@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Borrower;
 use App\Http\Controllers\Controller;
 use App\Models\Dispute;
 use App\Models\RentalRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -94,6 +97,86 @@ class StoreDisputeController extends Controller
         return back()->with(
             'success',
             'Dispute berhasil diajukan dan menunggu pemeriksaan admin.'
+        );
+    }
+
+    public function destroy(
+        Request $request,
+        Dispute $dispute
+    ): RedirectResponse {
+        $user = $request->user();
+
+        abort_unless(
+            $user->is_owner_active,
+            403,
+            'Store kamu belum aktif.'
+        );
+
+        $evidencePath = null;
+
+        DB::transaction(function () use (
+            $user,
+            $dispute,
+            &$evidencePath
+        ): void {
+            /*
+            * Ambil ulang dan lock row untuk mencegah race condition
+            * dengan proses approve/reject oleh admin.
+            */
+            $lockedDispute = Dispute::query()
+                ->with('rentalRequest')
+                ->lockForUpdate()
+                ->findOrFail($dispute->id);
+
+            /*
+            * Harus memenuhi dua kondisi:
+            * 1. User merupakan reporter dispute.
+            * 2. User merupakan owner dari transaksi tersebut.
+            *
+            * Ini mencegah dispute milik borrower dibatalkan melalui
+            * endpoint khusus store.
+            */
+            abort_unless(
+                (int) $lockedDispute->reporter_id === (int) $user->id
+                && (int) $lockedDispute->rentalRequest?->owner_id
+                    === (int) $user->id,
+                403,
+                'Kamu tidak berhak membatalkan dispute ini.'
+            );
+
+            if (! in_array(
+                $lockedDispute->status,
+                [
+                    Dispute::STATUS_OPEN,
+                    Dispute::STATUS_IN_REVIEW,
+                ],
+                true
+            )) {
+                throw ValidationException::withMessages([
+                    'dispute' =>
+                        'Dispute yang sudah selesai diproses tidak dapat dibatalkan.',
+                ]);
+            }
+
+            $evidencePath = $lockedDispute->evidence;
+
+            /*
+            * Delete row, bukan mengubah status.
+            * Setelah row hilang, transaksi dapat mengajukan dispute lagi.
+            */
+            $lockedDispute->delete();
+        });
+
+        /*
+        * Hapus evidence setelah transaksi database berhasil.
+        */
+        if ($evidencePath) {
+            Storage::disk('public')->delete($evidencePath);
+        }
+
+        return back()->with(
+            'success',
+            'Dispute berhasil dibatalkan.'
         );
     }
 }
