@@ -310,20 +310,26 @@ class StoreController extends Controller
             );
     }
 
-    public function deleteProduct(Product $product)
-    {
-        if ($product->owner_id !== auth()->id()) {
-            abort(403, 'Unauthorized access.');
-        }
+    public function deleteProduct(
+        Request $request,
+        Product $product
+    ) {
+        abort_unless(
+            (int) $product->owner_id === (int) $request->user()->id,
+            403,
+            'Unauthorized access.'
+        );
 
-        // Safe delete: jangan langsung hapus supaya history rental tetap aman
-        $product->update([
-            'status' => 'inactive',
-        ]);
+        $product->delete();
 
         return redirect()
-            ->route('borrower.dashboard', ['tab' => 'store'])
-            ->with('success', 'Item berhasil dihapus dari store.');
+            ->route('borrower.dashboard', [
+                'tab' => 'store',
+            ])
+            ->with(
+                'success',
+                'Item berhasil dihapus dari store.'
+            );
     }
 
     public function updateProduct(Request $request, Product $product)
