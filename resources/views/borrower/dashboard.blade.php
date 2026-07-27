@@ -111,7 +111,7 @@
                                 <i class="bi bi-shop text-white" style="font-size:20px; opacity:0.9;"></i>
                                 <span class="text-white fw-semibold"
                                     style="font-family:'Mona Sans',sans-serif; font-size:16px; {{ dashboardTabTextStyle('store', $activeTab) }}">
-                                    Store
+                                    {{ __('ui.store.nav') }}
                                 </span>
                             </a>
                         </div>

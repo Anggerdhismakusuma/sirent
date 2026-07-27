@@ -84,6 +84,11 @@ class DashboardController extends Controller
         $ongoingRent = RentalRequest::where('owner_id', $user->id)
             ->where('status', 'ongoing')
             ->count();
+        
+        // Total followers aktif milik store
+        $totalFollowers = DB::table('follows')
+            ->where('followee_id', $user->id)
+            ->count();
 
         $sellerStats = [
             'income' => (float) $totalIncome,
@@ -91,7 +96,7 @@ class DashboardController extends Controller
             'items' => (int) $availableItems,
             'ongoing' => (int) $ongoingRent,
             'rating' => number_format((float) $user->rating_avg_as_owner, 1) . ' / 5.0',
-            'followers' => 0,
+            'followers' => (int) $totalFollowers,
         ];
 
         // =========================
@@ -107,9 +112,16 @@ class DashboardController extends Controller
         $previousStart = $previousMonth->copy()->startOfMonth();
         $previousEnd = $previousMonth->copy()->endOfMonth();
 
-        $previousLabel = $previousMonth->format('M Y');
+        $previousLabel = $previousMonth
+            ->copy()
+            ->locale(app()->getLocale())
+            ->translatedFormat('M Y');
 
-        $makeGrowth = function ($current, $previous, $mode = 'percent') use ($previousLabel) {
+        $makeGrowth = function (
+            $current,
+            $previous,
+            $mode = 'percent'
+        ) use ($previousLabel) {
             $current = (float) $current;
             $previous = (float) $previous;
 
@@ -118,14 +130,18 @@ class DashboardController extends Controller
                     return [
                         'icon' => '▲',
                         'class' => 'text-success',
-                        'label' => 'New vs ' . $previousLabel,
+                        'label' => __('ui.store.stats.growth_new', [
+                            'period' => $previousLabel,
+                        ]),
                     ];
                 }
 
                 return [
                     'icon' => '•',
                     'class' => 'text-muted',
-                    'label' => 'No change vs ' . $previousLabel,
+                    'label' => __('ui.store.stats.growth_no_change', [
+                        'period' => $previousLabel,
+                    ]),
                 ];
             }
 
@@ -135,7 +151,9 @@ class DashboardController extends Controller
                 return [
                     'icon' => '•',
                     'class' => 'text-muted',
-                    'label' => 'No change vs ' . $previousLabel,
+                    'label' => __('ui.store.stats.growth_no_change', [
+                        'period' => $previousLabel,
+                    ]),
                 ];
             }
 
@@ -150,7 +168,10 @@ class DashboardController extends Controller
             return [
                 'icon' => $isUp ? '▲' : '▼',
                 'class' => $isUp ? 'text-success' : 'text-danger',
-                'label' => $value . ' vs ' . $previousLabel,
+                'label' => __('ui.store.stats.growth_value', [
+                    'value' => $value,
+                    'period' => $previousLabel,
+                ]),
             ];
         };
 
@@ -218,12 +239,32 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$previousStart, $previousEnd])
             ->avg('score') ?? 0;
 
+        $currentFollowers = DB::table('follows')
+            ->where('followee_id', $user->id)
+            ->whereBetween('created_at', [
+                $comparisonStart,
+                $comparisonEnd,
+            ])
+            ->count();
+
+        $previousFollowers = DB::table('follows')
+            ->where('followee_id', $user->id)
+            ->whereBetween('created_at', [
+                $previousStart,
+                $previousEnd,
+            ])
+            ->count();
+
         $sellerGrowth = [
             'income' => $makeGrowth($currentIncome, $previousIncome),
             'transactions' => $makeGrowth($currentTransactions, $previousTransactions),
             'items' => $makeGrowth($currentItems, $previousItems),
             'ongoing' => $makeGrowth($currentOngoing, $previousOngoing),
             'rating' => $makeGrowth($currentRating, $previousRating, 'diff'),
+            'followers' => $makeGrowth(
+                $currentFollowers,
+                $previousFollowers
+            ),
         ];
 
 
@@ -268,7 +309,15 @@ class DashboardController extends Controller
 
                 $row = $weeklyRows->get($weekKey);
 
-                $revenueLabels[] = $weekStart->format('d M') . ' - ' . $weekEnd->format('d M');
+                $revenueLabels[] = $weekStart
+                    ->copy()
+                    ->locale(app()->getLocale())
+                    ->translatedFormat('d M')
+                    . ' - '
+                    . $weekEnd
+                        ->copy()
+                        ->locale(app()->getLocale())
+                        ->translatedFormat('d M');
                 $revenueChart[] = $row ? (float) $row->total_revenue : 0;
                 $rentingTrendChart[] = $row ? (int) $row->total_booking : 0;
             }
@@ -295,7 +344,10 @@ class DashboardController extends Controller
 
                 $row = $monthlyRows->get($key);
 
-                $revenueLabels[] = $month->format('M Y');
+                $revenueLabels[] = $month
+                    ->copy()
+                    ->locale(app()->getLocale())
+                    ->translatedFormat('M Y');
                 $revenueChart[] = $row ? (float) $row->total_revenue : 0;
                 $rentingTrendChart[] = $row ? (int) $row->total_booking : 0;
             }
@@ -330,7 +382,7 @@ class DashboardController extends Controller
 
         if (empty($categoryChart)) {
             $categoryChart = [
-                'No Data' => 1,
+                __('ui.store.performance.no_data') => 1,
             ];
         }
 
@@ -364,7 +416,10 @@ class DashboardController extends Controller
             $row = $monthlyRecapRows->get($key);
 
             $monthlyRecap[] = [
-                'month' => $month->format('M Y'),
+                'month' => $month
+                    ->copy()
+                    ->locale(app()->getLocale())
+                    ->translatedFormat('M Y'),
                 'revenue' => $row ? (float) $row->revenue : 0,
                 'bookings' => $row ? (int) $row->bookings : 0,
                 'growth' => null
@@ -384,7 +439,9 @@ class DashboardController extends Controller
         // Monthly Growth Note
         // =========================
 
-        $monthlyGrowthNote = 'Not enough previous month revenue data for comparison.';
+        $monthlyGrowthNote = __(
+            'ui.store.performance.no_growth_data'
+        );
 
         $lastMonth = end($monthlyRecap);
         $previousMonth = $monthlyRecap[count($monthlyRecap) - 2] ?? null;
@@ -394,16 +451,23 @@ class DashboardController extends Controller
             $previousMonth &&
             (float) $previousMonth['revenue'] > 0
         ) {
-            $growth = (($lastMonth['revenue'] - $previousMonth['revenue']) / $previousMonth['revenue']) * 100;
-            $direction = $growth >= 0 ? 'increased' : 'decreased';
+            $growth = (
+                (
+                    $lastMonth['revenue']
+                    - $previousMonth['revenue']
+                )
+                / $previousMonth['revenue']
+            ) * 100;
 
-            $monthlyGrowthNote = sprintf(
-                'Revenue in %s %s %.1f%% compared to %s',
-                $lastMonth['month'],
-                $direction,
-                abs($growth),
-                $previousMonth['month']
-            );
+            $growthTranslationKey = $growth >= 0
+                ? 'ui.store.performance.revenue_increased'
+                : 'ui.store.performance.revenue_decreased';
+
+            $monthlyGrowthNote = __($growthTranslationKey, [
+                'current' => $lastMonth['month'],
+                'growth' => number_format(abs($growth), 1),
+                'previous' => $previousMonth['month'],
+            ]);
         }
 
 
