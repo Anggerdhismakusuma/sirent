@@ -197,6 +197,11 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         [StoreDisputeController::class, 'store']
     )->name('borrower.store.disputes.store');
 
+    Route::delete(
+        '/dashboard/store/disputes/{dispute}',
+        [StoreDisputeController::class, 'destroy']
+    )->name('borrower.store.disputes.destroy');
+
     Route::get('/aktivitas', function () {
         return view('home');
     })->name('borrower.activity');

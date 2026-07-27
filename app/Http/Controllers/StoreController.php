@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Product;
 use App\Models\Rating;
@@ -81,36 +82,155 @@ class StoreController extends Controller
 
     public function storeProduct(Request $request)
     {
-        $user = auth()->user();
+        $user = $request->user();
 
-        if (! $user->is_owner_active) {
-            return redirect()
-                ->route('borrower.dashboard', ['tab' => 'store'])
-                ->with('error', 'You need to open your store first.');
+        abort_unless(
+            $user->is_owner_active,
+            403,
+            'You need to open your store first.'
+        );
+
+        $validated = $request->validateWithBag(
+            'addProduct',
+            [
+                'title' => [
+                    'required',
+                    'string',
+                    'max:150',
+                ],
+
+                'category_id' => [
+                    'required',
+                    'exists:categories,id',
+                ],
+
+                'description' => [
+                    'required',
+                    'string',
+                ],
+
+                'condition' => [
+                    'required',
+                    'in:new,like_new,good,fair',
+                ],
+
+                'price_per_day' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                ],
+
+                'deposit_amount' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                ],
+
+                'location_city' => [
+                    'required',
+                    'string',
+                    'max:100',
+                ],
+
+                'location_detail' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
+
+                'status' => [
+                    'required',
+                    'in:active,inactive,draft',
+                ],
+
+                'images' => [
+                    'required',
+                    'array',
+                    'min:1',
+                    'max:5',
+                ],
+
+                'images.*' => [
+                    'required',
+                    'image',
+                    'mimes:jpg,jpeg,png,webp',
+                    'max:4096',
+                ],
+            ]
+        );
+
+        $storedImagePaths = [];
+
+        try {
+            DB::transaction(function () use (
+                $request,
+                $user,
+                $validated,
+                &$storedImagePaths
+            ): void {
+                $slugBase = Str::slug($validated['title']);
+
+                if ($slugBase === '') {
+                    $slugBase = 'item';
+                }
+
+                $slug = $slugBase
+                    . '-'
+                    . Str::lower(Str::random(8));
+
+                $product = Product::create([
+                    'owner_id' => $user->id,
+                    'category_id' => $validated['category_id'],
+                    'title' => $validated['title'],
+                    'slug' => $slug,
+                    'description' => $validated['description'],
+                    'condition' => $validated['condition'],
+                    'price_per_day' => $validated['price_per_day'],
+                    'deposit_amount' => $validated['deposit_amount'],
+                    'location_city' => $validated['location_city'],
+                    'location_detail' =>
+                        $validated['location_detail'] ?? null,
+                    'status' => $validated['status'],
+                    'rating_avg' => 0,
+                    'total_rented' => 0,
+                ]);
+
+                foreach (
+                    $request->file('images', [])
+                    as $index => $image
+                ) {
+                    $imagePath = $image->store(
+                        'products',
+                        'public'
+                    );
+
+                    $storedImagePaths[] = $imagePath;
+
+                    $product->images()->create([
+                        'image_path' => $imagePath,
+                        'is_primary' => $index === 0,
+                        'sort_order' => $index,
+                    ]);
+                }
+            });
+        } catch (\Throwable $exception) {
+            /*
+            * Kalau database gagal setelah gambar sempat tersimpan,
+            * hapus gambar agar tidak menjadi file orphan.
+            */
+            foreach ($storedImagePaths as $imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            throw $exception;
         }
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'price_per_day' => ['required', 'numeric', 'min:0'],
-            'status' => ['required', 'in:active,inactive'],
-        ]);
-
-        Product::create([
-            'owner_id' => $user->id,
-            'category_id' => $validated['category_id'],
-            'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']) . '-' . time(),
-            'description' => $validated['description'] ?? null,
-            'price_per_day' => $validated['price_per_day'],
-            'status' => $validated['status'],
-            'total_rented' => 0,
-        ]);
 
         return redirect()
             ->route('borrower.dashboard', ['tab' => 'store'])
-            ->with('success', 'Item berhasil ditambahkan.');
+            ->with(
+                'success',
+                'Item berhasil ditambahkan.'
+            );
     }
 
     public function deleteProduct(Product $product)

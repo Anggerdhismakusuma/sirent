@@ -493,6 +493,10 @@
                                         true
                                     );
 
+                                    $canCancelDispute =
+                                        $isDisputePending
+                                        && (int) $latestDispute->reporter_id === (int) auth()->id();
+
                                     $canDispute = in_array(
                                         $status,
                                         ['APPROVED', 'ONGOING', 'COMPLETED'],
@@ -611,10 +615,36 @@
                                             </button>
 
                                         @elseif ($isDisputePending)
-                                            <span class="small text-muted">
-                                                <i class="bi bi-hourglass-split me-1"></i>
-                                                Waiting for admin
-                                            </span>
+                                            <div class="d-inline-flex flex-column align-items-end gap-2">
+                                                <span class="small text-muted">
+                                                    <i class="bi bi-hourglass-split me-1"></i>
+                                                    Waiting for admin
+                                                </span>
+
+                                                @if ($canCancelDispute)
+                                                    <form
+                                                        action="{{ route(
+                                                            'borrower.store.disputes.destroy',
+                                                            $latestDispute
+                                                        ) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm(
+                                                            'Cancel this dispute? The report and its evidence will be permanently deleted.'
+                                                        )"
+                                                    >
+                                                        @csrf
+                                                        @method('DELETE')
+
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                        >
+                                                            <i class="bi bi-x-circle me-1"></i>
+                                                            Cancel Dispute
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
 
                                         @elseif ($isDisputeFinished)
                                             <span class="small text-muted">
@@ -1078,337 +1108,336 @@
                         aria-hidden="true"
                     >
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content border-0 rounded-4">
-                                <form
-                                    action="{{ route('borrower.store.products.update', $item) }}"
-                                    method="POST"
-                                    enctype="multipart/form-data"
-                                >
-                                    @csrf
-                                    @method('PATCH')
+                            <form
+                                action="{{ route('borrower.store.products.update', $item) }}"
+                                class="modal-content border-0 rounded-4"
+                                method="POST"
+                                enctype="multipart/form-data"
+                            >
+                                @csrf
+                                @method('PATCH')
 
-                                    <div class="modal-header border-0 px-4 pt-4">
-                                        <div>
-                                            <h5
-                                                class="modal-title fw-bold text-primary"
-                                                id="editStoreItemModalLabel{{ $item->id }}"
-                                            >
-                                                Edit Store Item
-                                            </h5>
+                                <div class="modal-header border-0 px-4 pt-4">
+                                    <div>
+                                        <h5
+                                            class="modal-title fw-bold text-primary"
+                                            id="editStoreItemModalLabel{{ $item->id }}"
+                                        >
+                                            Edit Store Item
+                                        </h5>
 
-                                            <small class="text-muted">
-                                                Update the information and availability of this item.
-                                            </small>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="modal"
-                                            aria-label="Close"
-                                        ></button>
+                                        <small class="text-muted">
+                                            Update the information and availability of this item.
+                                        </small>
                                     </div>
 
-                                    <div class="modal-body px-4 pb-2">
-                                        <div class="mb-3">
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+
+                                <div class="modal-body px-4 pb-2">
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductTitle{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            Item Name
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            id="editProductTitle{{ $item->id }}"
+                                            name="title"
+                                            class="form-control"
+                                            value="{{ $item->title }}"
+                                            maxlength="150"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label
-                                                for="editProductTitle{{ $item->id }}"
+                                                for="editProductCategory{{ $item->id }}"
                                                 class="form-label fw-bold"
                                             >
-                                                Item Name
-                                            </label>
-
-                                            <input
-                                                type="text"
-                                                id="editProductTitle{{ $item->id }}"
-                                                name="title"
-                                                class="form-control"
-                                                value="{{ $item->title }}"
-                                                maxlength="150"
-                                                required
-                                            >
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductCategory{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Category
-                                                </label>
-
-                                                <select
-                                                    id="editProductCategory{{ $item->id }}"
-                                                    name="category_id"
-                                                    class="form-select"
-                                                    required
-                                                >
-                                                    <option value="">Select category</option>
-
-                                                    @foreach ($categories as $category)
-                                                        <option
-                                                            value="{{ $category->id }}"
-                                                            @selected(
-                                                                (string) $item->category_id
-                                                                === (string) $category->id
-                                                            )
-                                                        >
-                                                            {{ $category->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductCondition{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Item Condition
-                                                </label>
-
-                                                <select
-                                                    id="editProductCondition{{ $item->id }}"
-                                                    name="condition"
-                                                    class="form-select"
-                                                    required
-                                                >
-                                                    <option
-                                                        value="new"
-                                                        @selected($item->condition === 'new')
-                                                    >
-                                                        New
-                                                    </option>
-
-                                                    <option
-                                                        value="like_new"
-                                                        @selected($item->condition === 'like_new')
-                                                    >
-                                                        Like New
-                                                    </option>
-
-                                                    <option
-                                                        value="good"
-                                                        @selected($item->condition === 'good')
-                                                    >
-                                                        Good Condition
-                                                    </option>
-
-                                                    <option
-                                                        value="fair"
-                                                        @selected($item->condition === 'fair')
-                                                    >
-                                                        Fair Condition
-                                                    </option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label
-                                                for="editProductDescription{{ $item->id }}"
-                                                class="form-label fw-bold"
-                                            >
-                                                Description
-                                            </label>
-
-                                            <textarea
-                                                id="editProductDescription{{ $item->id }}"
-                                                name="description"
-                                                class="form-control"
-                                                rows="4"
-                                                required
-                                            >{{ $item->description }}</textarea>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductPrice{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Price per Day
-                                                </label>
-
-                                                <div class="input-group">
-                                                    <span class="input-group-text">Rp</span>
-
-                                                    <input
-                                                        type="number"
-                                                        id="editProductPrice{{ $item->id }}"
-                                                        name="price_per_day"
-                                                        class="form-control"
-                                                        value="{{ (int) $item->price_per_day }}"
-                                                        min="0"
-                                                        step="1000"
-                                                        required
-                                                    >
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductDeposit{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Deposit Amount
-                                                </label>
-
-                                                <div class="input-group">
-                                                    <span class="input-group-text">Rp</span>
-
-                                                    <input
-                                                        type="number"
-                                                        id="editProductDeposit{{ $item->id }}"
-                                                        name="deposit_amount"
-                                                        class="form-control"
-                                                        value="{{ (int) ($item->deposit_amount ?? 0) }}"
-                                                        min="0"
-                                                        step="1000"
-                                                        required
-                                                    >
-                                                </div>
-
-                                                <small class="text-muted">
-                                                    Enter 0 if no deposit is required.
-                                                </small>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-5 mb-3">
-                                                <label
-                                                    for="editProductCity{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Location City
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    id="editProductCity{{ $item->id }}"
-                                                    name="location_city"
-                                                    class="form-control"
-                                                    value="{{ $item->location_city }}"
-                                                    maxlength="100"
-                                                    required
-                                                >
-                                            </div>
-
-                                            <div class="col-md-7 mb-3">
-                                                <label
-                                                    for="editProductLocationDetail{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Location Detail
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    id="editProductLocationDetail{{ $item->id }}"
-                                                    name="location_detail"
-                                                    class="form-control"
-                                                    value="{{ $item->location_detail }}"
-                                                    maxlength="255"
-                                                >
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label
-                                                for="editProductStatus{{ $item->id }}"
-                                                class="form-label fw-bold"
-                                            >
-                                                Product Status
+                                                Category
                                             </label>
 
                                             <select
-                                                id="editProductStatus{{ $item->id }}"
-                                                name="status"
+                                                id="editProductCategory{{ $item->id }}"
+                                                name="category_id"
+                                                class="form-select"
+                                                required
+                                            >
+                                                <option value="">Select category</option>
+
+                                                @foreach ($categories as $category)
+                                                    <option
+                                                        value="{{ $category->id }}"
+                                                        @selected(
+                                                            (string) $item->category_id
+                                                            === (string) $category->id
+                                                        )
+                                                    >
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="editProductCondition{{ $item->id }}"
+                                                class="form-label fw-bold"
+                                            >
+                                                Item Condition
+                                            </label>
+
+                                            <select
+                                                id="editProductCondition{{ $item->id }}"
+                                                name="condition"
                                                 class="form-select"
                                                 required
                                             >
                                                 <option
-                                                    value="active"
-                                                    @selected($item->status === 'active')
+                                                    value="new"
+                                                    @selected($item->condition === 'new')
                                                 >
-                                                    Active
+                                                    New
                                                 </option>
 
                                                 <option
-                                                    value="inactive"
-                                                    @selected($item->status === 'inactive')
+                                                    value="like_new"
+                                                    @selected($item->condition === 'like_new')
                                                 >
-                                                    Inactive
+                                                    Like New
                                                 </option>
 
                                                 <option
-                                                    value="draft"
-                                                    @selected($item->status === 'draft')
+                                                    value="good"
+                                                    @selected($item->condition === 'good')
                                                 >
-                                                    Draft
+                                                    Good Condition
+                                                </option>
+
+                                                <option
+                                                    value="fair"
+                                                    @selected($item->condition === 'fair')
+                                                >
+                                                    Fair Condition
                                                 </option>
                                             </select>
                                         </div>
+                                    </div>
 
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold d-block">
-                                                Current Main Image
-                                            </label>
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductDescription{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            Description
+                                        </label>
 
-                                            <img
-                                                src="{{ $editImagePath
-                                                    ? asset('storage/' . $editImagePath)
-                                                    : asset('images/placeholder-product.png') }}"
-                                                alt="{{ $item->title }}"
-                                                class="rounded-3 border"
-                                                style="width: 130px; height: 100px; object-fit: cover;"
-                                            >
-                                        </div>
+                                        <textarea
+                                            id="editProductDescription{{ $item->id }}"
+                                            name="description"
+                                            class="form-control"
+                                            rows="4"
+                                            required
+                                        >{{ $item->description }}</textarea>
+                                    </div>
 
-                                        <div class="mb-3">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label
-                                                for="editProductImages{{ $item->id }}"
+                                                for="editProductPrice{{ $item->id }}"
                                                 class="form-label fw-bold"
                                             >
-                                                Replace Product Images
+                                                Price per Day
                                             </label>
 
-                                            <input
-                                                type="file"
-                                                id="editProductImages{{ $item->id }}"
-                                                name="images[]"
-                                                class="form-control"
-                                                accept="image/jpeg,image/png,image/webp"
-                                                multiple
+                                            <div class="input-group">
+                                                <span class="input-group-text">Rp</span>
+
+                                                <input
+                                                    type="number"
+                                                    id="editProductPrice{{ $item->id }}"
+                                                    name="price_per_day"
+                                                    class="form-control"
+                                                    value="{{ (int) $item->price_per_day }}"
+                                                    min="0"
+                                                    step="1000"
+                                                    required
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="editProductDeposit{{ $item->id }}"
+                                                class="form-label fw-bold"
                                             >
+                                                Deposit Amount
+                                            </label>
+
+                                            <div class="input-group">
+                                                <span class="input-group-text">Rp</span>
+
+                                                <input
+                                                    type="number"
+                                                    id="editProductDeposit{{ $item->id }}"
+                                                    name="deposit_amount"
+                                                    class="form-control"
+                                                    value="{{ (int) ($item->deposit_amount ?? 0) }}"
+                                                    min="0"
+                                                    step="1000"
+                                                    required
+                                                >
+                                            </div>
 
                                             <small class="text-muted">
-                                                Leave this empty to keep the existing images.
-                                                Uploading new files will replace the existing image set.
+                                                Enter 0 if no deposit is required.
                                             </small>
                                         </div>
                                     </div>
 
-                                    <div class="modal-footer border-0 px-4 pb-4">
-                                        <button
-                                            type="button"
-                                            class="btn btn-light rounded-pill px-4"
-                                            data-bs-dismiss="modal"
-                                        >
-                                            Cancel
-                                        </button>
+                                    <div class="row">
+                                        <div class="col-md-5 mb-3">
+                                            <label
+                                                for="editProductCity{{ $item->id }}"
+                                                class="form-label fw-bold"
+                                            >
+                                                Location City
+                                            </label>
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-primary rounded-pill px-4"
-                                        >
-                                            Save Changes
-                                        </button>
+                                            <input
+                                                type="text"
+                                                id="editProductCity{{ $item->id }}"
+                                                name="location_city"
+                                                class="form-control"
+                                                value="{{ $item->location_city }}"
+                                                maxlength="100"
+                                                required
+                                            >
+                                        </div>
+
+                                        <div class="col-md-7 mb-3">
+                                            <label
+                                                for="editProductLocationDetail{{ $item->id }}"
+                                                class="form-label fw-bold"
+                                            >
+                                                Location Detail
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="editProductLocationDetail{{ $item->id }}"
+                                                name="location_detail"
+                                                class="form-control"
+                                                value="{{ $item->location_detail }}"
+                                                maxlength="255"
+                                            >
+                                        </div>
                                     </div>
-                                </form>
-                            </div>
+
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductStatus{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            Product Status
+                                        </label>
+
+                                        <select
+                                            id="editProductStatus{{ $item->id }}"
+                                            name="status"
+                                            class="form-select"
+                                            required
+                                        >
+                                            <option
+                                                value="active"
+                                                @selected($item->status === 'active')
+                                            >
+                                                Active
+                                            </option>
+
+                                            <option
+                                                value="inactive"
+                                                @selected($item->status === 'inactive')
+                                            >
+                                                Inactive
+                                            </option>
+
+                                            <option
+                                                value="draft"
+                                                @selected($item->status === 'draft')
+                                            >
+                                                Draft
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold d-block">
+                                            Current Main Image
+                                        </label>
+
+                                        <img
+                                            src="{{ $editImagePath
+                                                ? asset('storage/' . $editImagePath)
+                                                : asset('images/placeholder-product.png') }}"
+                                            alt="{{ $item->title }}"
+                                            class="rounded-3 border"
+                                            style="width: 130px; height: 100px; object-fit: cover;"
+                                        >
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductImages{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            Replace Product Images
+                                        </label>
+
+                                        <input
+                                            type="file"
+                                            id="editProductImages{{ $item->id }}"
+                                            name="images[]"
+                                            class="form-control"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            multiple
+                                        >
+
+                                        <small class="text-muted">
+                                            Leave this empty to keep the existing images.
+                                            Uploading new files will replace the existing image set.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-0 px-4 pb-4">
+                                    <button
+                                        type="button"
+                                        class="btn btn-light rounded-pill px-4"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary rounded-pill px-4"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 @endforeach
@@ -1467,14 +1496,14 @@
                                             type="text"
                                             id="productTitle"
                                             name="title"
-                                            class="form-control @error('title') is-invalid @enderror"
+                                            class="form-control @error('title', 'addProduct') is-invalid @enderror"
                                             value="{{ old('title') }}"
                                             placeholder="Example: Canon EOS M50"
                                             maxlength="150"
                                             required
                                         >
 
-                                        @error('title')
+                                        @error('title', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -1491,7 +1520,7 @@
                                             <select
                                                 id="productCategory"
                                                 name="category_id"
-                                                class="form-select @error('category_id') is-invalid @enderror"
+                                                class="form-select @error('category_id', 'addProduct') is-invalid @enderror"
                                                 required
                                             >
                                                 <option value="">
@@ -1508,7 +1537,7 @@
                                                 @endforeach
                                             </select>
 
-                                            @error('category_id')
+                                            @error('category_id', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1524,7 +1553,7 @@
                                             <select
                                                 id="productCondition"
                                                 name="condition"
-                                                class="form-select @error('condition') is-invalid @enderror"
+                                                class="form-select @error('condition', 'addProduct') is-invalid @enderror"
                                                 required
                                             >
                                                 <option value="">
@@ -1560,7 +1589,7 @@
                                                 </option>
                                             </select>
 
-                                            @error('condition')
+                                            @error('condition', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1577,13 +1606,13 @@
                                         <textarea
                                             id="productDescription"
                                             name="description"
-                                            class="form-control @error('description') is-invalid @enderror"
+                                            class="form-control @error('description', 'addProduct') is-invalid @enderror"
                                             rows="4"
                                             placeholder="Describe the item, specifications, included accessories, and usage information..."
                                             required
                                         >{{ old('description') }}</textarea>
 
-                                        @error('description')
+                                        @error('description', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -1606,7 +1635,7 @@
                                                     type="number"
                                                     id="productPrice"
                                                     name="price_per_day"
-                                                    class="form-control @error('price_per_day') is-invalid @enderror"
+                                                    class="form-control @error('price_per_day', 'addProduct') is-invalid @enderror"
                                                     value="{{ old('price_per_day') }}"
                                                     placeholder="50000"
                                                     min="0"
@@ -1614,7 +1643,7 @@
                                                     required
                                                 >
 
-                                                @error('price_per_day')
+                                                @error('price_per_day', 'addProduct')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -1637,7 +1666,7 @@
                                                     type="number"
                                                     id="productDeposit"
                                                     name="deposit_amount"
-                                                    class="form-control @error('deposit_amount') is-invalid @enderror"
+                                                    class="form-control @error('deposit_amount', 'addProduct') is-invalid @enderror"
                                                     value="{{ old('deposit_amount', 0) }}"
                                                     placeholder="0"
                                                     min="0"
@@ -1645,7 +1674,7 @@
                                                     required
                                                 >
 
-                                                @error('deposit_amount')
+                                                @error('deposit_amount', 'addProduct')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -1669,14 +1698,14 @@
                                                 type="text"
                                                 id="productCity"
                                                 name="location_city"
-                                                class="form-control @error('location_city') is-invalid @enderror"
+                                                class="form-control @error('location_city', 'addProduct') is-invalid @enderror"
                                                 value="{{ old('location_city') }}"
                                                 placeholder="Example: Bandung"
                                                 maxlength="100"
                                                 required
                                             >
 
-                                            @error('location_city')
+                                            @error('location_city', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1693,13 +1722,13 @@
                                                 type="text"
                                                 id="productLocationDetail"
                                                 name="location_detail"
-                                                class="form-control @error('location_detail') is-invalid @enderror"
+                                                class="form-control @error('location_detail', 'addProduct') is-invalid @enderror"
                                                 value="{{ old('location_detail') }}"
                                                 placeholder="Example: Kecamatan Coblong"
                                                 maxlength="255"
                                             >
 
-                                            @error('location_detail')
+                                            @error('location_detail', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1718,8 +1747,8 @@
                                             id="productImages"
                                             name="images[]"
                                             class="form-control
-                                                @error('images') is-invalid @enderror
-                                                @error('images.*') is-invalid @enderror"
+                                                @error('images', 'addProduct') is-invalid @enderror
+                                                @error('images.*', 'addProduct') is-invalid @enderror"
                                             accept="image/jpeg,image/png,image/webp"
                                             multiple
                                             required
@@ -1729,13 +1758,13 @@
                                             Maximum 5 images. The first image will become the main image.
                                         </small>
 
-                                        @error('images')
+                                        @error('images', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
                                         @enderror
 
-                                        @error('images.*')
+                                        @error('images.*', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -1986,4 +2015,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+@if ($errors->addProduct->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalElement = document.getElementById(
+                'addStoreItemModal'
+            );
+
+            if (
+                modalElement &&
+                typeof bootstrap !== 'undefined'
+            ) {
+                bootstrap.Modal
+                    .getOrCreateInstance(modalElement)
+                    .show();
+            }
+        });
+    </script>
+@endif
 @endpush
