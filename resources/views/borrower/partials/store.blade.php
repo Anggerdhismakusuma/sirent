@@ -3,12 +3,12 @@
     @if (!$user->is_owner_active)
         {{-- EMPTY STORE STATE --}}
         <div class="empty-store-state">
-            <h1>OOPS, YOU HAVE NO STORE!</h1>
+            <h1>{{ __('ui.store.empty_store.title') }}</h1>
 
             <form action="{{ route('borrower.store.open') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn-open-store">
-                    Open Store NOW!
+                    {{ __('ui.store.empty_store.open_now') }}
                 </button>
             </form>
         </div>
@@ -16,7 +16,9 @@
         {{-- SELLER DASHBOARD --}}
         <div class="seller-dashboard">
 
-            <h5 class="seller-section-title mb-4">Rental Statistics</h5>
+            <h5 class="seller-section-title mb-4">
+                {{ __('ui.store.stats.title') }}
+            </h5>
 
             {{-- STATS CARDS --}}
             <div class="seller-stats-grid mb-4">
@@ -25,11 +27,11 @@
                     <div class="stat-icon bg-primary-subtle text-primary">
                         <i class="bi bi-wallet2"></i>
                     </div>
-                    <small>Total Rent Income</small>
+                    <small>{{ __('ui.store.stats.income') }}</small>
                     <h4>Rp {{ number_format($sellerStats['income'] ?? 0, 0, ',', '.') }}</h4>
                     <p class="{{ $sellerGrowth['income']['class'] ?? 'text-muted' }}">
                         {{ $sellerGrowth['income']['icon'] ?? '•' }}
-                        {{ $sellerGrowth['income']['label'] ?? 'No comparison data' }}
+                        {{ $sellerGrowth['income']['label'] ?? __('ui.store.stats.no_comparison') }}
                     </p>
                 </div>
 
@@ -37,11 +39,11 @@
                     <div class="stat-icon bg-success-subtle text-success">
                         <i class="bi bi-bag-check"></i>
                     </div>
-                    <small>Total Transaction</small>
+                    <small>{{ __('ui.store.stats.transactions') }}</small>
                     <h4>{{ $sellerStats['transactions'] ?? 0 }}</h4>
                     <p class="{{ $sellerGrowth['transactions']['class'] ?? 'text-muted' }}">
                         {{ $sellerGrowth['transactions']['icon'] ?? '•' }}
-                        {{ $sellerGrowth['transactions']['label'] ?? 'No comparison data' }}
+                        {{ $sellerGrowth['transactions']['label'] ?? __('ui.store.stats.no_comparison') }}
                     </p>
                 </div>
 
@@ -49,11 +51,11 @@
                     <div class="stat-icon bg-info-subtle text-info">
                         <i class="bi bi-box-seam"></i>
                     </div>
-                    <small>Available Items</small>
+                    <small>{{ __('ui.store.stats.items') }}</small>
                     <h4>{{ $sellerStats['items'] ?? 0 }}</h4>
                     <p class="{{ $sellerGrowth['items']['class'] ?? 'text-muted' }}">
                         {{ $sellerGrowth['items']['icon'] ?? '•' }}
-                        {{ $sellerGrowth['items']['label'] ?? 'No comparison data' }}
+                        {{ $sellerGrowth['items']['label'] ?? __('ui.store.stats.no_comparison') }}
                     </p>
                 </div>
 
@@ -61,11 +63,11 @@
                     <div class="stat-icon bg-danger-subtle text-danger">
                         <i class="bi bi-arrow-left-right"></i>
                     </div>
-                    <small>Ongoing Rent</small>
+                    <small>{{ __('ui.store.stats.ongoing') }}</small>
                     <h4>{{ $sellerStats['ongoing'] ?? 0 }}</h4>
                     <p class="{{ $sellerGrowth['ongoing']['class'] ?? 'text-muted' }}">
                         {{ $sellerGrowth['ongoing']['icon'] ?? '•' }}
-                        {{ $sellerGrowth['ongoing']['label'] ?? 'No comparison data' }}
+                        {{ $sellerGrowth['ongoing']['label'] ?? __('ui.store.stats.no_comparison') }}
                     </p>
                 </div>
 
@@ -73,11 +75,11 @@
                     <div class="stat-icon bg-warning-subtle text-warning">
                         <i class="bi bi-star"></i>
                     </div>
-                    <small>Average Rating</small>
+                    <small>{{ __('ui.store.stats.rating') }}</small>
                     <h4>{{ $sellerStats['rating'] ?? '0.0 / 5.0' }}</h4>
                     <p class="{{ $sellerGrowth['rating']['class'] ?? 'text-muted' }}">
                         {{ $sellerGrowth['rating']['icon'] ?? '•' }}
-                        {{ $sellerGrowth['rating']['label'] ?? 'No comparison data' }}
+                        {{ $sellerGrowth['rating']['label'] ?? __('ui.store.stats.no_comparison') }}
                     </p>
                 </div>
 
@@ -85,11 +87,27 @@
                     <div class="stat-icon bg-danger-subtle text-danger">
                         <i class="bi bi-people"></i>
                     </div>
-                    <small>Followers</small>
-                    <h4>{{ $sellerStats['followers'] ?? 0 }}</h4>
+
+                    <small>{{ __('ui.store.stats.followers') }}</small>
+
+                    <h4>
+                        {{ number_format(
+                            $sellerStats['followers'] ?? 0,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+                    </h4>
+
+                    <p class="{{ $sellerGrowth['followers']['class']
+                        ?? 'text-muted' }}"
+                    >
+                        {{ $sellerGrowth['followers']['icon'] ?? '•' }}
+
+                        {{ $sellerGrowth['followers']['label']
+                            ?? __('ui.store.stats.no_comparison') }}
+                    </p>
                 </div>
-
-
             </div>
 
 
@@ -99,29 +117,20 @@
             @endphp
 
             <div class="seller-panel mb-4">
-                @if (session('success'))
-                    <div class="alert alert-success rounded-3">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->has('rental_request') || $errors->has('rejection_reason'))
-                    <div class="alert alert-danger rounded-3">
-                        {{ $errors->first('rental_request')
-                            ?: $errors->first('rejection_reason') }}
-                    </div>
-                @endif
+                
 
                 <div class="seller-panel-header mb-3">
                     <div>
-                        <h6 class="mb-1">Incoming Rental Requests</h6>
+                        <h6 class="mb-1">{{ __('ui.store.incoming.title') }}</h6>
                         <small class="text-muted">
-                            Review pending requests before the rental period is confirmed.
+                            {{ __('ui.store.incoming.subtitle') }}
                         </small>
                     </div>
 
                     <span class="badge rounded-pill text-bg-primary px-3 py-2">
-                        {{ $pendingRentalRequests->count() }} Pending
+                        {{ __('ui.store.incoming.pending_count', [
+                            'count' => $pendingRentalRequests->count(),
+                        ]) }}
                     </span>
                 </div>
 
@@ -141,7 +150,7 @@
                                     src="{{ $requestImagePath
                                         ? asset('storage/' . $requestImagePath)
                                         : asset('images/placeholder-product.png') }}"
-                                    alt="{{ $requestProduct?->title ?? 'Rental item' }}"
+                                    alt="{{ $requestProduct?->title ?? __('ui.store.incoming.rental_item') }}"
                                     class="rounded-3 border"
                                     style="width: 110px; height: 90px; object-fit: cover;"
                                 >
@@ -150,65 +159,80 @@
                             <div class="col-12 col-lg">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                     <h6 class="fw-bold mb-0">
-                                        {{ $requestProduct?->title ?? 'Product unavailable' }}
+                                        {{ $requestProduct?->title ?? __('ui.store.incoming.product_unavailable') }}
                                     </h6>
 
                                     @if ($isExpired)
                                         <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">
                                             <i class="bi bi-clock-history me-1"></i>
-                                            Expired
+                                            {{ __('ui.store.incoming.expired') }}
                                         </span>
                                     @else
                                         <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis">
-                                            Pending Approval
+                                            {{ __('ui.store.incoming.pending_approval') }}
                                         </span>
                                     @endif
                                 </div>
 
                                 <div class="small text-muted mb-2">
-                                    Request #{{ $rentalRequest->id }}
-                                    · Submitted {{ $rentalRequest->created_at?->format('d M Y, H:i') }}
+                                    {{ __('ui.store.incoming.request_submitted', [
+                                        'id' => $rentalRequest->id,
+                                        'date' => $rentalRequest->created_at
+                                            ?->locale(app()->getLocale())
+                                            ?->translatedFormat('d M Y, H:i'),
+                                    ]) }}
                                 </div>
 
                                 <div class="row g-2 small">
                                     <div class="col-md-6">
-                                        <span class="text-muted">Renter:</span>
-                                        <strong>{{ $requestBorrower?->name ?? 'Unknown user' }}</strong>
+                                        <span class="text-muted">{{ __('ui.store.incoming.renter') }}</span>
+                                        <strong>{{ $requestBorrower?->name ?? __('ui.store.incoming.unknown_user') }}</strong>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <span class="text-muted">Trust Score:</span>
-                                        <strong>{{ $requestBorrower?->rating_avg_as_borrower ?? 'Unknown user' }}</strong>
+                                        <span class="text-muted">{{ __('ui.store.incoming.trust_score') }}</span>
+                                        <strong>{{ $requestBorrower?->rating_avg_as_borrower
+        ?? __('ui.store.incoming.unknown_user') }}</strong>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <span class="text-muted">Email:</span>
+                                        <span class="text-muted">{{ __('ui.store.incoming.email') }}</span>
                                         <strong>{{ $requestBorrower?->email ?? '-' }}</strong>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <span class="text-muted">Rental period:</span>
+                                        <span class="text-muted">{{ __('ui.store.incoming.rental_period') }}</span>
                                         <strong>
-                                            {{ $rentalRequest->start_date?->format('d M Y') }}
+                                            {{ $rentalRequest->start_date
+                                                ?->locale(app()->getLocale())
+                                                ?->translatedFormat('d M Y') }}
                                             –
-                                            {{ $rentalRequest->end_date?->format('d M Y') }}
+                                            {{ $rentalRequest->end_date
+                                                ?->locale(app()->getLocale())
+                                                ?->translatedFormat('d M Y') }}
                                         </strong>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <span class="text-muted">Duration:</span>
-                                        <strong>{{ $rentalRequest->total_days }} day(s)</strong>
+                                        <span class="text-muted">{{ __('ui.store.incoming.duration') }}</span>
+                                        <strong>
+                                            {{ trans_choice(
+                                                'ui.store.incoming.duration_days',
+                                                $rentalRequest->total_days,
+                                                ['count' => $rentalRequest->total_days]
+                                            ) }}
+                                        </strong>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <span class="text-muted">Rental total:</span>
+                                        <span class="text-muted">{{ __('ui.store.incoming.rental_total') }}</span>
                                         <strong class="text-primary">
                                             Rp {{ number_format((float) $rentalRequest->total_price, 0, ',', '.') }}
                                         </strong>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <span class="text-muted">Deposit:</span>
+                                        <span class="text-muted">{{ __('ui.store.incoming.deposit') }}</span>
                                         <strong>
                                             Rp {{ number_format((float) ($requestProduct?->deposit_amount ?? 0), 0, ',', '.') }}
                                         </strong>
@@ -217,7 +241,7 @@
 
                                 @if ($rentalRequest->notes)
                                     <div class="mt-2 p-2 rounded-3 bg-light small">
-                                        <span class="text-muted">Renter note:</span>
+                                        <span class="text-muted">{{ __('ui.store.incoming.renter_note') }}</span>
                                         {{ $rentalRequest->notes }}
                                     </div>
                                 @endif
@@ -233,11 +257,11 @@
                                         >
                                             <div class="fw-semibold text-secondary">
                                                 <i class="bi bi-clock-history me-1"></i>
-                                                Request Expired
+                                                {{ __('ui.store.incoming.request_expired') }}
                                             </div>
 
                                             <small class="text-muted">
-                                                Start date has passed
+                                                {{ __('ui.store.incoming.start_date_passed') }}
                                             </small>
                                         </div>
                                     @else
@@ -247,7 +271,12 @@
                                                 $rentalRequest
                                             ) }}"
                                             method="POST"
-                                            onsubmit="return confirm('Setujui permintaan peminjaman ini?')"
+                                            data-swal-title="{{ __('ui.store.incoming.approve_confirm_title') }}"
+                                            data-swal-confirm="{{ __('ui.store.incoming.approve_confirm_text') }}"
+                                            data-swal-icon="question"
+                                            data-swal-confirm-button="{{ __('ui.store.incoming.approve_confirm_button') }}"
+                                            data-swal-cancel-button="{{ __('ui.cancel') }}"
+                                            data-swal-confirm-color="#198754"
                                         >
                                             @csrf
                                             @method('PATCH')
@@ -257,7 +286,7 @@
                                                 class="btn btn-success rounded-pill px-4 w-100"
                                             >
                                                 <i class="bi bi-check-circle me-1"></i>
-                                                Approve
+                                                {{ __('ui.store.incoming.approve') }}
                                             </button>
                                         </form>
 
@@ -268,7 +297,7 @@
                                             data-bs-target="#rejectRentalRequestModal{{ $rentalRequest->id }}"
                                         >
                                             <i class="bi bi-x-circle me-1"></i>
-                                            Reject
+                                            {{ __('ui.store.incoming.reject') }}
                                         </button>
                                     @endif
 
@@ -279,7 +308,7 @@
                                             target="_blank"
                                             rel="noopener"
                                         >
-                                            View Item
+                                            {{ __('ui.store.incoming.view_item') }}
                                         </a>
                                     @endif
                                 </div>
@@ -314,11 +343,11 @@
                                                     class="modal-title fw-bold text-danger"
                                                     id="rejectRentalRequestModalLabel{{ $rentalRequest->id }}"
                                                 >
-                                                    Reject Rental Request
+                                                    {{ __('ui.store.incoming.reject_title') }}
                                                 </h5>
 
                                                 <small class="text-muted">
-                                                    Explain why this request cannot be accepted.
+                                                    {{ __('ui.store.incoming.reject_subtitle') }}
                                                 </small>
                                             </div>
 
@@ -326,7 +355,7 @@
                                                 type="button"
                                                 class="btn-close"
                                                 data-bs-dismiss="modal"
-                                                aria-label="Close"
+                                                aria-label="{{ __('ui.close') }}"
                                             ></button>
                                         </div>
 
@@ -336,7 +365,7 @@
                                                     for="rejectionReason{{ $rentalRequest->id }}"
                                                     class="form-label fw-semibold"
                                                 >
-                                                    Rejection Reason
+                                                    {{ __('ui.store.incoming.rejection_reason') }}
                                                 </label>
 
                                                 <textarea
@@ -345,12 +374,12 @@
                                                     class="form-control"
                                                     rows="4"
                                                     maxlength="500"
-                                                    placeholder="Example: The item is undergoing maintenance during the selected period."
+                                                    placeholder="{{ __('ui.store.incoming.rejection_placeholder') }}"
                                                     required
                                                 ></textarea>
 
                                                 <small class="text-muted">
-                                                    This reason will be shown to the renter.
+                                                    {{ __('ui.store.incoming.rejection_help') }}
                                                 </small>
                                             </div>
                                         </div>
@@ -361,14 +390,14 @@
                                                 class="btn btn-light rounded-pill px-4"
                                                 data-bs-dismiss="modal"
                                             >
-                                                Cancel
+                                                {{ __('ui.cancel') }}
                                             </button>
 
                                             <button
                                                 type="submit"
                                                 class="btn btn-danger rounded-pill px-4"
                                             >
-                                                Reject Request
+                                                {{ __('ui.store.incoming.reject_button') }}
                                             </button>
                                         </div>
                                     </form>
@@ -382,10 +411,12 @@
                                 <i class="bi bi-inbox"></i>
                             </div>
 
-                            <h6 class="fw-bold mb-1">No pending rental requests</h6>
+                            <h6 class="fw-bold mb-1">
+                                {{ __('ui.store.incoming.empty_title') }}
+                            </h6>
 
                             <p class="text-muted small mb-0">
-                                New rental requests for your store will appear here.
+                                {{ __('ui.store.incoming.empty_text') }}
                             </p>
                         </div>
                     @endforelse
@@ -412,27 +443,23 @@
                 ];
 
                 $disputeStatusLabels = [
-                    'open' => 'Open',
-                    'in_review' => 'In Review',
-                    'resolved' => 'Approved',
-                    'rejected' => 'Rejected',
+                    'open' => __('ui.store.transactions.dispute_statuses.open'),
+                    'in_review' => __('ui.store.transactions.dispute_statuses.in_review'),
+                    'resolved' => __('ui.store.transactions.dispute_statuses.resolved'),
+                    'rejected' => __('ui.store.transactions.dispute_statuses.rejected'),
                 ];
             @endphp
 
             <div class="seller-panel mb-4">
 
-                @if ($errors->has('dispute'))
-                    <div class="alert alert-danger rounded-3">
-                        {{ $errors->first('dispute') }}
-                    </div>
-                @endif
+                
 
                 <div class="seller-panel-header mb-3">
                     <div>
-                        <h6 class="mb-1">Recent Transactions</h6>
+                        <h6 class="mb-1">{{ __('ui.store.transactions.title') }}</h6>
 
                         <small class="text-muted">
-                            View the latest rental transactions from your store.
+                            {{ __('ui.store.transactions.subtitle') }}
                         </small>
                     </div>
 
@@ -440,7 +467,7 @@
                         href="{{ route('borrower.store.transactions.history') }}"
                         class="btn btn-outline-primary rounded-pill px-4 fw-semibold"
                     >
-                        View All Transactions
+                        {{ __('ui.store.transactions.view_all') }}
                     </a>
                 </div>
 
@@ -448,13 +475,13 @@
                     <table class="table align-middle seller-table mb-0">
                         <thead>
                             <tr>
-                                <th>Transaction</th>
-                                <th>Item</th>
-                                <th>Renter</th>
-                                <th>Rental Period</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th class="text-end">Action</th>
+                                <th>{{ __('ui.store.transactions.transaction') }}</th>
+                                <th>{{ __('ui.store.transactions.item') }}</th>
+                                <th>{{ __('ui.store.transactions.renter') }}</th>
+                                <th>{{ __('ui.store.transactions.rental_period') }}</th>
+                                <th>{{ __('ui.store.transactions.total') }}</th>
+                                <th>{{ __('ui.store.transactions.status') }}</th>
+                                <th class="text-end">{{ __('ui.store.transactions.action') }}</th>
                             </tr>
                         </thead>
 
@@ -493,11 +520,11 @@
                                         true
                                     );
 
-                                    $canDispute = in_array(
-                                        $status,
-                                        ['APPROVED', 'ONGOING', 'COMPLETED'],
-                                        true
-                                    ) && ! $hasDispute;
+                                    $canCancelDispute =
+                                        $isDisputePending
+                                        && (int) $latestDispute->reporter_id === (int) auth()->id();
+
+                                    $canDispute = $status === 'COMPLETED' && ! $hasDispute;
 
                                     $imagePath = $product?->primaryImage?->image_path;
                                 @endphp
@@ -507,7 +534,9 @@
                                         <strong>#{{ $transaction->id }}</strong>
 
                                         <div class="small text-muted">
-                                            {{ $transaction->created_at?->format('d M Y, H:i') }}
+                                            {{ $transaction->created_at
+                                                ?->locale(app()->getLocale())
+                                                ?->translatedFormat('d M Y, H:i') }}
                                         </div>
                                     </td>
 
@@ -517,7 +546,7 @@
                                                 src="{{ $imagePath
                                                     ? asset('storage/' . $imagePath)
                                                     : asset('images/placeholder-product.png') }}"
-                                                alt="{{ $product?->title ?? 'Rental item' }}"
+                                                alt="{{ $product?->title ?? __('ui.store.incoming.rental_item') }}"
                                                 class="rounded-3 border"
                                                 style="
                                                     width: 52px;
@@ -528,11 +557,12 @@
 
                                             <div>
                                                 <strong>
-                                                    {{ $product?->title ?? 'Product unavailable' }}
+                                                    {{ $product?->title ?? __('ui.store.incoming.product_unavailable') }}
                                                 </strong>
 
                                                 <div class="small text-muted">
-                                                    {{ $product?->category?->name ?? 'No category' }}
+                                                    {{ $product?->category?->name
+        ?? __('ui.store.transactions.no_category') }}
                                                 </div>
                                             </div>
                                         </div>
@@ -540,7 +570,8 @@
 
                                     <td>
                                         <strong>
-                                            {{ $borrower?->name ?? 'Unknown renter' }}
+                                            {{ $borrower?->name
+        ?? __('ui.store.transactions.unknown_renter') }}
                                         </strong>
 
                                         <div class="small text-muted">
@@ -550,11 +581,17 @@
 
                                     <td>
                                         <div>
-                                            {{ $transaction->start_date?->format('d M Y') }}
+                                            {{ $transaction->start_date
+                                                ?->locale(app()->getLocale())
+                                                ?->translatedFormat('d M Y') }}
                                         </div>
 
                                         <div class="small text-muted">
-                                            until {{ $transaction->end_date?->format('d M Y') }}
+                                            {{ __('ui.store.transactions.until', [
+                                                'date' => $transaction->end_date
+                                                    ?->locale(app()->getLocale())
+                                                    ?->translatedFormat('d M Y'),
+                                            ]) }}
                                         </div>
                                     </td>
 
@@ -571,7 +608,10 @@
 
                                     <td>
                                         <span class="badge rounded-pill {{ $statusClass }}">
-                                            {{ ucfirst(strtolower($status)) }}
+                                            {{ __(
+                                                'ui.store.transactions.statuses.'
+                                                . strtolower($status)
+                                            ) }}
                                         </span>
 
                                         @if ($latestDispute)
@@ -592,7 +632,9 @@
                                                         title="{{ $latestDispute->resolution }}"
                                                     @endif
                                                 >
-                                                    Dispute: {{ $disputeStatusLabel }}
+                                                    {{ __('ui.store.transactions.dispute_label', [
+                                                        'status' => $disputeStatusLabel,
+                                                    ]) }}
                                                 </span>
                                             </div>
                                         @endif
@@ -607,14 +649,43 @@
                                                 data-bs-target="#sellerDisputeModal{{ $transaction->id }}"
                                             >
                                                 <i class="bi bi-exclamation-triangle me-1"></i>
-                                                Raise Dispute
+                                                {{ __('ui.store.transactions.raise_dispute') }}
                                             </button>
 
                                         @elseif ($isDisputePending)
-                                            <span class="small text-muted">
-                                                <i class="bi bi-hourglass-split me-1"></i>
-                                                Waiting for admin
-                                            </span>
+                                            <div class="d-inline-flex flex-column align-items-end gap-2">
+                                                <span class="small text-muted">
+                                                    <i class="bi bi-hourglass-split me-1"></i>
+                                                    {{ __('ui.store.transactions.waiting_admin') }}
+                                                </span>
+
+                                                @if ($canCancelDispute)
+                                                    <form
+                                                        action="{{ route(
+                                                            'borrower.store.disputes.destroy',
+                                                            $latestDispute
+                                                        ) }}"
+                                                        method="POST"
+                                                        data-swal-title="{{ __('ui.store.dispute.cancel_title') }}"
+                                                        data-swal-confirm="{{ __('ui.store.dispute.cancel_text') }}"
+                                                        data-swal-icon="warning"
+                                                        data-swal-confirm-button="{{ __('ui.store.dispute.cancel_button') }}"
+                                                        data-swal-cancel-button="{{ __('ui.store.dispute.keep_button') }}"
+                                                        data-swal-confirm-color="#dc3545"
+                                                    >
+                                                        @csrf
+                                                        @method('DELETE')
+
+                                                        <button
+                                                            type="submit"
+                                                            class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                        >
+                                                            <i class="bi bi-x-circle me-1"></i>
+                                                            {{ __('ui.store.transactions.cancel_dispute') }}
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
 
                                         @elseif ($isDisputeFinished)
                                             <span class="small text-muted">
@@ -623,7 +694,7 @@
 
                                         @else
                                             <span class="small text-muted">
-                                                No action
+                                                {{ __('ui.store.transactions.no_action') }}
                                             </span>
                                         @endif
                                     </td>
@@ -636,11 +707,11 @@
                                         </div>
 
                                         <h6 class="fw-bold mb-1">
-                                            No transaction history
+                                            {{ __('ui.store.transactions.empty_title') }}
                                         </h6>
 
                                         <p class="small text-muted mb-0">
-                                            Approved rental transactions will appear here.
+                                            {{ __('ui.store.transactions.empty_text') }}
                                         </p>
                                     </td>
                                 </tr>
@@ -657,11 +728,7 @@
                         (string) $transaction->status
                     );
 
-                    $modalCanDispute = in_array(
-                        $modalStatus,
-                        ['APPROVED', 'ONGOING', 'COMPLETED'],
-                        true
-                    ) && ! $transaction->latestDispute;
+                    $modalCanDispute = $modalStatus === 'COMPLETED' && ! $transaction->latestDispute;
                 @endphp
 
                 @if ($modalCanDispute)
@@ -687,12 +754,14 @@
                                                 class="modal-title fw-bold text-danger"
                                                 id="sellerDisputeModalLabel{{ $transaction->id }}"
                                             >
-                                                Raise a Dispute
+                                                {{ __('ui.store.dispute.title') }}
                                             </h5>
 
                                             <small class="text-muted">
-                                                Transaction #{{ $transaction->id }}
-                                                · {{ $transaction->product?->title }}
+                                                {{ __('ui.store.dispute.transaction', [
+                                                    'id' => $transaction->id,
+                                                    'product' => $transaction->product?->title,
+                                                ]) }}
                                             </small>
                                         </div>
 
@@ -700,7 +769,7 @@
                                             type="button"
                                             class="btn-close"
                                             data-bs-dismiss="modal"
-                                            aria-label="Close"
+                                            aria-label="{{ __('ui.close') }}"
                                         ></button>
                                     </div>
 
@@ -710,7 +779,7 @@
                                                 for="disputeReason{{ $transaction->id }}"
                                                 class="form-label fw-semibold"
                                             >
-                                                Dispute Reason
+                                                {{ __('ui.store.dispute.reason') }}
                                             </label>
 
                                             <textarea
@@ -720,12 +789,12 @@
                                                 rows="5"
                                                 minlength="20"
                                                 maxlength="1000"
-                                                placeholder="Explain the issue clearly, including the date, item condition, and other relevant information."
+                                                placeholder="{{ __('ui.store.dispute.reason_placeholder') }}"
                                                 required
                                             >{{ old('reason') }}</textarea>
 
                                             <small class="text-muted">
-                                                Minimum 20 characters.
+                                                {{ __('ui.store.dispute.min_chars') }}
                                             </small>
                                         </div>
 
@@ -734,7 +803,7 @@
                                                 for="disputeEvidence{{ $transaction->id }}"
                                                 class="form-label fw-semibold"
                                             >
-                                                Supporting Evidence
+                                                {{ __('ui.store.dispute.evidence') }}
                                             </label>
 
                                             <input
@@ -751,13 +820,12 @@
                                             >
 
                                             <small class="text-muted">
-                                                Optional. Maximum 4 MB, image or PDF.
+                                                {{ __('ui.store.dispute.evidence_help') }}
                                             </small>
                                         </div>
 
                                         <div class="alert alert-warning small mb-0">
-                                            The dispute will be reviewed by an administrator.
-                                            Make sure the information and evidence are accurate.
+                                            {{ __('ui.store.dispute.review_warning') }}
                                         </div>
                                     </div>
 
@@ -767,14 +835,14 @@
                                             class="btn btn-light rounded-pill px-4"
                                             data-bs-dismiss="modal"
                                         >
-                                            Cancel
+                                            {{ __('ui.cancel') }}
                                         </button>
 
                                         <button
                                             type="submit"
                                             class="btn btn-danger rounded-pill px-4"
                                         >
-                                            Submit Dispute
+                                            {{ __('ui.store.dispute.submit') }}
                                         </button>
                                     </div>
                                 </form>
@@ -790,32 +858,36 @@
                 <div class="seller-panel performance-panel">
                     <div class="seller-panel-header">
                         <div>
-                            <h6>Performance Trend</h6>
+                            <h6>{{ __('ui.store.performance.title') }}</h6>
                             <small class="text-muted">
-                                Revenue and rental activity based on selected period
+                                {{ __('ui.store.performance.subtitle') }}
                             </small>
                         </div>
 
                         <select onchange="window.location.href='{{ url('/dashboard') }}?tab=store&revenue_period=' + this.value">
                             <option value="monthly" {{ ($revenuePeriod ?? 'monthly') === 'monthly' ? 'selected' : '' }}>
-                                Monthly
+                                {{ __('ui.store.performance.monthly') }}
                             </option>
                             <option value="weekly" {{ ($revenuePeriod ?? 'monthly') === 'weekly' ? 'selected' : '' }}>
-                                Weekly
+                                {{ __('ui.store.performance.weekly') }}
                             </option>
                         </select>
                     </div>
 
                     <div class="performance-chart-grid">
                         <div>
-                            <h6 class="chart-subtitle">Revenue Stream</h6>
+                            <h6 class="chart-subtitle">
+                                {{ __('ui.store.performance.revenue_stream') }}
+                            </h6>
                             <div class="chart-box chart-large">
                                 <canvas id="revenueChart"></canvas>
                             </div>
                         </div>
 
                         <div>
-                            <h6 class="chart-subtitle">Renting Trend</h6>
+                            <h6 class="chart-subtitle">
+                                {{ __('ui.store.performance.renting_trend') }}
+                            </h6>
                             <div class="chart-box chart-large">
                                 <canvas id="rentingTrendChart"></canvas>
                             </div>
@@ -825,7 +897,7 @@
 
                 {{-- Revenue By Category --}}
                 <div class="seller-panel category-panel">
-                    <h6>Revenue By Category</h6>
+                    <h6>{{ __('ui.store.performance.revenue_by_category') }}</h6>
 
                     <div class="category-content">
                         <div class="chart-box chart-donut">
@@ -849,14 +921,14 @@
 
                 {{-- Monthly Recap --}}
                 <div class="seller-panel recap-panel">
-                    <h6>Monthly Recap</h6>
+                    <h6>{{ __('ui.store.performance.monthly_recap') }}</h6>
 
                     <table class="table table-sm seller-table mb-3">
                         <thead>
                             <tr>
-                                <th>Month</th>
-                                <th>Revenue</th>
-                                <th>Bookings</th>
+                                <th>{{ __('ui.store.performance.month') }}</th>
+                                <th>{{ __('ui.store.performance.revenue') }}</th>
+                                <th>{{ __('ui.store.performance.bookings') }}</th>
                             </tr>
                         </thead>
 
@@ -872,25 +944,27 @@
                     </table>
 
                     <div class="seller-success-note">
-                        {{ $monthlyGrowthNote ?? 'Not enough previous month revenue data for comparison.' }}
+                        {{ $monthlyGrowthNote
+                            ?? __('ui.store.performance.no_growth_data') }}
                     </div>
                 </div>
 
                 {{-- Top Items --}}
                 <div class="seller-panel top-items-panel">
                     <div class="seller-panel-header">
-                        <h6>Top Items Rented</h6>
+                        <h6>{{ __('ui.store.top_items.title') }}</h6>
                         <a href="#"
                             data-bs-toggle="modal"
                             data-bs-target="#topItemsModal">
-                            See all
+                            {{ __('ui.store.top_items.see_all') }}
                         </a>
                     </div>
 
                     <div class="top-items-grid">
                         @forelse ($topItems as $index => $item)
                             @php
-                                $itemName = $item->title ?? 'Item';
+                                $itemName = $item->title
+                                    ?? __('ui.store.transactions.item');
                                 $itemPrice = $item->price_per_day ?? 0;
                                 $imagePath = $item->primaryImage?->image_path;
                                 $rentedCount = $item->rented_count ?? $item->total_rented ?? 0;
@@ -905,14 +979,18 @@
                                 >
 
                                 <h6>{{ $itemName }}</h6>
-                                <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}/day</p>
+                                <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}{{ __('ui.per_day') }}</p>
                                 <small class="text-muted">
-                                    {{ $rentedCount }}x rented
+                                    {{ trans_choice(
+                                        'ui.store.top_items.times_rented',
+                                        $rentedCount,
+                                        ['count' => $rentedCount]
+                                    ) }}
                                 </small>
                             </div>
                         @empty
                             <div class="text-muted small">
-                                Belum ada item yang disewakan.
+                                {{ __('ui.store.top_items.empty') }}
                             </div>
                         @endforelse
                     </div>
@@ -923,21 +1001,22 @@
                                 <div class="modal-header border-0 px-4 pt-4">
                                     <div>
                                         <h5 class="modal-title fw-bold text-primary" id="topItemsModalLabel">
-                                            All Rented Items
+                                            {{ __('ui.store.top_items.all_title') }}
                                         </h5>
                                         <small class="text-muted">
-                                            Complete list of your store items and rental frequency.
+                                            {{ __('ui.store.top_items.all_subtitle') }}
                                         </small>
                                     </div>
 
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('ui.close') }}"></button>
                                 </div>
 
                                 <div class="modal-body px-4 pb-4">
                                     <div class="all-items-modal-grid">
                                         @forelse ($allTopItems as $index => $item)
                                             @php
-                                                $itemName = $item->title ?? 'Item';
+                                                $itemName = $item->title
+                                    ?? __('ui.store.transactions.item');
                                                 $itemPrice = $item->price_per_day ?? 0;
                                                 $imagePath = $item->primaryImage?->image_path;
                                                 $rentedCount = $item->rented_count ?? $item->total_rented ?? 0;
@@ -955,16 +1034,20 @@
 
                                                 <div class="all-item-info">
                                                     <h6>{{ $itemName }}</h6>
-                                                    <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}/day</p>
+                                                    <p>Rp {{ number_format($itemPrice, 0, ',', '.') }}{{ __('ui.per_day') }}</p>
 
                                                     <span class="rented-badge">
-                                                        {{ $rentedCount }}x rented
+                                                        {{ trans_choice(
+                                                    'ui.store.top_items.times_rented',
+                                                    $rentedCount,
+                                                    ['count' => $rentedCount]
+                                                ) }}
                                                     </span>
                                                 </div>
                                             </div>
                                         @empty
                                             <div class="text-muted">
-                                                Belum ada item yang disewakan.
+                                                {{ __('ui.store.top_items.empty') }}
                                             </div>
                                         @endforelse
                                     </div>
@@ -978,8 +1061,10 @@
                 <div class="seller-panel store-items-panel">
                     <div class="seller-panel-header">
                         <div>
-                            <h6>Store Items</h6>
-                            <small class="text-muted">Manage your listed rental items.</small>
+                            <h6>{{ __('ui.store.items.title') }}</h6>
+                            <small class="text-muted">
+                                {{ __('ui.store.items.subtitle') }}
+                            </small>
                         </div>
 
                         <button
@@ -988,14 +1073,15 @@
                             data-bs-toggle="modal"
                             data-bs-target="#addStoreItemModal"
                         >
-                            + Add Item
+                            {{ __('ui.store.items.add') }}
                         </button>
                     </div>
 
                     <div class="store-items-list">
                         @forelse ($storeItems as $item)
                             @php
-                                $itemName = $item->title ?? 'Item';
+                                $itemName = $item->title
+                                    ?? __('ui.store.transactions.item');
                                 $itemPrice = $item->price_per_day ?? 0;
                                 $imagePath = $item->primaryImage?->image_path;
                             @endphp
@@ -1013,12 +1099,13 @@
                                         <h6>{{ $itemName }}</h6>
 
                                         <p>
-                                            Rp {{ number_format((float) $itemPrice, 0, ',', '.') }}/day
+                                            Rp {{ number_format((float) $itemPrice, 0, ',', '.') }}{{ __('ui.per_day') }}
                                         </p>
 
                                         <div class="store-item-meta">
                                             <span>
-                                                {{ $item->category?->name ?? 'No Category' }}
+                                                {{ $item->category?->name
+                                                    ?? __('ui.store.items.no_category') }}
                                             </span>
 
                                             <span
@@ -1026,7 +1113,10 @@
                                                     ? 'item-active'
                                                     : 'item-inactive' }}"
                                             >
-                                                {{ ucfirst($item->status ?? 'inactive') }}
+                                                {{ __(
+                                                    'ui.store.form.statuses.'
+                                                    . ($item->status ?? 'inactive')
+                                                ) }}
                                             </span>
                                         </div>
                                     </div>
@@ -1039,26 +1129,34 @@
                                         data-bs-toggle="modal"
                                         data-bs-target="#editStoreItemModal{{ $item->id }}"
                                     >
-                                        Edit
+                                        {{ __('ui.store.items.edit') }}
                                     </button>
 
                                     <form
-                                        action="{{ route('borrower.store.products.delete', $item) }}"
+                                        action="{{ route(
+                                            'borrower.store.products.delete',
+                                            $item
+                                        ) }}"
                                         method="POST"
-                                        onsubmit="return confirm('Yakin mau hapus item ini dari store?')"
+                                        data-swal-title="{{ __('ui.store.items.delete_title') }}"
+                                        data-swal-confirm="{{ __('ui.store.items.delete_text') }}"
+                                        data-swal-icon="warning"
+                                        data-swal-confirm-button="{{ __('ui.store.items.delete_button') }}"
+                                        data-swal-cancel-button="{{ __('ui.cancel') }}"
+                                        data-swal-confirm-color="#dc3545"
                                     >
                                         @csrf
                                         @method('DELETE')
 
                                         <button type="submit" class="btn-delete-store-item">
-                                            Delete
+                                            {{ __('ui.store.items.delete') }}
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         @empty
                             <div class="store-items-empty">
-                                Belum ada item di store kamu.
+                                {{ __('ui.store.items.empty') }}
                             </div>
                         @endforelse
                     </div>
@@ -1078,337 +1176,337 @@
                         aria-hidden="true"
                     >
                         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content border-0 rounded-4">
-                                <form
-                                    action="{{ route('borrower.store.products.update', $item) }}"
-                                    method="POST"
-                                    enctype="multipart/form-data"
-                                >
-                                    @csrf
-                                    @method('PATCH')
+                            <form
+                                action="{{ route('borrower.store.products.update', $item) }}"
+                                class="modal-content border-0 rounded-4"
+                                method="POST"
+                                enctype="multipart/form-data"
+                            >
+                                @csrf
+                                @method('PATCH')
 
-                                    <div class="modal-header border-0 px-4 pt-4">
-                                        <div>
-                                            <h5
-                                                class="modal-title fw-bold text-primary"
-                                                id="editStoreItemModalLabel{{ $item->id }}"
-                                            >
-                                                Edit Store Item
-                                            </h5>
+                                <div class="modal-header border-0 px-4 pt-4">
+                                    <div>
+                                        <h5
+                                            class="modal-title fw-bold text-primary"
+                                            id="editStoreItemModalLabel{{ $item->id }}"
+                                        >
+                                            {{ __('ui.store.form.edit_title') }}
+                                        </h5>
 
-                                            <small class="text-muted">
-                                                Update the information and availability of this item.
-                                            </small>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            class="btn-close"
-                                            data-bs-dismiss="modal"
-                                            aria-label="Close"
-                                        ></button>
+                                        <small class="text-muted">
+                                            {{ __('ui.store.form.edit_subtitle') }}
+                                        </small>
                                     </div>
 
-                                    <div class="modal-body px-4 pb-2">
-                                        <div class="mb-3">
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="{{ __('ui.close') }}"
+                                    ></button>
+                                </div>
+
+                                <div class="modal-body px-4 pb-2">
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductTitle{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            {{ __('ui.store.form.item_name') }}
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            id="editProductTitle{{ $item->id }}"
+                                            name="title"
+                                            class="form-control"
+                                            value="{{ $item->title }}"
+                                            maxlength="150"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label
-                                                for="editProductTitle{{ $item->id }}"
+                                                for="editProductCategory{{ $item->id }}"
                                                 class="form-label fw-bold"
                                             >
-                                                Item Name
-                                            </label>
-
-                                            <input
-                                                type="text"
-                                                id="editProductTitle{{ $item->id }}"
-                                                name="title"
-                                                class="form-control"
-                                                value="{{ $item->title }}"
-                                                maxlength="150"
-                                                required
-                                            >
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductCategory{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Category
-                                                </label>
-
-                                                <select
-                                                    id="editProductCategory{{ $item->id }}"
-                                                    name="category_id"
-                                                    class="form-select"
-                                                    required
-                                                >
-                                                    <option value="">Select category</option>
-
-                                                    @foreach ($categories as $category)
-                                                        <option
-                                                            value="{{ $category->id }}"
-                                                            @selected(
-                                                                (string) $item->category_id
-                                                                === (string) $category->id
-                                                            )
-                                                        >
-                                                            {{ $category->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductCondition{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Item Condition
-                                                </label>
-
-                                                <select
-                                                    id="editProductCondition{{ $item->id }}"
-                                                    name="condition"
-                                                    class="form-select"
-                                                    required
-                                                >
-                                                    <option
-                                                        value="new"
-                                                        @selected($item->condition === 'new')
-                                                    >
-                                                        New
-                                                    </option>
-
-                                                    <option
-                                                        value="like_new"
-                                                        @selected($item->condition === 'like_new')
-                                                    >
-                                                        Like New
-                                                    </option>
-
-                                                    <option
-                                                        value="good"
-                                                        @selected($item->condition === 'good')
-                                                    >
-                                                        Good Condition
-                                                    </option>
-
-                                                    <option
-                                                        value="fair"
-                                                        @selected($item->condition === 'fair')
-                                                    >
-                                                        Fair Condition
-                                                    </option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label
-                                                for="editProductDescription{{ $item->id }}"
-                                                class="form-label fw-bold"
-                                            >
-                                                Description
-                                            </label>
-
-                                            <textarea
-                                                id="editProductDescription{{ $item->id }}"
-                                                name="description"
-                                                class="form-control"
-                                                rows="4"
-                                                required
-                                            >{{ $item->description }}</textarea>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductPrice{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Price per Day
-                                                </label>
-
-                                                <div class="input-group">
-                                                    <span class="input-group-text">Rp</span>
-
-                                                    <input
-                                                        type="number"
-                                                        id="editProductPrice{{ $item->id }}"
-                                                        name="price_per_day"
-                                                        class="form-control"
-                                                        value="{{ (int) $item->price_per_day }}"
-                                                        min="0"
-                                                        step="1000"
-                                                        required
-                                                    >
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6 mb-3">
-                                                <label
-                                                    for="editProductDeposit{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Deposit Amount
-                                                </label>
-
-                                                <div class="input-group">
-                                                    <span class="input-group-text">Rp</span>
-
-                                                    <input
-                                                        type="number"
-                                                        id="editProductDeposit{{ $item->id }}"
-                                                        name="deposit_amount"
-                                                        class="form-control"
-                                                        value="{{ (int) ($item->deposit_amount ?? 0) }}"
-                                                        min="0"
-                                                        step="1000"
-                                                        required
-                                                    >
-                                                </div>
-
-                                                <small class="text-muted">
-                                                    Enter 0 if no deposit is required.
-                                                </small>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-5 mb-3">
-                                                <label
-                                                    for="editProductCity{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Location City
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    id="editProductCity{{ $item->id }}"
-                                                    name="location_city"
-                                                    class="form-control"
-                                                    value="{{ $item->location_city }}"
-                                                    maxlength="100"
-                                                    required
-                                                >
-                                            </div>
-
-                                            <div class="col-md-7 mb-3">
-                                                <label
-                                                    for="editProductLocationDetail{{ $item->id }}"
-                                                    class="form-label fw-bold"
-                                                >
-                                                    Location Detail
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    id="editProductLocationDetail{{ $item->id }}"
-                                                    name="location_detail"
-                                                    class="form-control"
-                                                    value="{{ $item->location_detail }}"
-                                                    maxlength="255"
-                                                >
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label
-                                                for="editProductStatus{{ $item->id }}"
-                                                class="form-label fw-bold"
-                                            >
-                                                Product Status
+                                                {{ __('ui.store.form.category') }}
                                             </label>
 
                                             <select
-                                                id="editProductStatus{{ $item->id }}"
-                                                name="status"
+                                                id="editProductCategory{{ $item->id }}"
+                                                name="category_id"
+                                                class="form-select"
+                                                required
+                                            >
+                                                <option value="">
+                                                    {{ __('ui.store.form.select_category') }}
+                                                </option>
+
+                                                @foreach ($categories as $category)
+                                                    <option
+                                                        value="{{ $category->id }}"
+                                                        @selected(
+                                                            (string) $item->category_id
+                                                            === (string) $category->id
+                                                        )
+                                                    >
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="editProductCondition{{ $item->id }}"
+                                                class="form-label fw-bold"
+                                            >
+                                                {{ __('ui.store.form.condition') }}
+                                            </label>
+
+                                            <select
+                                                id="editProductCondition{{ $item->id }}"
+                                                name="condition"
                                                 class="form-select"
                                                 required
                                             >
                                                 <option
-                                                    value="active"
-                                                    @selected($item->status === 'active')
+                                                    value="new"
+                                                    @selected($item->condition === 'new')
                                                 >
-                                                    Active
+                                                    {{ __('ui.store.form.conditions.new') }}
                                                 </option>
 
                                                 <option
-                                                    value="inactive"
-                                                    @selected($item->status === 'inactive')
+                                                    value="like_new"
+                                                    @selected($item->condition === 'like_new')
                                                 >
-                                                    Inactive
+                                                    {{ __('ui.store.form.conditions.like_new') }}
                                                 </option>
 
                                                 <option
-                                                    value="draft"
-                                                    @selected($item->status === 'draft')
+                                                    value="good"
+                                                    @selected($item->condition === 'good')
                                                 >
-                                                    Draft
+                                                    {{ __('ui.store.form.conditions.good') }}
+                                                </option>
+
+                                                <option
+                                                    value="fair"
+                                                    @selected($item->condition === 'fair')
+                                                >
+                                                    {{ __('ui.store.form.conditions.fair') }}
                                                 </option>
                                             </select>
                                         </div>
+                                    </div>
 
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold d-block">
-                                                Current Main Image
-                                            </label>
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductDescription{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            {{ __('ui.store.form.description') }}
+                                        </label>
 
-                                            <img
-                                                src="{{ $editImagePath
-                                                    ? asset('storage/' . $editImagePath)
-                                                    : asset('images/placeholder-product.png') }}"
-                                                alt="{{ $item->title }}"
-                                                class="rounded-3 border"
-                                                style="width: 130px; height: 100px; object-fit: cover;"
-                                            >
-                                        </div>
+                                        <textarea
+                                            id="editProductDescription{{ $item->id }}"
+                                            name="description"
+                                            class="form-control"
+                                            rows="4"
+                                            required
+                                        >{{ $item->description }}</textarea>
+                                    </div>
 
-                                        <div class="mb-3">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label
-                                                for="editProductImages{{ $item->id }}"
+                                                for="editProductPrice{{ $item->id }}"
                                                 class="form-label fw-bold"
                                             >
-                                                Replace Product Images
+                                                {{ __('ui.store.form.price_per_day') }}
                                             </label>
 
-                                            <input
-                                                type="file"
-                                                id="editProductImages{{ $item->id }}"
-                                                name="images[]"
-                                                class="form-control"
-                                                accept="image/jpeg,image/png,image/webp"
-                                                multiple
+                                            <div class="input-group">
+                                                <span class="input-group-text">Rp</span>
+
+                                                <input
+                                                    type="number"
+                                                    id="editProductPrice{{ $item->id }}"
+                                                    name="price_per_day"
+                                                    class="form-control"
+                                                    value="{{ (int) $item->price_per_day }}"
+                                                    min="0"
+                                                    step="1000"
+                                                    required
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label
+                                                for="editProductDeposit{{ $item->id }}"
+                                                class="form-label fw-bold"
                                             >
+                                                {{ __('ui.store.form.deposit_amount') }}
+                                            </label>
+
+                                            <div class="input-group">
+                                                <span class="input-group-text">Rp</span>
+
+                                                <input
+                                                    type="number"
+                                                    id="editProductDeposit{{ $item->id }}"
+                                                    name="deposit_amount"
+                                                    class="form-control"
+                                                    value="{{ (int) ($item->deposit_amount ?? 0) }}"
+                                                    min="0"
+                                                    step="1000"
+                                                    required
+                                                >
+                                            </div>
 
                                             <small class="text-muted">
-                                                Leave this empty to keep the existing images.
-                                                Uploading new files will replace the existing image set.
+                                                {{ __('ui.store.form.deposit_help') }}
                                             </small>
                                         </div>
                                     </div>
 
-                                    <div class="modal-footer border-0 px-4 pb-4">
-                                        <button
-                                            type="button"
-                                            class="btn btn-light rounded-pill px-4"
-                                            data-bs-dismiss="modal"
-                                        >
-                                            Cancel
-                                        </button>
+                                    <div class="row">
+                                        <div class="col-md-5 mb-3">
+                                            <label
+                                                for="editProductCity{{ $item->id }}"
+                                                class="form-label fw-bold"
+                                            >
+                                                {{ __('ui.store.form.location_city') }}
+                                            </label>
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-primary rounded-pill px-4"
-                                        >
-                                            Save Changes
-                                        </button>
+                                            <input
+                                                type="text"
+                                                id="editProductCity{{ $item->id }}"
+                                                name="location_city"
+                                                class="form-control"
+                                                value="{{ $item->location_city }}"
+                                                maxlength="100"
+                                                required
+                                            >
+                                        </div>
+
+                                        <div class="col-md-7 mb-3">
+                                            <label
+                                                for="editProductLocationDetail{{ $item->id }}"
+                                                class="form-label fw-bold"
+                                            >
+                                                {{ __('ui.store.form.location_detail') }}
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                id="editProductLocationDetail{{ $item->id }}"
+                                                name="location_detail"
+                                                class="form-control"
+                                                value="{{ $item->location_detail }}"
+                                                maxlength="255"
+                                            >
+                                        </div>
                                     </div>
-                                </form>
-                            </div>
+
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductStatus{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            {{ __('ui.store.form.status') }}
+                                        </label>
+
+                                        <select
+                                            id="editProductStatus{{ $item->id }}"
+                                            name="status"
+                                            class="form-select"
+                                            required
+                                        >
+                                            <option
+                                                value="active"
+                                                @selected($item->status === 'active')
+                                            >
+                                                {{ __('ui.store.form.statuses.active') }}
+                                            </option>
+
+                                            <option
+                                                value="inactive"
+                                                @selected($item->status === 'inactive')
+                                            >
+                                                {{ __('ui.store.form.statuses.inactive') }}
+                                            </option>
+
+                                            <option
+                                                value="draft"
+                                                @selected($item->status === 'draft')
+                                            >
+                                                {{ __('ui.store.form.statuses.draft') }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold d-block">
+                                            {{ __('ui.store.form.current_image') }}
+                                        </label>
+
+                                        <img
+                                            src="{{ $editImagePath
+                                                ? asset('storage/' . $editImagePath)
+                                                : asset('images/placeholder-product.png') }}"
+                                            alt="{{ $item->title }}"
+                                            class="rounded-3 border"
+                                            style="width: 130px; height: 100px; object-fit: cover;"
+                                        >
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label
+                                            for="editProductImages{{ $item->id }}"
+                                            class="form-label fw-bold"
+                                        >
+                                            {{ __('ui.store.form.replace_images') }}
+                                        </label>
+
+                                        <input
+                                            type="file"
+                                            id="editProductImages{{ $item->id }}"
+                                            name="images[]"
+                                            class="form-control"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            multiple
+                                        >
+
+                                        <small class="text-muted">
+                                            {{ __('ui.store.form.replace_images_help') }}
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-0 px-4 pb-4">
+                                    <button
+                                        type="button"
+                                        class="btn btn-light rounded-pill px-4"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        {{ __('ui.cancel') }}
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary rounded-pill px-4"
+                                    >
+                                        {{ __('ui.store.form.save_changes') }}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 @endforeach
@@ -1438,11 +1536,11 @@
                                             class="modal-title fw-bold text-primary"
                                             id="addStoreItemModalLabel"
                                         >
-                                            Add Store Item
+                                            {{ __('ui.store.form.add_title') }}
                                         </h5>
 
                                         <small class="text-muted">
-                                            Add complete information about your rental item.
+                                            {{ __('ui.store.form.add_subtitle') }}
                                         </small>
                                     </div>
 
@@ -1450,7 +1548,7 @@
                                         type="button"
                                         class="btn-close"
                                         data-bs-dismiss="modal"
-                                        aria-label="Close"
+                                        aria-label="{{ __('ui.close') }}"
                                     ></button>
                                 </div>
 
@@ -1460,21 +1558,21 @@
                                     {{-- Item Name --}}
                                     <div class="mb-3">
                                         <label for="productTitle" class="form-label fw-bold">
-                                            Item Name
+                                            {{ __('ui.store.form.item_name') }}
                                         </label>
 
                                         <input
                                             type="text"
                                             id="productTitle"
                                             name="title"
-                                            class="form-control @error('title') is-invalid @enderror"
+                                            class="form-control @error('title', 'addProduct') is-invalid @enderror"
                                             value="{{ old('title') }}"
-                                            placeholder="Example: Canon EOS M50"
+                                            placeholder="{{ __('ui.store.form.placeholders.item_name') }}"
                                             maxlength="150"
                                             required
                                         >
 
-                                        @error('title')
+                                        @error('title', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -1485,17 +1583,17 @@
                                         {{-- Category --}}
                                         <div class="col-md-6 mb-3">
                                             <label for="productCategory" class="form-label fw-bold">
-                                                Category
+                                                {{ __('ui.store.form.category') }}
                                             </label>
 
                                             <select
                                                 id="productCategory"
                                                 name="category_id"
-                                                class="form-select @error('category_id') is-invalid @enderror"
+                                                class="form-select @error('category_id', 'addProduct') is-invalid @enderror"
                                                 required
                                             >
                                                 <option value="">
-                                                    Select category
+                                                    {{ __('ui.store.form.select_category') }}
                                                 </option>
 
                                                 @foreach ($categories as $category)
@@ -1508,7 +1606,7 @@
                                                 @endforeach
                                             </select>
 
-                                            @error('category_id')
+                                            @error('category_id', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1518,49 +1616,49 @@
                                         {{-- Condition --}}
                                         <div class="col-md-6 mb-3">
                                             <label for="productCondition" class="form-label fw-bold">
-                                                Item Condition
+                                                {{ __('ui.store.form.condition') }}
                                             </label>
 
                                             <select
                                                 id="productCondition"
                                                 name="condition"
-                                                class="form-select @error('condition') is-invalid @enderror"
+                                                class="form-select @error('condition', 'addProduct') is-invalid @enderror"
                                                 required
                                             >
                                                 <option value="">
-                                                    Select condition
+                                                    {{ __('ui.store.form.select_condition') }}
                                                 </option>
 
                                                 <option
                                                     value="new"
                                                     @selected(old('condition') === 'new')
                                                 >
-                                                    New
+                                                    {{ __('ui.store.form.conditions.new') }}
                                                 </option>
 
                                                 <option
                                                     value="like_new"
                                                     @selected(old('condition') === 'like_new')
                                                 >
-                                                    Like New
+                                                    {{ __('ui.store.form.conditions.like_new') }}
                                                 </option>
 
                                                 <option
                                                     value="good"
                                                     @selected(old('condition') === 'good')
                                                 >
-                                                    Good Condition
+                                                    {{ __('ui.store.form.conditions.good') }}
                                                 </option>
 
                                                 <option
                                                     value="fair"
                                                     @selected(old('condition') === 'fair')
                                                 >
-                                                    Fair Condition
+                                                    {{ __('ui.store.form.conditions.fair') }}
                                                 </option>
                                             </select>
 
-                                            @error('condition')
+                                            @error('condition', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1571,19 +1669,19 @@
                                     {{-- Description --}}
                                     <div class="mb-3">
                                         <label for="productDescription" class="form-label fw-bold">
-                                            Description
+                                            {{ __('ui.store.form.description') }}
                                         </label>
 
                                         <textarea
                                             id="productDescription"
                                             name="description"
-                                            class="form-control @error('description') is-invalid @enderror"
+                                            class="form-control @error('description', 'addProduct') is-invalid @enderror"
                                             rows="4"
-                                            placeholder="Describe the item, specifications, included accessories, and usage information..."
+                                            placeholder="{{ __('ui.store.form.placeholders.description') }}"
                                             required
                                         >{{ old('description') }}</textarea>
 
-                                        @error('description')
+                                        @error('description', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -1594,7 +1692,7 @@
                                         {{-- Price --}}
                                         <div class="col-md-6 mb-3">
                                             <label for="productPrice" class="form-label fw-bold">
-                                                Price per Day
+                                                {{ __('ui.store.form.price_per_day') }}
                                             </label>
 
                                             <div class="input-group">
@@ -1606,7 +1704,7 @@
                                                     type="number"
                                                     id="productPrice"
                                                     name="price_per_day"
-                                                    class="form-control @error('price_per_day') is-invalid @enderror"
+                                                    class="form-control @error('price_per_day', 'addProduct') is-invalid @enderror"
                                                     value="{{ old('price_per_day') }}"
                                                     placeholder="50000"
                                                     min="0"
@@ -1614,7 +1712,7 @@
                                                     required
                                                 >
 
-                                                @error('price_per_day')
+                                                @error('price_per_day', 'addProduct')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -1625,7 +1723,7 @@
                                         {{-- Deposit --}}
                                         <div class="col-md-6 mb-3">
                                             <label for="productDeposit" class="form-label fw-bold">
-                                                Deposit Amount
+                                                {{ __('ui.store.form.deposit_amount') }}
                                             </label>
 
                                             <div class="input-group">
@@ -1637,7 +1735,7 @@
                                                     type="number"
                                                     id="productDeposit"
                                                     name="deposit_amount"
-                                                    class="form-control @error('deposit_amount') is-invalid @enderror"
+                                                    class="form-control @error('deposit_amount', 'addProduct') is-invalid @enderror"
                                                     value="{{ old('deposit_amount', 0) }}"
                                                     placeholder="0"
                                                     min="0"
@@ -1645,7 +1743,7 @@
                                                     required
                                                 >
 
-                                                @error('deposit_amount')
+                                                @error('deposit_amount', 'addProduct')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>
@@ -1653,7 +1751,7 @@
                                             </div>
 
                                             <small class="text-muted">
-                                                Enter 0 if no deposit is required.
+                                                {{ __('ui.store.form.deposit_help') }}
                                             </small>
                                         </div>
                                     </div>
@@ -1662,21 +1760,21 @@
                                         {{-- Location City --}}
                                         <div class="col-md-5 mb-3">
                                             <label for="productCity" class="form-label fw-bold">
-                                                Location City
+                                                {{ __('ui.store.form.location_city') }}
                                             </label>
 
                                             <input
                                                 type="text"
                                                 id="productCity"
                                                 name="location_city"
-                                                class="form-control @error('location_city') is-invalid @enderror"
+                                                class="form-control @error('location_city', 'addProduct') is-invalid @enderror"
                                                 value="{{ old('location_city') }}"
-                                                placeholder="Example: Bandung"
+                                                placeholder="{{ __('ui.store.form.placeholders.city') }}"
                                                 maxlength="100"
                                                 required
                                             >
 
-                                            @error('location_city')
+                                            @error('location_city', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1686,20 +1784,20 @@
                                         {{-- Location Detail --}}
                                         <div class="col-md-7 mb-3">
                                             <label for="productLocationDetail" class="form-label fw-bold">
-                                                Location Detail
+                                                {{ __('ui.store.form.location_detail') }}
                                             </label>
 
                                             <input
                                                 type="text"
                                                 id="productLocationDetail"
                                                 name="location_detail"
-                                                class="form-control @error('location_detail') is-invalid @enderror"
+                                                class="form-control @error('location_detail', 'addProduct') is-invalid @enderror"
                                                 value="{{ old('location_detail') }}"
-                                                placeholder="Example: Kecamatan Coblong"
+                                                placeholder="{{ __('ui.store.form.placeholders.location_detail') }}"
                                                 maxlength="255"
                                             >
 
-                                            @error('location_detail')
+                                            @error('location_detail', 'addProduct')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -1710,7 +1808,7 @@
                                     {{-- Product Images --}}
                                     <div class="mb-3">
                                         <label for="productImages" class="form-label fw-bold">
-                                            Product Images
+                                            {{ __('ui.store.form.product_images') }}
                                         </label>
 
                                         <input
@@ -1718,24 +1816,24 @@
                                             id="productImages"
                                             name="images[]"
                                             class="form-control
-                                                @error('images') is-invalid @enderror
-                                                @error('images.*') is-invalid @enderror"
+                                                @error('images', 'addProduct') is-invalid @enderror
+                                                @error('images.*', 'addProduct') is-invalid @enderror"
                                             accept="image/jpeg,image/png,image/webp"
                                             multiple
                                             required
                                         >
 
                                         <small class="text-muted">
-                                            Maximum 5 images. The first image will become the main image.
+                                            {{ __('ui.store.form.product_images_help') }}
                                         </small>
 
-                                        @error('images')
+                                        @error('images', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
                                         @enderror
 
-                                        @error('images.*')
+                                        @error('images.*', 'addProduct')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -1757,14 +1855,14 @@
                                         class="btn btn-light rounded-pill px-4"
                                         data-bs-dismiss="modal"
                                     >
-                                        Cancel
+                                        {{ __('ui.cancel') }}
                                     </button>
 
                                     <button
                                         type="submit"
                                         class="btn btn-primary rounded-pill px-4"
                                     >
-                                        Save Item
+                                        {{ __('ui.store.form.save_item') }}
                                     </button>
                                 </div>
 
@@ -1796,6 +1894,24 @@ window.initStoreCharts = function () {
 
     const revenueLabels = @json($revenueLabels ?? []);
     const revenueData = @json($revenueChart ?? []);
+
+    const numberLocale = @json(
+        app()->getLocale() === 'id'
+            ? 'id-ID'
+            : 'en-US'
+    );
+
+    const revenueText = @json(
+        __('ui.store.performance.revenue')
+    );
+
+    const millionAbbr = @json(
+        __('ui.store.performance.million_abbr')
+    );
+
+    const thousandAbbr = @json(
+        __('ui.store.performance.thousand_abbr')
+    );
     
     const maxRevenue = Math.max(...revenueData, 0);
 
@@ -1803,14 +1919,22 @@ window.initStoreCharts = function () {
         value = Number(value || 0);
 
         if (value >= 1000000) {
-            return 'Rp ' + (value / 1000000).toFixed(1).replace('.0', '') + ' jt';
+            return 'Rp '
+                + (value / 1000000)
+                    .toFixed(1)
+                    .replace('.0', '')
+                + ' '
+                + millionAbbr;
         }
 
         if (value >= 1000) {
-            return 'Rp ' + (value / 1000).toFixed(0) + ' rb';
+            return 'Rp '
+                + (value / 1000).toFixed(0)
+                + ' '
+                + thousandAbbr;
         }
 
-        return 'Rp ' + value.toLocaleString('id-ID');
+        return 'Rp ' + value.toLocaleString(numberLocale);
     }
 
     const trendData = @json($rentingTrendChart ?? []);
@@ -1842,7 +1966,10 @@ window.initStoreCharts = function () {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Revenue: Rp ' + Number(context.raw || 0).toLocaleString('id-ID');
+                            return revenueText
+                                + ': Rp '
+                                + Number(context.raw || 0)
+                                    .toLocaleString(numberLocale);
                         }
                     }
                 }
@@ -1967,7 +2094,10 @@ window.initStoreCharts = function () {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.label + ': ' + context.raw;
+                            return context.label
+                                + ': Rp '
+                                + Number(context.raw || 0)
+                                    .toLocaleString(numberLocale);
                         }
                     }
                 }
@@ -1986,4 +2116,126 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+@if ($errors->addProduct->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalElement = document.getElementById(
+                'addStoreItemModal'
+            );
+
+            if (
+                modalElement &&
+                typeof bootstrap !== 'undefined'
+            ) {
+                bootstrap.Modal
+                    .getOrCreateInstance(modalElement)
+                    .show();
+            }
+        });
+    </script>
+@endif
+
+<script>
+document.addEventListener('submit', async function (event) {
+    const form = event.target;
+
+    if (!(form instanceof HTMLFormElement)) {
+        return;
+    }
+
+    const confirmationMessage = form.dataset.swalConfirm;
+
+    if (
+        !confirmationMessage ||
+        form.dataset.swalConfirmed === 'true'
+    ) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const result = await window.Swal.fire({
+        icon: form.dataset.swalIcon || 'warning',
+        title: form.dataset.swalTitle
+            || @js(__('ui.store.alerts.confirm_title')),
+        text: confirmationMessage,
+        showCancelButton: true,
+        confirmButtonText:
+            form.dataset.swalConfirmButton
+            || @js(__('ui.store.alerts.confirm_button')),
+        cancelButtonText:
+            form.dataset.swalCancelButton
+            || @js(__('ui.cancel')),
+        confirmButtonColor:
+            form.dataset.swalConfirmColor || '#0031e1',
+        cancelButtonColor: '#6c757d',
+        reverseButtons: true,
+        focusCancel: true,
+    });
+
+    if (!result.isConfirmed) {
+        return;
+    }
+
+    form.dataset.swalConfirmed = 'true';
+
+    if (event.submitter) {
+        form.requestSubmit(event.submitter);
+        return;
+    }
+
+    form.requestSubmit();
+});
+</script>
+
+@php
+    $storeFlashIcon = null;
+    $storeFlashTitle = null;
+    $storeFlashMessage = null;
+
+    if (session('success')) {
+        $storeFlashIcon = 'success';
+        $storeFlashTitle = __('ui.store.alerts.success');
+        $storeFlashMessage = session('success');
+    } elseif (session('error')) {
+        $storeFlashIcon = 'error';
+        $storeFlashTitle = __('ui.store.alerts.failed');
+        $storeFlashMessage = session('error');
+    } elseif (session('warning')) {
+        $storeFlashIcon = 'warning';
+        $storeFlashTitle = __('ui.store.alerts.warning');
+        $storeFlashMessage = session('warning');
+    }
+
+    $storeActionError =
+        $errors->first('rental_request')
+        ?: $errors->first('rejection_reason')
+        ?: $errors->first('dispute');
+
+    if (! $storeFlashMessage && $storeActionError) {
+        $storeFlashIcon = 'error';
+        $storeFlashTitle = __('ui.store.alerts.failed');
+        $storeFlashMessage = $storeActionError;
+    }
+@endphp
+
+@if ($storeFlashMessage)
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.Swal) {
+                return;
+            }
+
+            window.Swal.fire({
+                icon: @js($storeFlashIcon),
+                title: @js($storeFlashTitle),
+                text: @js($storeFlashMessage),
+                confirmButtonText: @js(
+                    __('ui.store.alerts.ok')
+                ),
+                confirmButtonColor: '#0031e1',
+            });
+        });
+    </script>
+@endif
 @endpush

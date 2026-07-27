@@ -336,6 +336,222 @@ return [
     'light' => 'Terang',
     'dark' => 'Gelap',
 
+
+    // ============================================
+    // Dashboard Toko
+    // ============================================
+    'store' => [
+        'nav' => 'Toko',
+
+        'empty_store' => [
+            'title' => 'OOPS, KAMU BELUM MEMILIKI TOKO!',
+            'open_now' => 'Buka Toko Sekarang!',
+        ],
+
+        'stats' => [
+            'title' => 'Statistik Penyewaan',
+            'income' => 'Total Pendapatan Sewa',
+            'transactions' => 'Total Transaksi',
+            'items' => 'Barang Tersedia',
+            'ongoing' => 'Sewa Berlangsung',
+            'rating' => 'Rata-rata Rating',
+            'followers' => 'Pengikut',
+            'no_comparison' => 'Belum ada data perbandingan',
+            'growth_new' => 'Baru dibanding :period',
+            'growth_no_change' => 'Tidak berubah dibanding :period',
+            'growth_value' => ':value dibanding :period',
+        ],
+
+        'incoming' => [
+            'title' => 'Permintaan Sewa Masuk',
+            'subtitle' => 'Tinjau permintaan yang menunggu sebelum periode sewa dikonfirmasi.',
+            'pending_count' => ':count Menunggu',
+            'rental_item' => 'Barang sewaan',
+            'product_unavailable' => 'Produk tidak tersedia',
+            'expired' => 'Kedaluwarsa',
+            'pending_approval' => 'Menunggu Persetujuan',
+            'request_submitted' => 'Permintaan #:id · Diajukan :date',
+            'renter' => 'Penyewa:',
+            'unknown_user' => 'Pengguna tidak diketahui',
+            'trust_score' => 'Skor Kepercayaan:',
+            'email' => 'Email:',
+            'rental_period' => 'Periode sewa:',
+            'duration' => 'Durasi:',
+            'duration_days' => ':count hari',
+            'rental_total' => 'Total sewa:',
+            'deposit' => 'Deposit:',
+            'renter_note' => 'Catatan penyewa:',
+            'request_expired' => 'Permintaan Kedaluwarsa',
+            'start_date_passed' => 'Tanggal mulai sudah terlewat',
+            'approve' => 'Setujui',
+            'reject' => 'Tolak',
+            'view_item' => 'Lihat Barang',
+            'approve_confirm_title' => 'Setujui Permintaan Sewa?',
+            'approve_confirm_text' => 'Periode sewa yang dipilih akan dipesan untuk penyewa ini.',
+            'approve_confirm_button' => 'Ya, Setujui',
+            'reject_title' => 'Tolak Permintaan Sewa',
+            'reject_subtitle' => 'Jelaskan alasan permintaan ini tidak dapat diterima.',
+            'rejection_reason' => 'Alasan Penolakan',
+            'rejection_placeholder' => 'Contoh: Barang sedang menjalani perawatan selama periode yang dipilih.',
+            'rejection_help' => 'Alasan ini akan ditampilkan kepada penyewa.',
+            'reject_button' => 'Tolak Permintaan',
+            'empty_title' => 'Tidak ada permintaan sewa yang menunggu',
+            'empty_text' => 'Permintaan sewa baru untuk toko kamu akan muncul di sini.',
+        ],
+
+        'transactions' => [
+            'title' => 'Transaksi Terbaru',
+            'subtitle' => 'Lihat transaksi penyewaan terbaru dari toko kamu.',
+            'view_all' => 'Lihat Semua Transaksi',
+            'transaction' => 'Transaksi',
+            'item' => 'Barang',
+            'renter' => 'Penyewa',
+            'rental_period' => 'Periode Sewa',
+            'total' => 'Total',
+            'status' => 'Status',
+            'action' => 'Aksi',
+            'until' => 'hingga :date',
+            'no_category' => 'Tanpa kategori',
+            'unknown_renter' => 'Penyewa tidak diketahui',
+            'dispute_label' => 'Dispute: :status',
+            'raise_dispute' => 'Ajukan Dispute',
+            'waiting_admin' => 'Menunggu admin',
+            'cancel_dispute' => 'Batalkan Dispute',
+            'no_action' => 'Tidak ada aksi',
+            'empty_title' => 'Belum ada riwayat transaksi',
+            'empty_text' => 'Transaksi sewa yang disetujui akan muncul di sini.',
+
+            'statuses' => [
+                'pending' => 'Menunggu',
+                'approved' => 'Disetujui',
+                'ongoing' => 'Berlangsung',
+                'completed' => 'Selesai',
+                'cancelled' => 'Dibatalkan',
+                'rejected' => 'Ditolak',
+            ],
+
+            'dispute_statuses' => [
+                'open' => 'Dibuka',
+                'in_review' => 'Sedang Ditinjau',
+                'resolved' => 'Disetujui',
+                'rejected' => 'Ditolak',
+            ],
+        ],
+
+        'dispute' => [
+            'title' => 'Ajukan Dispute',
+            'transaction' => 'Transaksi #:id · :product',
+            'reason' => 'Alasan Dispute',
+            'reason_placeholder' => 'Jelaskan masalah dengan jelas, termasuk tanggal, kondisi barang, dan informasi relevan lainnya.',
+            'min_chars' => 'Minimal 20 karakter.',
+            'evidence' => 'Bukti Pendukung',
+            'evidence_help' => 'Opsional. Maksimal 4 MB, berupa gambar atau PDF.',
+            'review_warning' => 'Dispute akan ditinjau oleh admin. Pastikan informasi dan bukti yang diberikan sudah akurat.',
+            'submit' => 'Kirim Dispute',
+            'cancel_title' => 'Batalkan Dispute?',
+            'cancel_text' => 'Laporan dispute dan bukti pendukungnya akan dihapus secara permanen.',
+            'cancel_button' => 'Ya, Batalkan Dispute',
+            'keep_button' => 'Pertahankan Dispute',
+        ],
+
+        'performance' => [
+            'title' => 'Tren Performa',
+            'subtitle' => 'Pendapatan dan aktivitas sewa berdasarkan periode yang dipilih.',
+            'monthly' => 'Bulanan',
+            'weekly' => 'Mingguan',
+            'revenue_stream' => 'Arus Pendapatan',
+            'renting_trend' => 'Tren Penyewaan',
+            'revenue_by_category' => 'Pendapatan Berdasarkan Kategori',
+            'monthly_recap' => 'Rekap Bulanan',
+            'month' => 'Bulan',
+            'revenue' => 'Pendapatan',
+            'bookings' => 'Penyewaan',
+            'no_data' => 'Belum Ada Data',
+            'no_growth_data' => 'Belum cukup data pendapatan bulan sebelumnya untuk dibandingkan.',
+            'revenue_increased' => 'Pendapatan pada :current meningkat :growth% dibandingkan :previous.',
+            'revenue_decreased' => 'Pendapatan pada :current menurun :growth% dibandingkan :previous.',
+            'million_abbr' => 'jt',
+            'thousand_abbr' => 'rb',
+        ],
+
+        'top_items' => [
+            'title' => 'Barang Paling Banyak Disewa',
+            'see_all' => 'Lihat semua',
+            'times_rented' => ':count kali disewa',
+            'empty' => 'Belum ada barang yang disewa.',
+            'all_title' => 'Semua Barang yang Disewa',
+            'all_subtitle' => 'Daftar lengkap barang toko dan frekuensi penyewaannya.',
+        ],
+
+        'items' => [
+            'title' => 'Barang Toko',
+            'subtitle' => 'Kelola barang yang terdaftar di toko kamu.',
+            'add' => '+ Tambah Barang',
+            'no_category' => 'Tanpa Kategori',
+            'edit' => 'Edit',
+            'delete' => 'Hapus',
+            'empty' => 'Belum ada barang di toko kamu.',
+            'delete_title' => 'Hapus Barang?',
+            'delete_text' => 'Barang ini akan dihapus dari toko dan tidak lagi tersedia untuk disewa.',
+            'delete_button' => 'Ya, Hapus',
+        ],
+
+        'form' => [
+            'edit_title' => 'Edit Barang Toko',
+            'edit_subtitle' => 'Perbarui informasi dan ketersediaan barang ini.',
+            'add_title' => 'Tambah Barang Toko',
+            'add_subtitle' => 'Tambahkan informasi lengkap mengenai barang sewaan kamu.',
+            'item_name' => 'Nama Barang',
+            'category' => 'Kategori',
+            'select_category' => 'Pilih kategori',
+            'condition' => 'Kondisi Barang',
+            'select_condition' => 'Pilih kondisi',
+            'description' => 'Deskripsi',
+            'price_per_day' => 'Harga per Hari',
+            'deposit_amount' => 'Jumlah Deposit',
+            'deposit_help' => 'Masukkan 0 jika tidak memerlukan deposit.',
+            'location_city' => 'Kota Lokasi',
+            'location_detail' => 'Detail Lokasi',
+            'status' => 'Status Produk',
+            'current_image' => 'Gambar Utama Saat Ini',
+            'replace_images' => 'Ganti Gambar Produk',
+            'replace_images_help' => 'Kosongkan bagian ini untuk mempertahankan gambar lama. Mengunggah file baru akan mengganti seluruh gambar yang ada.',
+            'product_images' => 'Gambar Produk',
+            'product_images_help' => 'Maksimal 5 gambar. Gambar pertama akan menjadi gambar utama.',
+            'save_changes' => 'Simpan Perubahan',
+            'save_item' => 'Simpan Barang',
+
+            'conditions' => [
+                'new' => 'Baru',
+                'like_new' => 'Seperti Baru',
+                'good' => 'Kondisi Baik',
+                'fair' => 'Kondisi Cukup',
+            ],
+
+            'statuses' => [
+                'active' => 'Aktif',
+                'inactive' => 'Tidak Aktif',
+                'draft' => 'Draf',
+            ],
+
+            'placeholders' => [
+                'item_name' => 'Contoh: Canon EOS M50',
+                'description' => 'Jelaskan barang, spesifikasi, aksesori yang termasuk, dan informasi penggunaannya...',
+                'city' => 'Contoh: Bandung',
+                'location_detail' => 'Contoh: Kecamatan Coblong',
+            ],
+        ],
+
+        'alerts' => [
+            'success' => 'Berhasil',
+            'failed' => 'Aksi Gagal',
+            'warning' => 'Peringatan',
+            'confirm_title' => 'Apakah kamu yakin?',
+            'confirm_button' => 'Ya, lanjutkan',
+            'ok' => 'OK',
+        ],
+    ],
+
     // ============================================
     // Chat
     // ============================================
@@ -644,6 +860,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'dispute_status_in_review' => 'Sedang Ditinjau',
+    'dispute_only_after_completed' => 'Dispute hanya dapat diajukan setelah peminjaman selesai.',
+    'dispute_available_after_completed' => 'Dispute tersedia setelah peminjaman selesai',
 
     // ============================================
     // Checkout & Pembayaran (Midtrans Snap)
