@@ -423,6 +423,10 @@ function chatApp(config) {
         searchQuery: '',
         attachment: null,
         attachmentPreview: null,
+        // Polling state
+        _lastPollTimer: null,
+        _latestMessageAt: null,
+        _fetchingMessages: false,
 
         // ── Computed ──
         get filteredConversations() {
@@ -499,11 +503,14 @@ function chatApp(config) {
             this.messagesLoaded = false;
             this.otherUser = null;
             this.currentConversation = null;
+            this._latestMessageAt = null;
+            this._fetchingMessages = true;  // block polls until fetch completes
             this.fetchMessages(convId);
         },
 
         fetchMessages: async function (convId) {
             var self = this;
+            this._fetchingMessages = true;
             try {
                 var res = await fetch('/pesan/' + convId, {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -521,6 +528,10 @@ function chatApp(config) {
                 self.messagesLoaded = true;
                 self.otherUser = data.other_user;
                 self.currentConversation = data.conversation;
+                // Track latest message timestamp for efficient polling
+                self._latestMessageAt = data.messages && data.messages.length > 0
+                    ? data.messages[data.messages.length - 1].created_at
+                    : null;
                 // Update conversation in list
                 var idx = self.conversations.findIndex(function (c) { return c.id === convId; });
                 if (idx >= 0) {
@@ -531,8 +542,12 @@ function chatApp(config) {
                 self.subscribeToConversation(convId);
             } catch (e) {
                 console.error('Failed to load messages:', e);
-                self.messages = [];
+                if (self.messages.length === 0) {
+                    self.messages = [];
+                }
                 self.messagesLoaded = true;
+            } finally {
+                self._fetchingMessages = false;
             }
         },
 
@@ -642,6 +657,70 @@ function chatApp(config) {
             }
         },
 
+        // Only auto-scroll if user is near bottom (within 150px)
+        scrollToBottomIfNear: function () {
+            var el = this.$refs.messageContainer;
+            if (!el) return;
+            var nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+            if (nearBottom) {
+                el.scrollTop = el.scrollHeight;
+            }
+        },
+
+        // Poll for new messages. If chat is empty (initial fetch failed),
+        // this acts as a full recovery — loads all messages and user info.
+        pollMessages: function () {
+            if (!this.activeConversationId) return;
+            if (this._fetchingMessages) return;
+            var self = this;
+            var needsFullLoad = this.messages.length === 0;
+            var url = '/pesan/' + this.activeConversationId;
+            // Only use incremental polling when we already have messages
+            if (!needsFullLoad && this._latestMessageAt) {
+                url += '?after=' + encodeURIComponent(this._latestMessageAt);
+            }
+            fetch(url, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                // Always keep user/conversation info in sync
+                if (data.other_user) {
+                    self.otherUser = data.other_user;
+                }
+                if (data.conversation) {
+                    self.currentConversation = data.conversation;
+                }
+                if (needsFullLoad) {
+                    // Recovery mode: load all messages (initial fetch must have failed)
+                    self.messages = data.messages || [];
+                    self.messagesLoaded = true;
+                    self._latestMessageAt = data.messages && data.messages.length > 0
+                        ? data.messages[data.messages.length - 1].created_at
+                        : null;
+                    // Update conversation in list
+                    var idx = self.conversations.findIndex(function (c) { return c.id === self.activeConversationId; });
+                    if (idx >= 0) {
+                        self.conversations[idx].unread_count = 0;
+                        self.updateNavbarBadge();
+                    }
+                    self.$nextTick(function () { self.scrollToBottom(); });
+                } else {
+                    // Incremental mode: only append new messages from the other user
+                    var newMessages = (data.messages || []).filter(function (m) {
+                        return m.sender_id !== self.userId &&
+                               !self.messages.some(function (existing) { return existing.id === m.id; });
+                    });
+                    if (newMessages.length > 0) {
+                        newMessages.forEach(function (m) { self.messages.push(m); });
+                        self._latestMessageAt = newMessages[newMessages.length - 1].created_at;
+                        self.$nextTick(function () { self.scrollToBottomIfNear(); });
+                    }
+                }
+            })
+            .catch(function () { /* silent — polling is best-effort */ });
+        },
+
         updateConversationInList: function (convId, preview) {
             var conv = this.conversations.find(function (c) { return c.id === convId; });
             if (conv) {
@@ -713,6 +792,9 @@ function chatApp(config) {
             });
 
             this.$nextTick(function () { self.updateNavbarBadge(); });
+
+            // Poll for new messages every 5 seconds (fallback when WebSocket unavailable)
+            this._lastPollTimer = setInterval(function () { self.pollMessages(); }, 5000);
 
             if (window.Echo && window.AuthUser) {
                 window.Echo.private('user.' + window.AuthUser.id)

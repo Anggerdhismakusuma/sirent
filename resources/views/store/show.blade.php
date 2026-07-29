@@ -308,10 +308,10 @@
                 </div>
             @endforelse
 
-            {{-- Pagination --}}
+            {{-- Pagination — simple numbered pages, no chevrons --}}
             @if($reviews->hasPages())
-            <div class="d-flex justify-content-center mt-3">
-                {{ $reviews->links() }}
+            <div class="d-flex justify-content-center mt-4">
+                {{ $reviews->links('pagination::bootstrap-5') }}
             </div>
             @endif
 

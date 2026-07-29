@@ -313,6 +313,7 @@ return [
     'notif_rental_auto_rejected' => 'Penyewaan Anda untuk ":product" otomatis ditolak karena pemilik tidak merespons tepat waktu.',
     'notif_dispute_status' => 'Status Dispute',
     'notif_dispute_submitted' => 'Dispute Anda untuk ":product" telah dikirim dan menunggu tinjauan admin.',
+    'notif_dispute_received' => 'Sebuah dispute telah diajukan terhadap Anda untuk ":product".',
     'notif_dispute_resolved' => 'Dispute Anda untuk ":product" telah diselesaikan.',
     'notif_dispute_rejected' => 'Dispute Anda untuk ":product" telah ditolak.',
     'notif_dispute_updated' => 'Dispute Anda untuk ":product" telah diperbarui.',
