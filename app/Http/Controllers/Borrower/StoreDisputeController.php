@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use App\Notifications\DisputeStatusChanged;
-use App\Notifications\DisputeStatusChanged;
-use App\Notifications\DisputeStatusChanged;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 

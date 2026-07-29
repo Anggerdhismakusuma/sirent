@@ -167,32 +167,140 @@ class StoreController extends Controller
             'You need to open your store first.'
         );
 
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:150'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'condition' => ['required', 'in:new,like_new,good,fair'],
-            'price_per_day' => ['required', 'numeric', 'min:0'],
-            'deposit_amount' => ['required', 'numeric', 'min:0'],
-            'location_city' => ['required', 'string', 'max:100'],
-            'location_detail' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', 'in:active,inactive'],
-        ]);
+        $validated = $request->validateWithBag(
+            'addProduct',
+            [
+                'title' => [
+                    'required',
+                    'string',
+                    'max:150',
+                ],
 
-        Product::create([
-            'owner_id' => $user->id,
-            'category_id' => $validated['category_id'],
-            'title' => $validated['title'],
-            'slug' => Str::slug($validated['title']) . '-' . time(),
-            'description' => $validated['description'] ?? null,
-            'condition' => $validated['condition'],
-            'price_per_day' => $validated['price_per_day'],
-            'deposit_amount' => $validated['deposit_amount'],
-            'location_city' => $validated['location_city'],
-            'location_detail' => $validated['location_detail'] ?? null,
-            'status' => $validated['status'],
-            'total_rented' => 0,
-        ]);
+                'category_id' => [
+                    'required',
+                    'exists:categories,id',
+                ],
+
+                'description' => [
+                    'required',
+                    'string',
+                ],
+
+                'condition' => [
+                    'required',
+                    'in:new,like_new,good,fair',
+                ],
+
+                'price_per_day' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                ],
+
+                'deposit_amount' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                ],
+
+                'location_city' => [
+                    'required',
+                    'string',
+                    'max:100',
+                ],
+
+                'location_detail' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
+
+                'status' => [
+                    'required',
+                    'in:active,inactive,draft',
+                ],
+
+                'images' => [
+                    'required',
+                    'array',
+                    'min:1',
+                    'max:5',
+                ],
+
+                'images.*' => [
+                    'required',
+                    'image',
+                    'mimes:jpg,jpeg,png,webp',
+                    'max:4096',
+                ],
+            ]
+        );
+
+        $storedImagePaths = [];
+
+        try {
+            DB::transaction(function () use (
+                $request,
+                $user,
+                $validated,
+                &$storedImagePaths
+            ): void {
+                $slugBase = Str::slug($validated['title']);
+
+                if ($slugBase === '') {
+                    $slugBase = 'item';
+                }
+
+                $slug = $slugBase
+                    . '-'
+                    . Str::lower(Str::random(8));
+
+                $product = Product::create([
+                    'owner_id' => $user->id,
+                    'category_id' => $validated['category_id'],
+                    'title' => $validated['title'],
+                    'slug' => $slug,
+                    'description' => $validated['description'],
+                    'condition' => $validated['condition'],
+                    'price_per_day' => $validated['price_per_day'],
+                    'deposit_amount' => $validated['deposit_amount'],
+                    'location_city' => $validated['location_city'],
+                    'location_detail' =>
+                        $validated['location_detail'] ?? null,
+                    'status' => $validated['status'],
+                    'rating_avg' => 0,
+                    'total_rented' => 0,
+                ]);
+
+                foreach (
+                    $request->file('images', [])
+                    as $index => $image
+                ) {
+                    $imagePath = $image->store(
+                        'products',
+                        'public'
+                    );
+
+                    $storedImagePaths[] = $imagePath;
+
+                    $product->images()->create([
+                        'image_path' => $imagePath,
+                        'is_primary' => $index === 0,
+                        'sort_order' => $index,
+                    ]);
+                }
+            });
+        } catch (\Throwable $exception) {
+            /*
+            * Kalau database gagal setelah gambar sempat tersimpan,
+            * hapus gambar agar tidak menjadi file orphan.
+            */
+            foreach ($storedImagePaths as $imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            throw $exception;
+        }
 
         return redirect()
             ->route('borrower.dashboard', ['tab' => 'store'])
