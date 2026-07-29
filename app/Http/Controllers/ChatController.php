@@ -31,7 +31,7 @@ class ChatController extends Controller
      * F-CHT-04: Membuka satu percakapan.
      * GET /pesan/{conversation}
      */
-    public function show(Conversation $conversation): View|JsonResponse
+    public function show(Request $request, Conversation $conversation): View|JsonResponse
     {
         $userId = auth()->id();
 
@@ -47,10 +47,16 @@ class ChatController extends Controller
             ->update(['is_read' => true]);
 
         // Load data
-        $messages = $conversation->messages()
+        $messagesQuery = $conversation->messages()
             ->with('sender')
-            ->orderBy('created_at')
-            ->get()
+            ->orderBy('created_at');
+
+        // Polling optimization: only return messages after the given timestamp
+        if ($request->has('after')) {
+            $messagesQuery->where('created_at', '>', $request->input('after'));
+        }
+
+        $messages = $messagesQuery->get()
             ->map(function (Message $m) use ($userId) {
                 return [
                     'id' => $m->id,

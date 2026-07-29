@@ -102,7 +102,8 @@ class Product extends Model
     public function scopeInCity($query, ?string $city)
     {
         if ($city) {
-            return $query->where('location_city', $city);
+            $city = trim($city);
+            return $query->where('location_city', 'like', '%' . $city . '%');
         }
         return $query;
     }

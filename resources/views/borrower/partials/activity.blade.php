@@ -92,7 +92,9 @@
                                 @if(in_array($request->status, ['approved', 'ongoing']) && !$request->activeDispute)
                                 <button class="btn btn-outline-danger btn-sm rounded-3 d-block mt-1"
                                         style="font-family:'Mona Sans',sans-serif; font-size:14px;"
-                                        onclick="openDisputeModal({{ $request->id }}, '{{ $request->product->title ?? 'Product' }}')">
+                                        data-rental-id="{{ $request->id }}"
+                                        data-product-title="{{ $request->product->title ?? 'Product' }}"
+                                        onclick="window.dispatchEvent(new CustomEvent('open-dispute-modal',{detail:{id:this.dataset.rentalId,title:this.dataset.productTitle}}))">
                                     ⚠ {{ __('ui.dispute_owner') }}
                                 </button>
                                 @elseif($request->activeDispute)
@@ -186,14 +188,18 @@
                             @else
                                 <button class="btn btn-outline-warning btn-sm rounded-3 d-block mb-1"
                                         style="font-family:'Mona Sans',sans-serif; font-size:14px;"
-                                        onclick="openRatingModal({{ $request->id }}, '{{ $request->product->title ?? 'Product' }}')">
+                                        data-rental-id="{{ $request->id }}"
+                                        data-product-title="{{ $request->product->title ?? 'Product' }}"
+                                        onclick="window.dispatchEvent(new CustomEvent('open-rating-modal',{detail:{id:this.dataset.rentalId,title:this.dataset.productTitle}}))">
                                     ⭐ {{ __('ui.rate_owner') }}
                                 </button>
                             @endif
                             @if(!$request->activeDispute)
                                 <button class="btn btn-outline-danger btn-sm rounded-3 d-block"
                                         style="font-family:'Mona Sans',sans-serif; font-size:14px;"
-                                        onclick="openDisputeModal({{ $request->id }}, '{{ $request->product->title ?? 'Product' }}')">
+                                        data-rental-id="{{ $request->id }}"
+                                        data-product-title="{{ $request->product->title ?? 'Product' }}"
+                                        onclick="window.dispatchEvent(new CustomEvent('open-dispute-modal',{detail:{id:this.dataset.rentalId,title:this.dataset.productTitle}}))">
                                     ⚠ {{ __('ui.dispute_owner') }}
                                 </button>
                             @else
@@ -558,6 +564,13 @@
                 this.show = true;
             },
 
+            init() {
+                const self = this;
+                window.addEventListener('open-rating-modal', function (e) {
+                    self.open(e.detail.id, e.detail.title);
+                });
+            },
+
             async submitRating() {
                 if (this.selectedScore === 0 || this.submitting) return;
 
@@ -597,10 +610,9 @@
 
     // Bridge function to open rating modal
     function openRatingModal(id, title) {
-        const modal = document.querySelector('[x-data="ratingModal()"]');
-        if (modal && modal.__x) {
-            modal.__x.$data.open(id, title);
-        }
+        window.dispatchEvent(new CustomEvent('open-rating-modal', {
+            detail: { id: id, title: title }
+        }));
     }
 
     // Dispute modal Alpine component
@@ -621,6 +633,13 @@
                 this.evidence = null;
                 this.reasonError = '';
                 this.show = true;
+            },
+
+            init() {
+                const self = this;
+                window.addEventListener('open-dispute-modal', function (e) {
+                    self.open(e.detail.id, e.detail.title);
+                });
             },
 
             async submitDispute() {
@@ -684,10 +703,9 @@
 
     // Bridge function to open dispute modal
     function openDisputeModal(id, title) {
-        const modal = document.querySelector('[x-data="disputeModal()"]');
-        if (modal && modal.__x) {
-            modal.__x.$data.open(id, title);
-        }
+        window.dispatchEvent(new CustomEvent('open-dispute-modal', {
+            detail: { id: id, title: title }
+        }));
     }
 
     // ── Transaction Detail Modal ──

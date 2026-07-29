@@ -8,6 +8,7 @@ use App\Models\RentalRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use App\Notifications\DisputeStatusChanged;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -79,7 +80,7 @@ class StoreDisputeController extends Controller
                 ->store('dispute-evidence', 'public');
         }
 
-        Dispute::create([
+        $dispute = Dispute::create([
             'rental_request_id' => $rentalRequest->id,
             'reporter_id' => $user->id,
             'reason' => $validated['reason'],
@@ -91,6 +92,25 @@ class StoreDisputeController extends Controller
             'handled_by' => null,
             'resolved_at' => null,
         ]);
+
+        $productName = $rentalRequest->product?->title ?? 'Unknown Product';
+
+        // Notify the reporter (store owner) that the dispute has been submitted
+        $user->notify(new DisputeStatusChanged(
+            disputeId: $dispute->id,
+            productName: $productName,
+            status: 'submitted',
+        ));
+
+        // Notify the borrower that they received a dispute
+        $borrower = $rentalRequest->borrower;
+        if ($borrower) {
+            $borrower->notify(new DisputeStatusChanged(
+                disputeId: $dispute->id,
+                productName: $productName,
+                status: 'received',
+            ));
+        }
 
         return back()->with(
             'success',

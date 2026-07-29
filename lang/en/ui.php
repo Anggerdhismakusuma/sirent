@@ -313,6 +313,7 @@ return [
     'notif_rental_auto_rejected' => 'Your rental for ":product" was automatically rejected because the owner did not respond in time.',
     'notif_dispute_status' => 'Dispute Status',
     'notif_dispute_submitted' => 'Your dispute for ":product" has been submitted and is awaiting admin review.',
+    'notif_dispute_received' => 'A dispute has been filed against you for ":product".',
     'notif_dispute_resolved' => 'Your dispute for ":product" has been resolved.',
     'notif_dispute_rejected' => 'Your dispute for ":product" has been rejected.',
     'notif_dispute_updated' => 'Your dispute for ":product" has been updated.',

@@ -34,6 +34,7 @@ class DisputeStatusChanged extends Notification
     {
         $message = match ($this->status) {
             'submitted' => __('ui.notif_dispute_submitted', ['product' => $this->productName]),
+            'received'  => __('ui.notif_dispute_received', ['product' => $this->productName]),
             'resolved'  => __('ui.notif_dispute_resolved', ['product' => $this->productName]),
             'rejected'  => __('ui.notif_dispute_rejected', ['product' => $this->productName]),
             default     => __('ui.notif_dispute_updated', ['product' => $this->productName]),

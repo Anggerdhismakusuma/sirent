@@ -29,18 +29,22 @@
                 <a href="{{ route('chat.index') }}" class="btn btn-link text-primary p-0 position-relative me-2" title="{{ __('ui.messages') }}"
                    x-data
                    x-init="
-                       fetch('{{ route('chat.unread') }}', {
-                           headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                       })
-                       .then(r => r.json())
-                       .then(data => {
-                           const badge = document.getElementById('chat-unread-count');
-                           if (badge) {
-                               badge.textContent = data.count > 99 ? '99+' : data.count;
-                               badge.hidden = data.count === 0;
-                           }
-                       })
-                       .catch(() => {});
+                       const updateChatBadge = () => {
+                           fetch('{{ route('chat.unread') }}', {
+                               headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                           })
+                           .then(r => r.json())
+                           .then(data => {
+                               const badge = document.getElementById('chat-unread-count');
+                               if (badge) {
+                                   badge.textContent = data.count > 99 ? '99+' : data.count;
+                                   badge.hidden = data.count === 0;
+                               }
+                           })
+                           .catch(() => {});
+                       };
+                       updateChatBadge();
+                       setInterval(updateChatBadge, 30000);
                    ">
                     <i class="bi bi-chat-dots fs-5"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"

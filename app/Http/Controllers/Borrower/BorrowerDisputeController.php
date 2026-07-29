@@ -93,6 +93,16 @@ class BorrowerDisputeController extends Controller
             status: 'submitted',
         ));
 
+        // Notify the store owner that they received a dispute
+        $owner = $rentalRequest->owner;
+        if ($owner) {
+            $owner->notify(new DisputeStatusChanged(
+                disputeId: $dispute->id,
+                productName: $rentalRequest->product?->title ?? 'Unknown Product',
+                status: 'received',
+            ));
+        }
+
         return response()->json([
             'success' => true,
             'message' => __('ui.dispute_success'),
