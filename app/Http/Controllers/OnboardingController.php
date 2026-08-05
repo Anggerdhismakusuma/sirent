@@ -7,7 +7,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -125,7 +127,11 @@ class OnboardingController extends Controller
     }
 
     /**
-     * AJAX Method: Kirim Email Verifikasi secara manual saat tombol diklik
+     * AJAX Method: Kirim Email Verifikasi secara manual saat tombol diklik.
+     *
+     * Menggunakan Mail::send() langsung seperti OTP — bukan notification system —
+     * karena notification pipeline (MailChannel) bisa gagal secara silent
+     * di production saat mengonversi MailMessage ke Mailable.
      */
     public function sendVerificationEmail(Request $request): JsonResponse
     {
@@ -140,15 +146,50 @@ class OnboardingController extends Controller
         }
 
         try {
-            // Memicu pengiriman notification email bawaan Laravel (MustVerifyEmail)
-            $user->sendEmailVerificationNotification();
+            // Generate signed verification URL — identik dengan yang dibuat oleh
+            // VerifyEmail notification, tapi kita generate sendiri agar tidak
+            // bergantung pada notification pipeline.
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                [
+                    'id' => $user->getKey(),
+                    'hash' => sha1($user->getEmailForVerification()),
+                ]
+            );
+
+            // Kirim via Mail::send() — pendekatan yang sama persis dengan OTP
+            Mail::send([], [], function ($message) use ($user, $verificationUrl) {
+                $message->to($user->email)
+                    ->subject('Verifikasi Email — SI-RENT')
+                    ->html("
+                        <div style='font-family: sans-serif; padding: 20px; max-width: 500px; border: 1px solid #ddd; border-radius: 12px;'>
+                            <h2 style='color: #3673fb;'>Verifikasi Email SI-RENT</h2>
+                            <p>Halo {$user->name}, klik tombol di bawah untuk memverifikasi alamat email Anda:</p>
+                            <div style='text-align: center; margin: 30px 0;'>
+                                <a href='{$verificationUrl}'
+                                   style='background: #3673fb; color: #fff; padding: 14px 40px;
+                                          text-decoration: none; border-radius: 8px; font-size: 16px;
+                                          font-weight: bold; display: inline-block;'>
+                                    Verifikasi Email
+                                </a>
+                            </div>
+                            <p style='font-size: 12px; color: #777;'>
+                                Tautan berlaku selama 60 menit. Jika Anda tidak membuat akun SI-RENT, abaikan email ini.
+                            </p>
+                        </div>
+                    ");
+            });
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Tautan verifikasi berhasil dikirim ke email Anda!'
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Gagal mengirim email verifikasi onboarding: ' . $e->getMessage());
+            Log::error('Gagal mengirim email verifikasi onboarding: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
 
             return response()->json([
                 'status' => 'error',
