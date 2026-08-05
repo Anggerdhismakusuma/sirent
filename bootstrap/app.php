@@ -31,6 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ['middleware' => ['auth']],
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust Railway's proxy/load-balancer so that X-Forwarded-Proto / X-Forwarded-For
+        // headers are respected. Without this, the app sees HTTP requests behind the proxy,
+        // which breaks signed URL validation (the URL is generated with HTTPS but the
+        // request arrives as HTTP → signature mismatch → 403).
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'auth.guest' => \App\Http\Middleware\RedirectIfGuest::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
