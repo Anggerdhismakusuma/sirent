@@ -13,6 +13,7 @@
         "nyholm/psr7": "*",
         "pusher/pusher-php-server": "^7.2",
         "railsware/mailtrap-php": "*",
+        "resend/resend-laravel": "^1.4",
         "symfony/http-client": "*",
         "symfony/mailer": "*"
     },
